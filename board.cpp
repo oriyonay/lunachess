@@ -955,6 +955,12 @@ void board::update_unsafe() {
   UNSAFE |= possible;
 }
 
+// is_check(): ASSUMES UNSAFE BITBOARD HAS BEEN UPDATED (which it is if we've
+// called get_moves())
+bool board::is_check() {
+  return UNSAFE & bitboard[KING + turn];
+}
+
 /* ---------- BOARD UTILITY FUNCTIONS ---------- */
 
 // generates a move integer:

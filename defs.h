@@ -10,6 +10,8 @@ typedef uint64_t U64;
 #define MAX_POSITION_MOVES 256
 #define MAX_GAME_MOVES 2048
 
+#define INF 2147483647
+
 #define FEN_START "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 // these are set up in a clever way so that we can add them up -

@@ -2,7 +2,6 @@
 #define BOARD_H
 
 #include <cstring>
-#include <string> // TODO: remove this!
 
 #include "consts.h"
 #include "defs.h"
@@ -42,6 +41,7 @@ struct board {
 
   inline void update_move_info_bitboards();
   void update_unsafe();
+  bool is_check();
 };
 
 // utility functions for board class:

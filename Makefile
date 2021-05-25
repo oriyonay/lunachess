@@ -11,6 +11,15 @@ all:
 run:
 	./main.out
 
+run_test:
+	./tests.out
+
+test: tests.cpp
+	make board.o
+	make consts.o
+	g++ -std=c++11 -O3 -w -c tests.cpp -o tests.o
+	g++ -std=c++11 -O3 board.o consts.o tests.o -o tests.out
+
 clean:
 	rm *.o ||:
 	rm *.out ||:

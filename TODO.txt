@@ -11,3 +11,5 @@ TODO:
 - possible: make a table for all (1L << x) instead of calculating them
 - replace all magic numbers with defs!
 - potential redundancy in undo en passant routine?
+- idea for more efficient check-checking: generate all moves from the king and
+  bitwise-AND that with the king bitboard

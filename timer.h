@@ -20,7 +20,7 @@ public:
   }
 
   void print_duration() {
-    double elapsed = duration<double>(duration_cast<milliseconds>(end_time - start_time)).count();
+    double elapsed = duration<double>(duration_cast<microseconds>(end_time - start_time)).count();
     printf("timer stopped at %f seconds\n", elapsed);
   }
 };
