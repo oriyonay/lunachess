@@ -153,13 +153,13 @@ bool board::make_move(int move) {
   move_history[num_moves_played++] = move;
 
   // get move info:
-  int to = (move >> 26) & 0x3F;
-  int from = (move >> 20) & 0x3F;
-  int captured = (move >> 16) & 0xF;
-  int piece_moved = move & 0xF;
-  int ep = (move >> 15) & 1;
-  int castle = (move >> 13) & 1;
-  int promotion = (move >> 12) & 1;
+  int to = MOVE_TO(move);
+  int from = MOVE_FROM(move);
+  int captured = MOVE_CAPTURED(move);
+  int piece_moved = MOVE_PIECEMOVED(move);
+  int ep = MOVE_IS_EP(move);
+  int castle = MOVE_IS_CASTLE(move);
+  int promotion = MOVE_IS_PROMOTION(move);
 
   // move the piece to its new board location:
   bitboard[piece_moved] |= (1L << to);
@@ -298,14 +298,14 @@ void board::undo_move() {
   int move = move_history[num_moves_played];
 
   // get move info:
-  int to = (move >> 26) & 0x3F;
-  int from = (move >> 20) & 0x3F;
-  int captured = (move >> 16) & 0xF;
-  int piece_moved = move & 0xF;
-  int ep = (move >> 15) & 1;
-  int castle = (move >> 13) & 1;
-  int promotion = (move >> 12) & 1;
-  int pcr = (move >> 4) & 0xF;
+  int to = MOVE_TO(move);
+  int from = MOVE_FROM(move);
+  int captured = MOVE_CAPTURED(move);
+  int piece_moved = MOVE_PIECEMOVED(move);
+  int ep = MOVE_IS_EP(move);
+  int castle = MOVE_IS_CASTLE(move);
+  int promotion = MOVE_IS_PROMOTION(move);
+  int pcr = MOVE_PCR(move);
 
   // remove the piece back from its current board location:
   bitboard[piece_moved] ^= (1L << to);

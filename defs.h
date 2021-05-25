@@ -45,6 +45,8 @@ enum {INIT_WK = 0x1000000000000000L, INIT_BK = 0x10L};
 #define MOVE_IS_CASTLE(move) ((move >> 13) & 1)
 #define MOVE_IS_PROMOTION(move) ((move >> 12) & 1)
 #define MOVE_PROMOTION_PIECE(move) ((move >> 8) & 0xF)
+#define MOVE_PIECEMOVED(move) (move & 0xF)
+#define MOVE_PCR(move) ((move >> 4) & 0xF)
 
 // macros for determining castle rights:
 // CWK = castle white kingside, CBQ = castle black queenside, etc.
