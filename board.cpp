@@ -916,8 +916,7 @@ void board::update_unsafe() {
 
   while (i) {
     idx = LSB(i);
-    possible  = (idx > 18) ? KNIGHT_SPAN << (idx - 18) : KNIGHT_SPAN >> (18 - idx);
-    possible &= (idx % 8 < 4) ? ~FILE_GH : ~FILE_AB;
+    possible = KNIGHT_MOVES[idx];
     UNSAFE |= possible;
 
     opp_knight &= ~i;
@@ -948,9 +947,36 @@ void board::update_unsafe() {
 
   // king attacks:
   idx = LSB(opp_king);
-  possible = (idx > 9) ? KING_SPAN << (idx - 9) : KING_SPAN >> (9 - idx);
-  possible &= (idx % 8 < 4) ? ~FILE_GH : ~FILE_AB;
+  possible = KING_MOVES[idx];
   UNSAFE |= possible;
+}
+
+// pinned_pieces(): returns a bitboard of all pinned pieces
+U64 board::pinned_pieces() {
+  char king_square = LSB(bitboard[KING + turn]);
+  int not_turn = (turn == WHITE) ? BLACK : WHITE;
+  U64 blockers = CANT_CAPTURE;
+
+  U64 pinned = 0L;
+  U64 pinner = xray_rook(OCCUPIED_SQUARES, blockers, king_square) &
+               (bitboard[ROOK + not_turn] | bitboard[QUEEN + not_turn]);
+
+  while (pinner) {
+    int sq  = LSB(pinner);
+    pinned |= RECT_LOOKUP[sq][king_square] & blockers;
+    POP_LSB(pinner);
+  }
+
+  pinner = xray_bishop(OCCUPIED_SQUARES, blockers, king_square) &
+           (bitboard[BISHOP + not_turn] | bitboard[QUEEN + not_turn]);
+
+  while (pinner) {
+    int sq  = LSB(pinner);
+    pinned |= RECT_LOOKUP[sq][king_square] & blockers;
+    POP_LSB(pinner);
+  }
+
+  return pinned;
 }
 
 // is_check(): ASSUMES UNSAFE BITBOARD HAS BEEN UPDATED (which it is if we've
@@ -1012,4 +1038,22 @@ inline U64 reverse_bits(U64 n) {
     // swap 4-byte long pairs
     n = ( n >> 32                     ) | ( n                       << 32);
     return n;
+}
+
+// xrayRook(): returns bitboard of x-ray rook attacks.
+// occ = bitboard of occupied pieces, s = index of slider piece, and
+// blockers = bitboard of pieces we can't capture
+inline U64 xray_rook(U64 occ, U64 blockers, char s) {
+  U64 attacks = line_moves(s, occ);
+  blockers &= attacks;
+  return attacks ^ line_moves(s, occ ^ blockers);
+}
+
+// xrayBishop(): returns bitboard of x-ray bishop attacks.
+// occ = bitboard of occupied pieces, s = index of slider piece, and
+// blockers = bitboard of pieces we can't capture
+inline U64 xray_bishop(U64 occ, U64 blockers, char s) {
+  U64 attacks = diag_moves(s, occ);
+  blockers &= attacks;
+  return attacks ^ diag_moves(s, occ ^ blockers);
 }

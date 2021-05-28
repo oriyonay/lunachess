@@ -103,6 +103,8 @@ int perft(board* b, int depth) {
       if (!b->make_move(moves[i])) num_moves--;
       b->undo_move();
     }
+
+    delete[] moves;
     return num_moves;
   }
 
@@ -113,6 +115,8 @@ int perft(board* b, int depth) {
     }
     b->undo_move();
   }
+
+  delete[] moves;
 
   return sum;
 }

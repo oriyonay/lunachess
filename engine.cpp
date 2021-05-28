@@ -42,8 +42,7 @@ move alphabeta(board* b, int depth) {
       // make the move:
       b->make_move(moves[i]);
 
-      printf("---------- ROOT: ");
-      pm(moves[i]);
+      printf("ROOT MOVE MADE\n");
 
       candidate_score = alphabeta_helper(b, depth-1, alpha, beta, false);
       if (candidate_score >= best_score) {
@@ -104,13 +103,12 @@ int alphabeta_helper(board* b, int depth, int alpha, int beta, bool maximizing) 
     best_score = -INF;
 
     // make every move and return the one with the highest value:
+    printf("starting maximizing loop\n");
     for (int i = 0; i < num_moves; i++) {
-
-      for (int j = 0; j < 5 - depth; j++) printf("\t");
-      printf("white plays ");
-      pm(moves[i]);
-
       b->make_move(moves[i]);
+      pm(moves[i]);
+      printf("move: %d, depth: %d\n", moves[i], depth);
+      b->print();
       best_score = std::max(best_score, alphabeta_helper(b, depth-1, alpha, beta, false));
       alpha = std::max(alpha, best_score);
       if (alpha >= beta) break;
@@ -123,13 +121,12 @@ int alphabeta_helper(board* b, int depth, int alpha, int beta, bool maximizing) 
     best_score = INF;
 
     // make every move and return the one with the highest value:
+    printf("starting minimizing loop\n");
     for (int i = 0; i < num_moves; i++) {
-
-      for (int j = 0; j < 5 - depth; j++) printf("\t");
-      printf("white plays ");
-      pm(moves[i]);
-      
       b->make_move(moves[i]);
+      pm(moves[i]);
+      printf("move: %d, depth: %d\n", moves[i], depth);
+      b->print();
       best_score = std::min(best_score, alphabeta_helper(b, depth-1, alpha, beta, true));
       beta = std::min(beta, best_score);
       if (beta <= alpha) break;

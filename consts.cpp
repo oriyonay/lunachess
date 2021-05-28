@@ -75,6 +75,33 @@ extern void init_consts() {
     KING_MOVES[i] = (i > 9) ? KING_SPAN << (i - 9) : KING_SPAN >> (9 - i);
     KING_MOVES[i] &= (i % 8 < 4) ? ~FILE_GH : ~FILE_AB;
   }
+
+  // calculate RECT_LOOKUP:
+  for (int i = 0; i < 64; i++) {
+    for (int j = 0; j < 64; j++) {
+      RECT_LOOKUP[i][j] = in_between(i, j);
+    }
+  }
+}
+
+// in_between(): given indices of two squares, returns 0 if there is no line
+// between them, and 1s along the line between them (in any direction) otherwise
+U64 in_between(int sq1, int sq2) {
+   const U64 m1   = -1L;
+   const U64 a2a7 = 0x0001010101010100L;
+   const U64 b2g7 = 0x0040201008040200L;
+   const U64 h1b7 = 0x0002040810204080L; /* Thanks Dustin, g2b7 did not work for c1-a3 */
+   U64 btwn, line, rank, file;
+
+   btwn  = (m1 << sq1) ^ (m1 << sq2);
+   file  =   (sq2 & 7) - (sq1   & 7);
+   rank  =  ((sq2 | 7) -  sq1) >> 3 ;
+   line  =      (   (file  &  7) - 1) & a2a7; /* a2a7 if same file */
+   line += 2 * ((   (rank  &  7) - 1) >> 58); /* b1g1 if same rank */
+   line += (((rank - file) & 15) - 1) & b2g7; /* b2g7 if same diagonal */
+   line += (((rank + file) & 15) - 1) & h1b7; /* h1b7 if same antidiag */
+   line *= btwn & -btwn; /* mul acts like shift by smaller square */
+   return line & btwn;   /* return the bits on that line in-between */
 }
 
 std::unordered_map<char, int> PIECE_INDICES = {
@@ -116,6 +143,8 @@ U64 KING_SPAN = 460039L;
 
 U64 KNIGHT_MOVES[64] = {0};
 U64 KING_MOVES[64] = {0};
+
+U64 RECT_LOOKUP[64][64] = {0};
 
 U64 CWK_SAFE_SPACES = (1L << 61) | (1L << 62);
 U64 CWQ_SAFE_SPACES = (1L << 58) | (1L << 59);

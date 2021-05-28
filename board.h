@@ -41,6 +41,7 @@ struct board {
 
   inline void update_move_info_bitboards();
   void update_unsafe();
+  U64 pinned_pieces();
   bool is_check();
 };
 
@@ -50,5 +51,9 @@ inline U64 move_int(char TO, char FROM, char CAPTURED, char EP, char PF, char CA
 inline U64 line_moves(char s, U64 OCCUPIED);
 inline U64 diag_moves(char s, U64 OCCUPIED);
 inline U64 reverse_bits(U64 n);
+
+// utility functions for determining pinned pieces, etc.:
+inline U64 xray_rook(U64 occ, U64 blockers, char s);
+inline U64 xray_bishop(U64 occ, U64 blockers, char s);
 
 #endif

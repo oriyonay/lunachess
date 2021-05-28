@@ -10,6 +10,9 @@
 // initializes all uninitialized constants (bitmasks, etc.)
 extern void init_consts();
 
+// returns the RECT_LOOKUP result for a single pair i, j:
+extern U64 in_between(int sq1, int sq2);
+
 // maps piece characters to their index in the board::bitboard array
 extern std::unordered_map<char, int> PIECE_INDICES;
 
@@ -45,6 +48,11 @@ extern U64 KING_SPAN;
 // square x)
 extern U64 KNIGHT_MOVES[64];
 extern U64 KING_MOVES[64];
+
+// rectangular lookup matrix: initialized as empty for any 2 squares i, j that
+// are not on the same line, and with 1s on the line in-between squares i, j
+// otherwise
+extern U64 RECT_LOOKUP[64][64];
 
 // bitmasks for spaces between kings and rooks (to check for possible castling)
 // the queenside pieces need a special EMPTY_SPACES mask to also include the
