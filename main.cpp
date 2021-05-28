@@ -20,20 +20,17 @@ void print_bitboard(U64 bb) {
 int main(int argc, char** argv) {
   init_consts();
 
-  char* FEN = "rnbqkbnr/pppp3p/6p1/3Npp1Q/4P3/8/PPPP1PPP/R1B1KBNR b KQkq - 1 4";
+  char* FEN = FEN_START;
   board b(FEN);
 
-  U64 pinned = b.pinned_pieces();
-  print_bitboard(pinned);
-
-  /* timer t;
+  timer t;
   t.start();
-  // printf("%d\n", perft(&b, 5));
+  printf("%d\n", perft(&b, 6));
   // printf("best eval found: %d\n", alphabeta_helper(&b, 5, -INF, INF, true));
   // move m = alphabeta(&b, 5);
   // print_move(m.move_code);
   t.stop();
-  t.print_duration(); */
+  t.print_duration();
 
   return 0;
 }
@@ -59,20 +56,12 @@ void print_move(int m) {
 int perft(board* b, int depth) {
   int num_moves;
   int* moves = b->get_moves(num_moves);
-  if (depth == 1) {
-    int n_copy = num_moves;
-    for (int i = 0; i < n_copy; i++) {
-      if (!b->make_move(moves[i])) num_moves--;
-      b->undo_move();
-    }
-    return num_moves;
-  }
+  if (depth == 1) return num_moves;
 
   int sum = 0;
   for (int i = 0; i < num_moves; i++) {
-    if (b->make_move(moves[i])) {
-      sum += perft(b, depth - 1);
-    }
+    b->make_move(moves[i]);
+    sum += perft(b, depth - 1);
     b->undo_move();
   }
 

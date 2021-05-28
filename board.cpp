@@ -90,6 +90,41 @@ int* board::get_moves(int& num_moves) {
   add_knight_moves(move_list, num_moves);
   add_king_moves(move_list, num_moves);
 
+  // now we have all pseudo-legal moves. let's eliminate illegal moves!
+  // we only need to check moves in four conditions: en passant, pinned piece is
+  // moved, when we're in check, and when the king moves.
+  bool valid[num_moves];
+  int num_invalid = 0;
+  bool check = is_check();
+  U64 pinned = pinned_pieces();
+  for (int i = 0; i < num_moves; i++) {
+    // determine if a move is valid:
+    valid[i] = true;
+
+    // we only need to actually check a move in these conditions:
+    if (check || MOVE_PIECEMOVED(move_list[i]) - turn == KING ||
+       (pinned & (1L << MOVE_FROM(move_list[i]))) || MOVE_IS_EP(move_list[i])) {
+         valid[i] = make_move(move_list[i]);
+         undo_move();
+    }
+  }
+
+  // now we push invalid moves to the end of the move stack, then shorten its
+  // length (essentially removing them):
+  int j = 0; // always <= i
+  for (int i = 0; i < num_moves; i++) {
+    if (valid[i] && !valid[j]) {
+      std::swap(move_list[i], move_list[j]);
+      std::swap(valid[i], valid[j]);
+    }
+    if (valid[j]) j++;
+  }
+
+  // update the number of moves to eliminate invalid moves.
+  // j here always = human index of the first invalid move, which is the
+  // number of valid moves:
+  num_moves = j;
+
   return move_list;
 }
 

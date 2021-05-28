@@ -98,21 +98,14 @@ int perft(board* b, int depth) {
   int num_moves;
   int* moves = b->get_moves(num_moves);
   if (depth == 1) {
-    int n_copy = num_moves;
-    for (int i = 0; i < n_copy; i++) {
-      if (!b->make_move(moves[i])) num_moves--;
-      b->undo_move();
-    }
-
     delete[] moves;
     return num_moves;
   }
 
   int sum = 0;
   for (int i = 0; i < num_moves; i++) {
-    if (b->make_move(moves[i])) {
-      sum += perft(b, depth - 1);
-    }
+    b->make_move(moves[i]);
+    sum += perft(b, depth - 1);
     b->undo_move();
   }
 

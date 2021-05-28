@@ -1,6 +1,7 @@
 #ifndef BOARD_H
 #define BOARD_H
 
+#include <algorithm>
 #include <cstring>
 
 #include "consts.h"
