@@ -3,9 +3,10 @@
 
 #include "board.h"
 
-#define GREEN "\033[32m"
-#define RED   "\033[31m"
-#define RESET "\033[0m"
+#define GREEN  "\033[32m"
+#define RED    "\033[31m"
+#define YELLOW "\033[33m"
+#define RESET  "\033[0m"
 
 int perft(board* b, int depth);
 
@@ -89,6 +90,7 @@ int main() {
   all_tests_passed &= pt7.test();
 
   if (all_tests_passed) printf("%sALL TESTS PASSED%s.\n", GREEN, RESET);
+  else printf("%sNOT ALL TESTS PASSED%s.\n", YELLOW, RESET);
 }
 
 // perft(): the perft test function

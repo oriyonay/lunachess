@@ -13,7 +13,7 @@ int perft(board* b, int depth);
 int main(int argc, char** argv) {
   init_consts();
 
-  char* FEN = FEN_START;
+  /* char* FEN = FEN_START;
   board b(FEN);
 
   timer t;
@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
   move m = alphabeta(&b, 5);
   print_move(m.move_code);
   t.stop();
-  t.print_duration();
+  t.print_duration(); */
 
   return 0;
 }

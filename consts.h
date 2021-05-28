@@ -40,6 +40,12 @@ extern U64 ANTIDIAGONAL_MASKS[15];
 extern U64 KNIGHT_SPAN;
 extern U64 KING_SPAN;
 
+// knight-span and king-span bitmasks for the entire board
+// (i.e., KNIGHT_MOVES[x] gives a bitmask of all knight attacks for a knight on
+// square x)
+extern U64 KNIGHT_MOVES[64];
+extern U64 KING_MOVES[64];
+
 // bitmasks for spaces between kings and rooks (to check for possible castling)
 // the queenside pieces need a special EMPTY_SPACES mask to also include the
 // space 3 squares away from the king, which must be empty but does not have

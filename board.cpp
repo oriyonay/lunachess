@@ -784,8 +784,7 @@ void board::add_knight_moves(int* move_list, int& num_moves) {
     idx = LSB(i);
 
     // figure out how to shift the knight span bitboard to get possible moves:
-    possible = (idx > 18) ? KNIGHT_SPAN << (idx - 18) : KNIGHT_SPAN >> (18 - idx);
-    possible &= (idx % 8 < 4) ? ~FILE_GH & CAN_MOVE_TO : ~FILE_AB & CAN_MOVE_TO;
+    possible = KNIGHT_MOVES[idx] & CAN_MOVE_TO;
 
     j = ISOLATE_LSB(possible);
     while (j) {
@@ -818,8 +817,7 @@ void board::add_king_moves(int* move_list, int& num_moves) {
   char idx2;
 
   // figure out how to shift the king span bitboard to get possible moves:
-  U64 possible = (idx > 9) ? KING_SPAN << (idx - 9) : KING_SPAN >> (9 - idx);
-  possible &= (idx % 8 < 4) ? ~FILE_GH & CAN_MOVE_TO : ~FILE_AB & CAN_MOVE_TO;
+  U64 possible = KING_MOVES[idx] & CAN_MOVE_TO;
 
   U64 j = ISOLATE_LSB(possible);
   while (j) {

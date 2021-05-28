@@ -63,6 +63,18 @@ extern void init_consts() {
   std::sort(DIAGONAL_MASKS, DIAGONAL_MASKS + 15);
   std::sort(ANTIDIAGONAL_MASKS, ANTIDIAGONAL_MASKS + 15);
   std::sort(ANTIDIAGONAL_MASKS + 7, ANTIDIAGONAL_MASKS + 15, std::greater<U64>());
+
+  // calculate the knight moves bitmasks:
+  for (int i = 0; i < 64; i++) {
+    KNIGHT_MOVES[i] = (i > 18) ? KNIGHT_SPAN << (i - 18) : KNIGHT_SPAN >> (18 - i);
+    KNIGHT_MOVES[i] &= (i % 8 < 4) ? ~FILE_GH : ~FILE_AB;
+  }
+
+  // calculate the king moves bitmasks:
+  for (int i = 0; i < 64; i++) {
+    KING_MOVES[i] = (i > 9) ? KING_SPAN << (i - 9) : KING_SPAN >> (9 - i);
+    KING_MOVES[i] &= (i % 8 < 4) ? ~FILE_GH : ~FILE_AB;
+  }
 }
 
 std::unordered_map<char, int> PIECE_INDICES = {
@@ -101,6 +113,9 @@ const char DEBRUIJN_INDEX[64] = {
 
 U64 KNIGHT_SPAN = 43234889994L;
 U64 KING_SPAN = 460039L;
+
+U64 KNIGHT_MOVES[64] = {0};
+U64 KING_MOVES[64] = {0};
 
 U64 CWK_SAFE_SPACES = (1L << 61) | (1L << 62);
 U64 CWQ_SAFE_SPACES = (1L << 58) | (1L << 59);
