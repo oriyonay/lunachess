@@ -10,25 +10,18 @@
 void print_move(int m);
 int perft(board* b, int depth);
 
-void print_bitboard(U64 bb) {
-    for (int i = 0; i < 64; i++) {
-        printf("%c ", ((bb >> i) & 1) ? 'x' : '.');
-        if (i % 8 == 7) printf("\n");
-    }
-}
-
 int main(int argc, char** argv) {
   init_consts();
 
-  char* FEN = FEN_START;
+  char* FEN = "rnb1kbnr/pppp1ppp/8/4p3/4P2q/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3";
   board b(FEN);
+
+  b.print();
 
   timer t;
   t.start();
-  printf("%d\n", perft(&b, 6));
-  // printf("best eval found: %d\n", alphabeta_helper(&b, 5, -INF, INF, true));
-  // move m = alphabeta(&b, 5);
-  // print_move(m.move_code);
+  move m = alphabeta(&b, 5);
+  print_move(m.move_code);
   t.stop();
   t.print_duration();
 

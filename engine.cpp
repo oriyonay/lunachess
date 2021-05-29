@@ -17,6 +17,29 @@ void pm(int m) {
   printf("%s\n", move_str);
 }
 
+// todo: remove this
+int validate_board(board* b) {
+  // error 1: is there more than 1 piece on a single square in the bitboards?
+  for (int i = 0; i < 64; i++) {
+    int num_pieces_here = 0;
+    for (int j = 0; j < 12; j++) {
+      if ((b->bitboard[j] >> i) & 1) num_pieces_here++;
+    }
+    if (num_pieces_here > 1) return 1;
+  }
+
+  // error 2: do the bitboard and piece board match?
+  for (int i = 0; i < 64; i++) {
+    if (b->piece_board[i] == NONE) continue;
+    if (!((b->bitboard[b->piece_board[i]] >> i) & 1)) {
+      return 2;
+    }
+  }
+
+  // board passed all tests:
+  return 0;
+}
+
 int evaluate(board* b) {
   // naive evaluation for now:
   return b->material;
@@ -42,18 +65,18 @@ move alphabeta(board* b, int depth) {
       // make the move:
       b->make_move(moves[i]);
 
-      printf("ROOT MOVE MADE\n");
-
       candidate_score = alphabeta_helper(b, depth-1, alpha, beta, false);
       if (candidate_score >= best_score) {
         best_score = candidate_score;
         best_move.move_code = moves[i];
+        printf("better move found: ");
+        pm(moves[i]);
       }
-      alpha = std::max(alpha, best_score);
+      b->undo_move();
 
       // beta cutoff:
+      alpha = std::max(alpha, best_score);
       if (alpha >= beta) break;
-      b->undo_move();
     }
   }
 
@@ -72,9 +95,10 @@ move alphabeta(board* b, int depth) {
         best_move.move_code = moves[i];
       }
 
+      b->undo_move();
+
       // alpha cutoff:
       if (beta <= alpha) break;
-      b->undo_move();
     }
   }
 
@@ -103,16 +127,13 @@ int alphabeta_helper(board* b, int depth, int alpha, int beta, bool maximizing) 
     best_score = -INF;
 
     // make every move and return the one with the highest value:
-    printf("starting maximizing loop\n");
     for (int i = 0; i < num_moves; i++) {
       b->make_move(moves[i]);
-      pm(moves[i]);
-      printf("move: %d, depth: %d\n", moves[i], depth);
-      b->print();
       best_score = std::max(best_score, alphabeta_helper(b, depth-1, alpha, beta, false));
+      b->undo_move();
+
       alpha = std::max(alpha, best_score);
       if (alpha >= beta) break;
-      b->undo_move();
     }
   }
 
@@ -121,16 +142,13 @@ int alphabeta_helper(board* b, int depth, int alpha, int beta, bool maximizing) 
     best_score = INF;
 
     // make every move and return the one with the highest value:
-    printf("starting minimizing loop\n");
     for (int i = 0; i < num_moves; i++) {
       b->make_move(moves[i]);
-      pm(moves[i]);
-      printf("move: %d, depth: %d\n", moves[i], depth);
-      b->print();
       best_score = std::min(best_score, alphabeta_helper(b, depth-1, alpha, beta, true));
+      b->undo_move();
+
       beta = std::min(beta, best_score);
       if (beta <= alpha) break;
-      b->undo_move();
     }
   }
 

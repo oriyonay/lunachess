@@ -61,7 +61,7 @@ board::board(char* FEN) : material(0), num_moves_played(0), castle_rights(0),
   // parse the rest of the FEN-string: TODO
 }
 
-/* get_moves(): generates and returns a list of all possible PSEUDO-LEGAL moves
+/* get_moves(): generates and returns a list of all possible legal moves
  * on the board. a reference to an integer num_moves is taken, and is updated
  * with the number of moves generated.
  *
