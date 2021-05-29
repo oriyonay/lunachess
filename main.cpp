@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
 
   timer t;
   t.start();
-  move m = alphabeta(&b, 5);
+  move m = alphabeta(&b, 3);
   print_move(m.move_code);
   t.stop();
   t.print_duration();

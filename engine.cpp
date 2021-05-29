@@ -40,6 +40,19 @@ int validate_board(board* b) {
   return 0;
 }
 
+// todo: remove this
+void check_material(board* b) {
+  int total_material = 0;
+  for (int i = 0; i < 64; i++) {
+    total_material += PIECE_TO_MATERIAL[b->piece_board[i]];
+  }
+
+  if (total_material != b->material) {
+    printf("%d != %d\n", total_material, b->material);
+    b->print();
+  }
+}
+
 int evaluate(board* b) {
   // naive evaluation for now:
   return b->material;
@@ -69,7 +82,7 @@ move alphabeta(board* b, int depth) {
       if (candidate_score >= best_score) {
         best_score = candidate_score;
         best_move.move_code = moves[i];
-        printf("better move found: ");
+        printf("better move (score %d) found: ", best_score);
         pm(moves[i]);
       }
       b->undo_move();
@@ -111,6 +124,8 @@ move alphabeta(board* b, int depth) {
 int alphabeta_helper(board* b, int depth, int alpha, int beta, bool maximizing) {
   // base case:
   if (depth == 0) return evaluate(b);
+
+  check_material(b);
 
   // recursive case:
   int best_score;

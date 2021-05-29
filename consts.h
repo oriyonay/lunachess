@@ -20,7 +20,7 @@ extern std::unordered_map<char, int> PIECE_INDICES;
 extern std::unordered_map<char, int> MATERIAL;
 
 // maps piece types (enums) to their material value
-extern const int PIECE_TO_MATERIAL[12];
+extern const int PIECE_TO_MATERIAL[13];
 
 // maps board::bitboard indices to their piece character
 extern char* PIECE_CHARS;

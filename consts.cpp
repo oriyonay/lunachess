@@ -114,8 +114,8 @@ std::unordered_map<char, int> MATERIAL = {
   {'p', -100}, {'n', -275}, {'b', -325}, {'r', -500}, {'q', -900},{'k', -100000}
 };
 
-const int PIECE_TO_MATERIAL[12] = {100, 275, 325, 500, 900, 100000,
-                             -100, -275, -325, -500, -900, -100000};
+const int PIECE_TO_MATERIAL[13] = {100, 275, 325, 500, 900, 100000,
+                             -100, -275, -325, -500, -900, -100000, 0};
 
 char* PIECE_CHARS = "PNBRQKpnbrqk ";
 
