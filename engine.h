@@ -8,15 +8,6 @@
 
 #include "board.h"
 
-// a struct to store a move (int) and its respective evaluation (int):
-struct move {
-  int move_code;
-  int score;
-
-  move() {}
-  move(int move_code, int score) : move_code(move_code), score(score) {}
-};
-
 // evaluate(): the board evaluation function
 int evaluate(board* b);
 
@@ -24,7 +15,7 @@ int evaluate(board* b);
 // TODO
 
 // the search algorithm for finding the best move:
-move alphabeta(board* b, int depth);
-int alphabeta_helper(board* b, int depth, int alpha, int beta, bool maximizing);
+int negamax(board* b, int depth);
+int negamax_helper(board* b, int depth, int alpha, int beta, bool maximizing);
 
 #endif

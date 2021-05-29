@@ -13,15 +13,15 @@ int perft(board* b, int depth);
 int main(int argc, char** argv) {
   init_consts();
 
-  char* FEN = "rnb1kbnr/pppp1ppp/8/4p3/4P2q/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3";
+  char* FEN = "rnb1kbnr/pppp1ppp/8/4p3/4P2q/5N2/PPPP1PPP/RNBQKB1R b KQkq - 2 3";
   board b(FEN);
 
   b.print();
 
   timer t;
   t.start();
-  move m = alphabeta(&b, 3);
-  print_move(m.move_code);
+  // printf("%d moves calculated\n", perft(&b, 5));
+  print_move(negamax(&b, 4));
   t.stop();
   t.print_duration();
 
