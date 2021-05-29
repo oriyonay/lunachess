@@ -9,13 +9,26 @@
 #include "board.h"
 
 // evaluate(): the board evaluation function
-inline int evaluate(board* b);
+inline int evaluate();
 
-// the move ordering function
-// TODO
+// search: a class for searching a board
+class search {
+public:
+  int nodes_evaluated;
+  search(board* b);
 
-// the search algorithm for finding the best move:
-int negamax(board* b, int depth);
-int negamax_helper(board* b, int depth, int alpha, int beta, bool maximizing);
+  // the search algorithm for finding the best move:
+  int negamax(int depth);
+  int negamax_helper(int depth, int alpha, int beta, bool maximizing);
+
+  // to stop the search at any time:
+  void stop();
+
+private:
+  bool abort;
+  int best_move;
+  int best_score;
+  board* b;
+};
 
 #endif

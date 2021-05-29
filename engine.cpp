@@ -1,14 +1,33 @@
 #include "engine.h"
 
+// TODO: remove this
+// TODO: remove nodes_evaluated
+char* pm(int m) {
+  int to = (m >> 26) & 0x3F;
+  int from = (m >> 20) & 0x3F;
+
+  char* move_str = new char[6];
+  move_str[5] = '\0';
+  move_str[4] = '\0'; // TODO: REMOVE THIS
+
+  move_str[0] = ((from % 8) + 'a');
+  move_str[1] = (8 - (from / 8) + '0');
+  move_str[2] = ((to % 8) + 'a');
+  move_str[3] = (8 - (to / 8) + '0');
+
+  return move_str;
+}
+
 inline int evaluate(board* b) {
   // naive evaluation for now:
   return (b->turn == WHITE) ? b->material : -b->material;
 }
 
-int negamax(board* b, int depth) {
+search::search(board* b) : abort(false), best_move(NULL), best_score(-INF), b(b) {}
+
+int search::negamax(int depth) {
+  nodes_evaluated = 0;
   // initialize important variables:
-  int best_move = NULL;
-  int best_score = -INF;
   int alpha = -INF;
   int beta = INF;
   int candidate_score;
@@ -21,7 +40,7 @@ int negamax(board* b, int depth) {
   // recursively find the best move from here:
   for (int i = 0; i < num_moves; i++) {
     b->make_move(moves[i]);
-    candidate_score = -negamax_helper(b, depth - 1, alpha, beta, maximizing);
+    candidate_score = -negamax_helper(depth - 1, alpha, beta, maximizing);
     if (candidate_score >= best_score) {
       best_score = candidate_score;
       best_move = moves[i];
@@ -35,9 +54,12 @@ int negamax(board* b, int depth) {
   return best_move;
 }
 
-int negamax_helper(board* b, int depth, int alpha, int beta, bool maximizing) {
+int search::negamax_helper(int depth, int alpha, int beta, bool maximizing) {
+  // if we got the abort signal, abort:
+  if (abort) return 0;
+
   // base case:
-  if (depth == 0) return evaluate(b);
+  if (depth == 0) { nodes_evaluated++; return evaluate(b); }
 
   // generate all possible moves from this position:
   int num_moves;
@@ -50,11 +72,15 @@ int negamax_helper(board* b, int depth, int alpha, int beta, bool maximizing) {
   int best_score = -INF;
   for (int i = 0; i < num_moves; i++) {
     b->make_move(moves[i]);
-    best_score = std::max(best_score, -negamax_helper(b, depth - 1, -beta, -alpha, !maximizing));
+    best_score = std::max(best_score, -negamax_helper(depth - 1, -beta, -alpha, !maximizing));
     b->undo_move();
     alpha = std::max(alpha, best_score);
     if (alpha >= beta) break;
   }
 
   return best_score;
+}
+
+void search::stop() {
+  abort = true;
 }
