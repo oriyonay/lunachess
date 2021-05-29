@@ -9,7 +9,7 @@
 #include "board.h"
 
 // evaluate(): the board evaluation function
-int evaluate(board* b);
+inline int evaluate(board* b);
 
 // the move ordering function
 // TODO

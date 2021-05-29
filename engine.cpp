@@ -1,8 +1,8 @@
 #include "engine.h"
 
-int evaluate(board* b) {
+inline int evaluate(board* b) {
   // naive evaluation for now:
-  return b->material * ((b->turn == WHITE) ? 1 : -1);
+  return (b->turn == WHITE) ? b->material : -b->material;
 }
 
 int negamax(board* b, int depth) {
@@ -14,9 +14,11 @@ int negamax(board* b, int depth) {
   int candidate_score;
   bool maximizing = (b->turn == WHITE);
 
-  // recursively find the best move from here:
+  // generate all possible moves from this position:
   int num_moves;
   int* moves = b->get_moves(num_moves);
+
+  // recursively find the best move from here:
   for (int i = 0; i < num_moves; i++) {
     b->make_move(moves[i]);
     candidate_score = -negamax_helper(b, depth - 1, alpha, beta, maximizing);
