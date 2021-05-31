@@ -13,6 +13,13 @@ extern void init_consts();
 // returns the RECT_LOOKUP result for a single pair i, j:
 extern U64 in_between(int sq1, int sq2);
 
+// calculates rook and bishop masks to be stored in ROOK_MASKS and BISHOP_MASKS:
+extern U64 rmask(int sq);
+extern U64 bmask(int sq);
+
+// given a magic table hash index, calculate the bitboard of blocking pieces:
+U64 get_blockers_from_index(int index, U64 mask);
+
 // maps piece characters to their index in the board::bitboard array
 extern std::unordered_map<char, int> PIECE_INDICES;
 
@@ -30,6 +37,26 @@ extern U64 FILES[8];
 extern U64 RANKS[9]; // RANKS[0] is unused for human indexing convenience
 extern U64 FILE_AB;
 extern U64 FILE_GH;
+
+/*  ---------- TABLES FOR MAGIC BITBOARDS: ---------- */
+// masks in the line and diagonal directions for each square. used for masking
+// out irrelevant bits from blocker set:
+extern U64 ROOK_MASKS[64];
+extern U64 BISHOP_MASKS[64];
+
+// magic numbers for rooks and bishops:
+extern const U64 ROOK_MAGICS[64];
+extern const U64 BISHOP_MAGICS[64];
+
+// number of index bits for each square's hash table:
+extern const int ROOK_INDEX_BITS[64];
+extern const int BISHOP_INDEX_BITS[64];
+
+// and finally, the actual magic tables for rook and bishop-like pieces:
+extern U64 ROOK_TABLE[64][4096];
+extern U64 BISHOP_TABLE[64][512];
+
+/*  ---------- END OF MAGIC BITBOARD-RELATED CONSTANTS ---------- */
 
 // bitmasks for bitscanning:
 extern const U64 DEBRUIJN;

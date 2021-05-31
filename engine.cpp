@@ -23,6 +23,13 @@ inline int evaluate(board* b) {
   return (b->turn == WHITE) ? b->material : -b->material;
 }
 
+/* int search::iterative_deepening(int max_depth) {
+  for (int depth = 1; depth < max_depth; depth++) {
+    negamax(depth);
+  }
+  return best_move;
+} */
+
 search::search(board* b) : abort(false), best_move(NULL), best_score(-INF), b(b) {}
 
 int search::negamax(int depth) {

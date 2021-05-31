@@ -732,7 +732,7 @@ void board::add_diag_moves(int* move_list, int& num_moves) {
 
   while (i) {
     idx = LSB(i);
-    possible = diag_moves(idx, OCCUPIED_SQUARES) & CAN_MOVE_TO;
+    possible = diag_moves_magic(idx, OCCUPIED_SQUARES) & CAN_MOVE_TO;
 
     j = ISOLATE_LSB(possible);
     while (j) {
@@ -776,7 +776,7 @@ void board::add_line_moves(int* move_list, int& num_moves) {
 
   while (i) {
     idx = LSB(i);
-    possible = line_moves(idx, OCCUPIED_SQUARES) & CAN_MOVE_TO;
+    possible = line_moves_magic(idx, OCCUPIED_SQUARES) & CAN_MOVE_TO;
 
     j = ISOLATE_LSB(possible);
     while (j) {
@@ -962,7 +962,7 @@ void board::update_unsafe() {
   i = ISOLATE_LSB(opp_QB);
   while (i) {
     idx = LSB(i);
-    possible = diag_moves(idx, OCCUPIED_SQUARES);
+    possible = diag_moves_magic(idx, OCCUPIED_SQUARES);
     UNSAFE |= possible;
 
     opp_QB &= ~i;
@@ -973,7 +973,7 @@ void board::update_unsafe() {
   i = ISOLATE_LSB(opp_QR);
   while (i) {
     idx = LSB(i);
-    possible = line_moves(idx, OCCUPIED_SQUARES);
+    possible = line_moves_magic(idx, OCCUPIED_SQUARES);
     UNSAFE |= possible;
 
     opp_QR &= ~i;
@@ -1030,6 +1030,7 @@ inline U64 move_int(char TO, char FROM, char CAPTURED, char EP, char PF, char CA
 }
 
 // generate all possible horizontal and vertical (rook-like) moves.
+// * only used in generation of magic bitboard tables *
 // here, s = the board index of the slider piece location and
 // OCCUPIED = bitboard of the occupied pieces
 inline U64 line_moves(char s, U64 OCCUPIED) {
@@ -1043,6 +1044,7 @@ inline U64 line_moves(char s, U64 OCCUPIED) {
 }
 
 // generate all possible diagonal (bishop-like) moves:
+// * only used in generation of magic bitboard tables *
 inline U64 diag_moves(char s, U64 OCCUPIED) {
   U64 s_bin = 1L << s;
   U64 diag = DIAGONAL_MASKS[(s / 8) + (s % 8)];
@@ -1056,6 +1058,30 @@ inline U64 diag_moves(char s, U64 OCCUPIED) {
          (2 * reverse_bits(s_bin)))) & antidiag;
 
   return diag | antidiag;
+}
+
+// line_moves_magic(): same as line_moves() but using magic bitboards (so much faster).
+inline U64 line_moves_magic(char s, U64 OCCUPIED) {
+  // Mask blockers to only include bits on diagonals
+  OCCUPIED &= ROOK_MASKS[s];
+
+  // Generate the key using a multiplication and right shift
+  U64 key = (OCCUPIED * ROOK_MAGICS[s]) >> (64 - ROOK_INDEX_BITS[s]);
+
+  // Return the preinitialized attack set bitboard from the table
+  return ROOK_TABLE[s][key];
+}
+
+// diag_moves_magic(): same as diag_moves() but using magic bitboards (so much faster).
+inline U64 diag_moves_magic(char s, U64 OCCUPIED) {
+  // Mask blockers to only include bits on diagonals
+  OCCUPIED &= BISHOP_MASKS[s];
+
+  // Generate the key using a multiplication and right shift
+  U64 key = (OCCUPIED * BISHOP_MAGICS[s]) >> (64 - BISHOP_INDEX_BITS[s]);
+
+  // Return the preinitialized attack set bitboard from the table
+  return BISHOP_TABLE[s][key];
 }
 
 // reverse_bits(n): reverses the bits of a U64

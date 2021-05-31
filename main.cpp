@@ -13,14 +13,15 @@ int perft(board* b, int depth);
 int main(int argc, char** argv) {
   init_consts();
 
-  char* FEN = "r1b1kbnr/pppp1Npp/8/8/3nq3/8/PPPPBP1P/RNBQKR2 b Qkq - 1 7";
+  char* FEN = FEN_START; // "r1b1kbnr/pppp1Npp/8/8/3nq3/8/PPPPBP1P/RNBQKR2 b Qkq - 1 7";
   board b(FEN);
 
   timer t;
   t.start();
-  search s(&b);
-  print_move(s.negamax(5));
-  printf("evaluated %d nodes\n", s.nodes_evaluated);
+  printf("%d positions found\n", perft(&b, 6));
+  // search s(&b);
+  // print_move(s.negamax(5));
+  // printf("evaluated %d nodes\n", s.nodes_evaluated);
   t.stop();
   t.print_duration();
 
