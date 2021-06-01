@@ -16,6 +16,7 @@ struct board {
   int material;
   char turn;
   char castle_rights; // bits: 0 0 0 0 K Q k q
+  U64 hash;
 
   // data used to generate moves:
   U64 CANT_CAPTURE;
@@ -41,22 +42,22 @@ struct board {
   void add_king_moves(int* move_list, int& num_moves);
 
   inline void update_move_info_bitboards();
-  void update_unsafe();
+  inline void update_unsafe();
   U64 pinned_pieces();
   bool is_check();
 };
 
 // utility functions for board class:
-inline U64 move_int(char TO, char FROM, char CAPTURED, char EP, char PF, char CASTLE,
+inline static U64 move_int(char TO, char FROM, char CAPTURED, char EP, char PF, char CASTLE,
                     char PROM, char PROM_PIECE, char PCR, char PM);
 inline U64 line_moves(char s, U64 OCCUPIED);
 inline U64 diag_moves(char s, U64 OCCUPIED);
-inline U64 line_moves_magic(char s, U64 OCCUPIED);
-inline U64 diag_moves_magic(char s, U64 OCCUPIED);
+inline static U64 line_moves_magic(char s, U64 OCCUPIED);
+inline static U64 diag_moves_magic(char s, U64 OCCUPIED);
 inline U64 reverse_bits(U64 n);
 
 // utility functions for determining pinned pieces, etc.:
-inline U64 xray_rook(U64 occ, U64 blockers, char s);
-inline U64 xray_bishop(U64 occ, U64 blockers, char s);
+inline static U64 xray_rook(U64 occ, U64 blockers, char s);
+inline static U64 xray_bishop(U64 occ, U64 blockers, char s);
 
 #endif

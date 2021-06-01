@@ -3,7 +3,7 @@
 // the board constructor, which parses a FEN-string:
 board::board(char* FEN) : material(0), num_moves_played(0), castle_rights(0),
   CANT_CAPTURE(0L), CAN_CAPTURE(0L), EMPTY_SQUARES(0L), CAN_MOVE_TO(0L),
-  OCCUPIED_SQUARES(0L) {
+  OCCUPIED_SQUARES(0L), hash(0L) {
   // clear the bitboards:
   memset(bitboard, 0, 12 * sizeof(U64));
 
@@ -16,12 +16,15 @@ board::board(char* FEN) : material(0), num_moves_played(0), castle_rights(0),
 
   // parse the main FEN. (i is the shift index)
   int i = 0;
+  int piece_type;
   while (*FEN != ' ') {
     if (isdigit(*FEN)) i += (*FEN) - '0' - 1; // -1 to cancel out i++
     else if (*FEN != '/') {
-      bitboard[PIECE_INDICES.find(*FEN)->second] |= (1L << i);
-      piece_board[i] = PIECE_INDICES.find(*FEN)->second;
+      piece_type = PIECE_INDICES.find(*FEN)->second;
+      bitboard[piece_type] |= (1L << i);
+      piece_board[i] = piece_type;
       material += MATERIAL.find(*FEN)->second;
+      hash ^= ZOBRIST_SQUARE_KEYS[piece_type][i];
     }
     else i--; // to handle '/' (we -1 to cancel out the i++)
 
@@ -34,6 +37,7 @@ board::board(char* FEN) : material(0), num_moves_played(0), castle_rights(0),
   // parse the turn value:
   FEN++;
   turn = ((*FEN) == 'w') ? WHITE : BLACK;
+  if (turn == WHITE) hash ^= ZOBRIST_TURN_KEY;
 
   // parse castling rights:
   FEN += 2;
@@ -54,6 +58,9 @@ board::board(char* FEN) : material(0), num_moves_played(0), castle_rights(0),
     }
     FEN++;
   }
+
+  // hash in castling rights:
+  hash ^= ZOBRIST_CASTLE_RIGHTS_KEYS[castle_rights];
 
   // update move information bitboards:
   update_move_info_bitboards();
@@ -191,7 +198,7 @@ bool board::make_move(int move) {
   int to = MOVE_TO(move);
   int from = MOVE_FROM(move);
   int captured = MOVE_CAPTURED(move);
-  int piece_moved = MOVE_PIECEMOVED(move);
+  int piece_moved = piece_board[from];
   int ep = MOVE_IS_EP(move);
   int castle = MOVE_IS_CASTLE(move);
   int promotion = MOVE_IS_PROMOTION(move);
@@ -199,10 +206,12 @@ bool board::make_move(int move) {
   // move the piece to its new board location:
   bitboard[piece_moved] |= (1L << to);
   piece_board[to] = piece_moved;
+  hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][to];
 
   // remove the piece from its old location:
   bitboard[piece_moved] ^= (1L << from);
   piece_board[from] = NONE;
+  hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][from];
 
   // update castle rights (in case a piece took one of the rooks):
   switch(to) {
@@ -232,9 +241,10 @@ bool board::make_move(int move) {
     if ((from == 0 || to == 0) && CAN_CBQ(castle_rights)) castle_rights &= 0xE;
   }
 
-  // if a piece was captured, update the board and material:
+  // if a piece was captured, update the board and material, and hash out the piece:
   if (captured != NONE) {
     bitboard[captured] ^= (1L << to);
+    hash ^= ZOBRIST_SQUARE_KEYS[captured][to];
 
     material -= PIECE_TO_MATERIAL[captured];
   }
@@ -312,8 +322,18 @@ bool board::make_move(int move) {
     bitboard[promoted_piece] |= (1L << to);
     piece_board[to] = promoted_piece;
 
+    // update hash:
+    hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][to];
+    hash ^= ZOBRIST_SQUARE_KEYS[promoted_piece][to];
+
     // update material:
     material += PIECE_TO_MATERIAL[promoted_piece] - PIECE_TO_MATERIAL[piece_moved];
+  }
+
+  // hash in new castle rights (if they were changed);
+  if (castle_rights != MOVE_PCR(move)) {
+    hash ^= ZOBRIST_CASTLE_RIGHTS_KEYS[MOVE_PCR(move)];
+    hash ^= ZOBRIST_CASTLE_RIGHTS_KEYS[castle_rights];
   }
 
   // now comes the moment of truth. is this move legal? well, only if we're not in check:
@@ -321,6 +341,7 @@ bool board::make_move(int move) {
 
   // flip the turn:
   turn = (turn == WHITE) ? BLACK : WHITE;
+  hash ^= ZOBRIST_TURN_KEY;
 
   return !(UNSAFE & bitboard[KING + ((turn == WHITE) ? BLACK : WHITE)]);
 }
@@ -345,18 +366,25 @@ void board::undo_move() {
   // remove the piece back from its current board location:
   bitboard[piece_moved] ^= (1L << to);
   piece_board[to] = NONE;
+  hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][to];
 
   // put the piece back in its previous location:
   bitboard[piece_moved] |= (1L << from);
   piece_board[from] = piece_moved;
+  hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][from];
 
   // reload castle rights:
-  castle_rights = pcr;
+  if (castle_rights != pcr) {
+    hash ^= ZOBRIST_CASTLE_RIGHTS_KEYS[castle_rights];
+    hash ^= ZOBRIST_CASTLE_RIGHTS_KEYS[pcr];
+    castle_rights = pcr;
+  }
 
   // if a piece was captured, update the board and material:
   if (captured != NONE) {
     bitboard[captured] |= (1L << to);
     piece_board[to] = captured;
+    hash ^= ZOBRIST_SQUARE_KEYS[captured][to];
 
     material += PIECE_TO_MATERIAL[captured];
   }
@@ -434,12 +462,17 @@ void board::undo_move() {
     bitboard[promoted_piece] ^= (1L << to);
     piece_board[to] = captured;
 
+    // update hash:
+    hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][to];
+    hash ^= ZOBRIST_SQUARE_KEYS[promoted_piece][to];
+
     // update material:
     material -= PIECE_TO_MATERIAL[promoted_piece] - PIECE_TO_MATERIAL[piece_moved];
   }
 
   // flip the turn:
   turn = (turn == WHITE) ? BLACK : WHITE;
+  hash ^= ZOBRIST_TURN_KEY;
 }
 
 // print(): prints the board:
@@ -926,7 +959,7 @@ inline void board::update_move_info_bitboards() {
   update_unsafe();
 }
 
-void board::update_unsafe() {
+inline void board::update_unsafe() {
   int NOT_TURN = (turn == WHITE) ? BLACK : WHITE;
 
   U64 opp_knight = bitboard[KNIGHT + NOT_TURN];
@@ -1023,7 +1056,7 @@ bool board::is_check() {
 /* ---------- BOARD UTILITY FUNCTIONS ---------- */
 
 // generates a move integer:
-inline U64 move_int(char TO, char FROM, char CAPTURED, char EP, char PF, char CASTLE,
+inline static U64 move_int(char TO, char FROM, char CAPTURED, char EP, char PF, char CASTLE,
                     char PROM, char PROM_PIECE, char PCR, char PM) {
   return (TO << 26) | (FROM << 20) | (CAPTURED << 16) | (EP << 15) | (PF << 14) |
          (CASTLE << 13) | (PROM << 12) | (PROM_PIECE << 8) | (PCR << 4) | PM;
@@ -1061,26 +1094,26 @@ inline U64 diag_moves(char s, U64 OCCUPIED) {
 }
 
 // line_moves_magic(): same as line_moves() but using magic bitboards (so much faster).
-inline U64 line_moves_magic(char s, U64 OCCUPIED) {
-  // Mask blockers to only include bits on diagonals
+inline static U64 line_moves_magic(char s, U64 OCCUPIED) {
+  // mask out anything not in the possible attack set:
   OCCUPIED &= ROOK_MASKS[s];
 
-  // Generate the key using a multiplication and right shift
+  // generate magic table key:
   U64 key = (OCCUPIED * ROOK_MAGICS[s]) >> (64 - ROOK_INDEX_BITS[s]);
 
-  // Return the preinitialized attack set bitboard from the table
+  // look up the attack set in the table:
   return ROOK_TABLE[s][key];
 }
 
 // diag_moves_magic(): same as diag_moves() but using magic bitboards (so much faster).
-inline U64 diag_moves_magic(char s, U64 OCCUPIED) {
-  // Mask blockers to only include bits on diagonals
+inline static U64 diag_moves_magic(char s, U64 OCCUPIED) {
+  // mask out anything not in the possible attack set:
   OCCUPIED &= BISHOP_MASKS[s];
 
-  // Generate the key using a multiplication and right shift
+  // generate magic table key:
   U64 key = (OCCUPIED * BISHOP_MAGICS[s]) >> (64 - BISHOP_INDEX_BITS[s]);
 
-  // Return the preinitialized attack set bitboard from the table
+  // look up the attack set in the table:
   return BISHOP_TABLE[s][key];
 }
 
@@ -1104,7 +1137,7 @@ inline U64 reverse_bits(U64 n) {
 // xrayRook(): returns bitboard of x-ray rook attacks.
 // occ = bitboard of occupied pieces, s = index of slider piece, and
 // blockers = bitboard of pieces we can't capture
-inline U64 xray_rook(U64 occ, U64 blockers, char s) {
+inline static U64 xray_rook(U64 occ, U64 blockers, char s) {
   U64 attacks = line_moves(s, occ);
   blockers &= attacks;
   return attacks ^ line_moves(s, occ ^ blockers);
@@ -1113,7 +1146,7 @@ inline U64 xray_rook(U64 occ, U64 blockers, char s) {
 // xrayBishop(): returns bitboard of x-ray bishop attacks.
 // occ = bitboard of occupied pieces, s = index of slider piece, and
 // blockers = bitboard of pieces we can't capture
-inline U64 xray_bishop(U64 occ, U64 blockers, char s) {
+inline static U64 xray_bishop(U64 occ, U64 blockers, char s) {
   U64 attacks = diag_moves(s, occ);
   blockers &= attacks;
   return attacks ^ diag_moves(s, occ ^ blockers);

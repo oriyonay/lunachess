@@ -2,6 +2,23 @@
 #include "consts.h"
 
 extern void init_consts() {
+  // ----- initialize random zobrist keys: -----
+  for (int i = 0; i < 12; i++) {
+    for (int j = 0; j < 64; j++) {
+      ZOBRIST_SQUARE_KEYS[i][j] = generator();
+    }
+  }
+
+  for (int i = 0; i < 16; i++) {
+    ZOBRIST_CASTLE_RIGHTS_KEYS[i] = generator();
+  }
+
+  for (int i = 0; i < 8; i++) {
+    ZOBRIST_EP_KEYS[i] = generator();
+  }
+
+  ZOBRIST_TURN_KEY = generator();
+
   // ----- initialize file bitmasks: -----
   FILES[0] = 0L;
   for (int i = 0; i < 8; i++) {
@@ -116,6 +133,7 @@ extern void init_consts() {
 
 // in_between(): given indices of two squares, returns 0 if there is no line
 // between them, and 1s along the line between them (in any direction) otherwise
+// (from chessprogramming.org):
 U64 in_between(int sq1, int sq2) {
    const U64 m1   = -1L;
    const U64 a2a7 = 0x0001010101010100L;
@@ -172,6 +190,10 @@ U64 get_blockers_from_index(int index, U64 mask) {
   }
   return blockers;
 }
+
+// a 64-bit pseudo-random number generator (mersenne twister engine):
+std::random_device rd;
+std::mt19937_64 generator(rd());
 
 /* ---------- end of functions for calculating constants ---------- */
 
@@ -259,6 +281,12 @@ const int BISHOP_INDEX_BITS[64] = {
 // and finally, the actual magic tables for rook and bishop-like pieces:
 U64 ROOK_TABLE[64][4096];
 U64 BISHOP_TABLE[64][512];
+
+// random numbers for zobrist hashing:
+U64 ZOBRIST_SQUARE_KEYS[12][64];
+U64 ZOBRIST_CASTLE_RIGHTS_KEYS[16];
+U64 ZOBRIST_EP_KEYS[8];
+U64 ZOBRIST_TURN_KEY;
 
 const U64 DEBRUIJN = 0x03f79d71b4cb0a89L;
 const char DEBRUIJN_INDEX[64] = {

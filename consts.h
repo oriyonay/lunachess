@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <random>
 #include <unordered_map>
 
 #include "defs.h"
@@ -18,7 +19,10 @@ extern U64 rmask(int sq);
 extern U64 bmask(int sq);
 
 // given a magic table hash index, calculate the bitboard of blocking pieces:
-U64 get_blockers_from_index(int index, U64 mask);
+extern U64 get_blockers_from_index(int index, U64 mask);
+
+// a 64-bit pseudo-random number generator (for hashing):
+extern std::mt19937_64 generator;
 
 // maps piece characters to their index in the board::bitboard array
 extern std::unordered_map<char, int> PIECE_INDICES;
@@ -57,6 +61,12 @@ extern U64 ROOK_TABLE[64][4096];
 extern U64 BISHOP_TABLE[64][512];
 
 /*  ---------- END OF MAGIC BITBOARD-RELATED CONSTANTS ---------- */
+
+// random numbers for zobrist hashing:
+extern U64 ZOBRIST_SQUARE_KEYS[12][64];
+extern U64 ZOBRIST_CASTLE_RIGHTS_KEYS[16];
+extern U64 ZOBRIST_EP_KEYS[8];
+extern U64 ZOBRIST_TURN_KEY;
 
 // bitmasks for bitscanning:
 extern const U64 DEBRUIJN;
