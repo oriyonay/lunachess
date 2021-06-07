@@ -509,8 +509,7 @@ void board::add_pawn_moves(int* move_list, int& num_moves) {
       POP_LSB(moves);
 
       // the captured piece is piece_board[idx]
-      move_list[num_moves++] = move_int(idx, idx+7, piece_board[idx], 0, 0, 0,
-                                        0, NONE, castle_rights, WP);
+      move_list[num_moves++] = move_int(idx, idx+7, piece_board[idx], castle_rights, WP);
     }
 
     moves = (bitboard[WP] >> 9) & CAN_CAPTURE & ~RANKS[8] & ~FILES[H];  // capture left
@@ -520,8 +519,7 @@ void board::add_pawn_moves(int* move_list, int& num_moves) {
       idx = LSB(moves);
       POP_LSB(moves);
 
-      move_list[num_moves++] = move_int(idx, idx+9, piece_board[idx], 0, 0, 0,
-                                        0, NONE, castle_rights, WP);
+      move_list[num_moves++] = move_int(idx, idx+9, piece_board[idx], castle_rights, WP);
     }
 
     // ----- look for 1-square pawn push moves: -----
@@ -533,8 +531,7 @@ void board::add_pawn_moves(int* move_list, int& num_moves) {
       idx = LSB(moves);
       POP_LSB(moves);
 
-      move_list[num_moves++] = move_int(idx, idx+8, NONE, 0, 0, 0,
-                                        0, NONE, castle_rights, WP);
+      move_list[num_moves++] = move_int(idx, idx+8, NONE, castle_rights, WP);
     }
 
     // ----- look for 2-square pawn push moves: -----
@@ -632,8 +629,7 @@ void board::add_pawn_moves(int* move_list, int& num_moves) {
       idx = LSB(moves);
       POP_LSB(moves);
 
-      move_list[num_moves++] = move_int(idx, idx-7, piece_board[idx], 0, 0, 0,
-                                        0, NONE, castle_rights, BP);
+      move_list[num_moves++] = move_int(idx, idx-7, piece_board[idx], castle_rights, BP);
     }
 
     moves = (bitboard[BP] << 9) & CAN_CAPTURE & ~RANKS[1] & ~FILES[A];  // capture right
@@ -643,8 +639,7 @@ void board::add_pawn_moves(int* move_list, int& num_moves) {
       idx = LSB(moves);
       POP_LSB(moves);
 
-      move_list[num_moves++] = move_int(idx, idx-9, piece_board[idx], 0, 0, 0,
-                                        0, NONE, castle_rights, BP);
+      move_list[num_moves++] = move_int(idx, idx-9, piece_board[idx], castle_rights, BP);
     }
 
     // ----- look for 1-square pawn push moves: -----
@@ -656,8 +651,7 @@ void board::add_pawn_moves(int* move_list, int& num_moves) {
       idx = LSB(moves);
       POP_LSB(moves);
 
-      move_list[num_moves++] = move_int(idx, idx-8, NONE, 0, 0, 0,
-                                        0, NONE, castle_rights, BP);
+      move_list[num_moves++] = move_int(idx, idx-8, NONE, castle_rights, BP);
     }
 
     // ----- look for 2-square pawn push moves: -----
@@ -773,12 +767,10 @@ void board::add_diag_moves(int* move_list, int& num_moves) {
 
       // add the move to the move list. was a piece captured?
       if (OCCUPIED_SQUARES & j) {
-        move_list[num_moves++] = move_int(idx2, idx, piece_board[idx2], 0, 0, 0, 0,
-                                          NONE, castle_rights, piece_board[idx]);
+        move_list[num_moves++] = move_int(idx2, idx, piece_board[idx2], castle_rights, piece_board[idx]);
       }
       else {
-        move_list[num_moves++] = move_int(idx2, idx, NONE, 0, 0, 0, 0,
-                                          NONE, castle_rights, piece_board[idx]);
+        move_list[num_moves++] = move_int(idx2, idx, NONE, castle_rights, piece_board[idx]);
       }
 
       // remove this position from possible (equivalent to POP_LSB macro but we already have j)
@@ -817,12 +809,10 @@ void board::add_line_moves(int* move_list, int& num_moves) {
 
       // add the move to the move list. was a piece captured?
       if (OCCUPIED_SQUARES & j) {
-        move_list[num_moves++] = move_int(idx2, idx, piece_board[idx2], 0, 0, 0, 0,
-                                          NONE, castle_rights, piece_board[idx]);
+        move_list[num_moves++] = move_int(idx2, idx, piece_board[idx2], castle_rights, piece_board[idx]);
       }
       else {
-        move_list[num_moves++] = move_int(idx2, idx, NONE, 0, 0, 0, 0,
-                                          NONE, castle_rights, piece_board[idx]);
+        move_list[num_moves++] = move_int(idx2, idx, NONE, castle_rights, piece_board[idx]);
       }
 
       // remove this position from possible (equivalent to POP_LSB macro but we already have j)
@@ -860,12 +850,10 @@ void board::add_knight_moves(int* move_list, int& num_moves) {
 
       // add the move to the move list. was a piece captured?
       if (OCCUPIED_SQUARES & j) {
-        move_list[num_moves++] = move_int(idx2, idx, piece_board[idx2], 0, 0, 0, 0,
-                                          NONE, castle_rights, KNIGHT + turn);
+        move_list[num_moves++] = move_int(idx2, idx, piece_board[idx2], castle_rights, KNIGHT + turn);
       }
       else {
-        move_list[num_moves++] = move_int(idx2, idx, NONE, 0, 0, 0, 0,
-                                          NONE, castle_rights, KNIGHT + turn);
+        move_list[num_moves++] = move_int(idx2, idx, NONE, castle_rights, KNIGHT + turn);
       }
 
       // remove this position from possible (equivalent to POP_LSB macro but we already have j)
@@ -893,12 +881,10 @@ void board::add_king_moves(int* move_list, int& num_moves) {
 
     // add the move to the move list. was a piece captured?
     if (OCCUPIED_SQUARES & j) {
-      move_list[num_moves++] = move_int(idx2, idx, piece_board[idx2], 0, 0, 0, 0,
-                                        NONE, castle_rights, KING + turn);
+      move_list[num_moves++] = move_int(idx2, idx, piece_board[idx2], castle_rights, KING + turn);
     }
     else {
-      move_list[num_moves++] = move_int(idx2, idx, NONE, 0, 0, 0, 0,
-                                        NONE, castle_rights, KING + turn);
+      move_list[num_moves++] = move_int(idx2, idx, NONE, castle_rights, KING + turn);
     }
 
     // remove this position from possible (equivalent to POP_LSB macro but we already have j)
@@ -1056,10 +1042,14 @@ bool board::is_check() {
 /* ---------- BOARD UTILITY FUNCTIONS ---------- */
 
 // generates a move integer:
-inline static U64 move_int(char TO, char FROM, char CAPTURED, char EP, char PF, char CASTLE,
+inline static int move_int(char TO, char FROM, char CAPTURED, char EP, char PF, char CASTLE,
                     char PROM, char PROM_PIECE, char PCR, char PM) {
   return (TO << 26) | (FROM << 20) | (CAPTURED << 16) | (EP << 15) | (PF << 14) |
          (CASTLE << 13) | (PROM << 12) | (PROM_PIECE << 8) | (PCR << 4) | PM;
+}
+
+inline static int move_int(char TO, char FROM, char CAPTURED, char PCR, char PM) {
+  return (TO << 26) | (FROM << 20) | (CAPTURED << 16) | (NONE << 8) | (PCR << 4) | PM;
 }
 
 // generate all possible horizontal and vertical (rook-like) moves.

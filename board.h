@@ -52,8 +52,9 @@ struct board {
 };
 
 // utility functions for board class:
-inline static U64 move_int(char TO, char FROM, char CAPTURED, char EP, char PF, char CASTLE,
+inline static int move_int(char TO, char FROM, char CAPTURED, char EP, char PF, char CASTLE,
                     char PROM, char PROM_PIECE, char PCR, char PM);
+inline static int move_int(char TO, char FROM, char CAPTURED, char PCR, char PM);
 inline U64 line_moves(char s, U64 OCCUPIED);
 inline U64 diag_moves(char s, U64 OCCUPIED);
 inline static U64 line_moves_magic(char s, U64 OCCUPIED);

@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "board.h"
+#include "timer.h"
 
 #define GREEN  "\033[32m"
 #define RED    "\033[31m"
@@ -80,6 +81,8 @@ int main() {
   );
 
   // run all tests:
+  timer t;
+  t.start();
   bool all_tests_passed = true;
   all_tests_passed &= initial_position.test();
   all_tests_passed &= pt2.test();
@@ -88,9 +91,11 @@ int main() {
   all_tests_passed &= pt5.test();
   all_tests_passed &= pt6.test();
   all_tests_passed &= pt7.test();
+  t.stop();
 
   if (all_tests_passed) printf("%sALL TESTS PASSED%s.\n", GREEN, RESET);
   else printf("%sNOT ALL TESTS PASSED%s.\n", YELLOW, RESET);
+  t.print_duration();
 }
 
 // perft(): the perft test function
