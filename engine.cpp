@@ -38,7 +38,6 @@ int search::negamax(int depth) {
   int alpha = -INF;
   int beta = INF;
   int candidate_score;
-  bool maximizing = (b->turn == WHITE);
 
   // generate all possible moves from this position:
   int num_moves;
@@ -47,7 +46,7 @@ int search::negamax(int depth) {
   // recursively find the best move from here:
   for (int i = 0; i < num_moves; i++) {
     b->make_move(moves[i]);
-    candidate_score = -negamax_helper(depth - 1, alpha, beta, maximizing);
+    candidate_score = -negamax_helper(depth - 1, alpha, beta);
     if (candidate_score >= best_score) {
       best_score = candidate_score;
       best_move = moves[i];
@@ -61,7 +60,7 @@ int search::negamax(int depth) {
   return best_move;
 }
 
-int search::negamax_helper(int depth, int alpha, int beta, bool maximizing) {
+int search::negamax_helper(int depth, int alpha, int beta) {
   // if we got the abort signal, abort:
   if (abort) return 0;
 
@@ -79,7 +78,7 @@ int search::negamax_helper(int depth, int alpha, int beta, bool maximizing) {
   int best_score = -INF;
   for (int i = 0; i < num_moves; i++) {
     b->make_move(moves[i]);
-    best_score = std::max(best_score, -negamax_helper(depth - 1, -beta, -alpha, !maximizing));
+    best_score = std::max(best_score, -negamax_helper(depth - 1, -beta, -alpha));
     b->undo_move();
     alpha = std::max(alpha, best_score);
     if (alpha >= beta) break;

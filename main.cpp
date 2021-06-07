@@ -13,15 +13,17 @@ int perft(board* b, int depth);
 int main(int argc, char** argv) {
   init_consts();
 
-  char* FEN = FEN_START; // "r1b1kbnr/pppp1Npp/8/8/3nq3/8/PPPPBP1P/RNBQKR2 b Qkq - 1 7";
+  printf("%d\n", sizeof(tt_entry));
+
+  char* FEN = "r1b1kbnr/pppp1Npp/8/8/3nq3/8/PPPPBP1P/RNBQKR2 b Qkq - 1 7";
   board b(FEN);
 
   timer t;
   t.start();
-  printf("%d positions found\n", perft(&b, 6));
-  // search s(&b);
-  //print_move(s.negamax(5));
-  // printf("evaluated %d nodes\n", s.nodes_evaluated);
+  // printf("%d positions found\n", perft(&b, 5));
+  search s(&b);
+  print_move(s.negamax(5));
+  printf("evaluated %d nodes\n", s.nodes_evaluated);
   t.stop();
   t.print_duration();
 
@@ -52,16 +54,10 @@ int perft(board* b, int depth) {
   if (depth == 1) return num_moves;
 
   int sum = 0;
-  U64 hc = b->hash;
   for (int i = 0; i < num_moves; i++) {
     b->make_move(moves[i]);
     sum += perft(b, depth - 1);
     b->undo_move();
-
-    if (hc != b->hash) {
-      print_move(moves[i]);
-      return 0;
-    }
   }
 
   return sum;

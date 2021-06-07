@@ -10,6 +10,9 @@ typedef uint64_t U64;
 #define MAX_POSITION_MOVES 256
 #define MAX_GAME_MOVES 2048
 
+// engine settings:
+#define DEFAULT_TT_SIZE (1 << 20)
+
 #define INF 2147483647
 
 #define FEN_START "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"

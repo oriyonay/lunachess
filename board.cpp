@@ -315,7 +315,7 @@ bool board::make_move(int move) {
 
   if (promotion) {
     // to which piece are we promoting?
-    int promoted_piece = (move >> 8) & 0xF;
+    int promoted_piece = MOVE_PROMOTION_PIECE(move);
 
     // we need to replace the piece we previously moved TO with the new promoted piece:
     bitboard[piece_moved] ^= (1L << to);

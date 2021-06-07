@@ -19,6 +19,10 @@ extern void init_consts() {
 
   ZOBRIST_TURN_KEY = generator();
 
+  // round transposition table size down to nearest power of 2 & initialize index mask:
+  while (TT_SIZE & (TT_SIZE-1)) POP_LSB(TT_SIZE);
+  TT_INDEX_MASK = TT_SIZE - 1;
+
   // ----- initialize file bitmasks: -----
   FILES[0] = 0L;
   for (int i = 0; i < 8; i++) {
@@ -196,6 +200,9 @@ std::random_device rd;
 std::mt19937_64 generator(rd());
 
 /* ---------- end of functions for calculating constants ---------- */
+
+unsigned int TT_SIZE = DEFAULT_TT_SIZE;
+unsigned int TT_INDEX_MASK;
 
 std::unordered_map<char, int> PIECE_INDICES = {
   {'P', 0}, {'N', 1}, {'B', 2}, {'R', 3}, {'Q', 4}, {'K', 5},
