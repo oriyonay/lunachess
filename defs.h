@@ -43,20 +43,20 @@ enum {INIT_WK = 0x1000000000000000L, INIT_BK = 0x10L};
 #define MOVE_TO(move) ((move >> 26) & 0x3F)
 #define MOVE_FROM(move) ((move >> 20) & 0x3F)
 #define MOVE_CAPTURED(move) ((move >> 16) & 0xF)
-#define MOVE_IS_EP(move) ((move >> 15) & 1)
-#define MOVE_IS_PAWNFIRST(move) ((move >> 14) & 1)
-#define MOVE_IS_CASTLE(move) ((move >> 13) & 1)
-#define MOVE_IS_PROMOTION(move) ((move >> 12) & 1)
+#define MOVE_IS_EP(move) (move & 0x8000)
+#define MOVE_IS_PAWNFIRST(move) (move & 0x4000)
+#define MOVE_IS_CASTLE(move) (move & 0x2000)
+#define MOVE_IS_PROMOTION(move) (move & 0x1000)
 #define MOVE_PROMOTION_PIECE(move) ((move >> 8) & 0xF)
 #define MOVE_PIECEMOVED(move) (move & 0xF)
 #define MOVE_PCR(move) ((move >> 4) & 0xF)
 
 // macros for determining castle rights:
 // CWK = castle white kingside, CBQ = castle black queenside, etc.
-#define CAN_CWK(castle_rights) ((castle_rights >> 3) & 1)
-#define CAN_CWQ(castle_rights) ((castle_rights >> 2) & 1)
-#define CAN_CBK(castle_rights) ((castle_rights >> 1) & 1)
-#define CAN_CBQ(castle_rights) ((castle_rights     ) & 1)
+#define CAN_CWK(castle_rights) (castle_rights & 0x8)
+#define CAN_CWQ(castle_rights) (castle_rights & 0x4)
+#define CAN_CBK(castle_rights) (castle_rights & 0x2)
+#define CAN_CBQ(castle_rights) (castle_rights & 0x1)
 
 // macros for getting the file and rank indices from a board index:
 #define FILE_NO(idx) (idx % 8)

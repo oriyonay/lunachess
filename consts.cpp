@@ -322,3 +322,7 @@ U64 CBQ_SAFE_SPACES = (1L << 2) | (1L << 3);
 
 U64 CWQ_EMPTY_SPACES = (1L << 57) | (1L << 58) | (1L << 59);
 U64 CBQ_EMPTY_SPACES = (1L << 1) | (1L << 2) | (1L << 3);
+
+// miscellaneous pre-calculated constants:
+char FILE_OF[64];
+char RANK_OF[64];

@@ -1012,17 +1012,10 @@ U64 board::pinned_pieces() {
   U64 blockers = CANT_CAPTURE;
 
   U64 pinned = 0L;
-  U64 pinner = xray_rook(OCCUPIED_SQUARES, blockers, king_square) &
-               (bitboard[ROOK + not_turn] | bitboard[QUEEN + not_turn]);
-
-  while (pinner) {
-    int sq  = LSB(pinner);
-    pinned |= RECT_LOOKUP[sq][king_square] & blockers;
-    POP_LSB(pinner);
-  }
-
-  pinner = xray_bishop(OCCUPIED_SQUARES, blockers, king_square) &
-           (bitboard[BISHOP + not_turn] | bitboard[QUEEN + not_turn]);
+  U64 pinner = (xray_rook(OCCUPIED_SQUARES, blockers, king_square) &
+               (bitboard[ROOK + not_turn] | bitboard[QUEEN + not_turn])) |
+               (xray_bishop(OCCUPIED_SQUARES, blockers, king_square) &
+               (bitboard[BISHOP + not_turn] | bitboard[QUEEN + not_turn]));
 
   while (pinner) {
     int sq  = LSB(pinner);
