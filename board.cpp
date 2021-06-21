@@ -62,6 +62,13 @@ board::board(char* FEN) : material(0), num_moves_played(0), castle_rights(0),
   // hash in castling rights:
   hash ^= ZOBRIST_CASTLE_RIGHTS_KEYS[castle_rights];
 
+  // load W and B bitboards:
+  W = bitboard[WP] | bitboard[WN] | bitboard[WB] | bitboard[WR] |
+      bitboard[WQ] | bitboard[WK];
+
+  B = bitboard[BP] | bitboard[BN] | bitboard[BB] | bitboard[BR] |
+      bitboard[BQ] | bitboard[BK];
+
   // update move information bitboards:
   update_move_info_bitboards();
 
@@ -213,6 +220,10 @@ bool board::make_move(int move) {
   piece_board[from] = NONE;
   hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][from];
 
+  // update W and B bitboards:
+  if (turn == WHITE) W ^= (1L << to) | (1L << from);
+  else B ^= (1L << to) | (1L << from);
+
   // update castle rights (in case a piece took one of the rooks):
   switch(to) {
     case 63:
@@ -247,6 +258,10 @@ bool board::make_move(int move) {
     hash ^= ZOBRIST_SQUARE_KEYS[captured][to];
 
     material -= PIECE_TO_MATERIAL[captured];
+
+    // update the W or B bitboard:
+    if (turn == WHITE) B ^= (1L << to);
+    else W ^= (1L << to);
   }
 
   // if this was an en passant, remove the piece from the board:
@@ -254,26 +269,34 @@ bool board::make_move(int move) {
     // then we flipped the wrong bit earlier. let's flip it again:
     bitboard[captured] ^= (1L << to);
 
+    // we have to flip it again in the W or B bitboard as well:
+    if (turn == WHITE) B ^= (1L << to);
+    else W ^= (1L << to);
+
     // in which direction was the capture?
     switch (from - to) {
       case 7:
         // white en passant captures right
         bitboard[BP] ^= (1L << (from + 1));
+        B ^= (1L << (from + 1));
         piece_board[from + 1] = NONE;
         break;
       case 9:
         // white en passant captures left
         bitboard[BP] ^= (1L << (from - 1));
+        B ^= (1L << (from - 1));
         piece_board[from - 1] = NONE;
         break;
       case -9:
         // black en passant captures right
         bitboard[WP] ^= (1L << (from + 1));
+        W ^= (1L << (from + 1));
         piece_board[from + 1] = NONE;
         break;
       case -7:
         // black en passant captures left
         bitboard[WP] ^= (1L << (from - 1));
+        W ^= (1L << (from - 1));
         piece_board[from - 1] = NONE;
         break;
     }
@@ -284,28 +307,32 @@ bool board::make_move(int move) {
     switch (to) {
       case 62:
         // white kingside castle
-        bitboard[WR] ^= 0xA000000000000000L; // (1 << 61) | (1 << 63) to flip both bits at once
+        bitboard[WR] ^= CWK_ROOK_MASK; // (1 << 61) | (1 << 63) to flip both bits at once
+        W ^= CWK_ROOK_MASK;
         piece_board[61] = WR;
         piece_board[63] = NONE;
         castle_rights &= 0x3; // cancel out castle rights
         break;
       case 58:
         // white queenside castle
-        bitboard[WR] ^= 0x900000000000000L; // (1 << 56) | (1 << 59) to flip both bits at once
+        bitboard[WR] ^= CWQ_ROOK_MASK; // (1 << 56) | (1 << 59) to flip both bits at once
+        W ^= CWQ_ROOK_MASK;
         piece_board[59] = WR;
         piece_board[56] = NONE;
         castle_rights &= 0x3; // cancel out castle rights
         break;
       case 6:
         // black kingside castle
-        bitboard[BR] ^= 0xA0L; // (1 << 5) | (1 << 7) to flip both bits at once
+        bitboard[BR] ^= CBK_ROOK_MASK; // (1 << 5) | (1 << 7) to flip both bits at once
+        B ^= CBK_ROOK_MASK;
         piece_board[5] = BR;
         piece_board[7] = NONE;
         castle_rights &= 0xC; // cancel out castle rights
         break;
       case 2:
         // black queenside castle
-        bitboard[BR] ^= 0x9L; // (1 << 0) | (1 << 3) to flip both bits at once
+        bitboard[BR] ^= CBQ_ROOK_MASK; // (1 << 0) | (1 << 3) to flip both bits at once
+        B ^= CBQ_ROOK_MASK;
         piece_board[3] = BR;
         piece_board[0] = NONE;
         castle_rights &= 0xC; // cancel out castle rights
@@ -336,13 +363,14 @@ bool board::make_move(int move) {
     hash ^= ZOBRIST_CASTLE_RIGHTS_KEYS[castle_rights];
   }
 
-  // now comes the moment of truth. is this move legal? well, only if we're not in check:
+  // update the move info bitboards (while avoiding redundancies):
   update_move_info_bitboards();
 
   // flip the turn:
   turn = (turn == WHITE) ? BLACK : WHITE;
   hash ^= ZOBRIST_TURN_KEY;
 
+  // now comes the moment of truth. is this move legal? well, only if we're not in check:
   return !(UNSAFE & bitboard[KING + ((turn == WHITE) ? BLACK : WHITE)]);
 }
 
@@ -373,6 +401,10 @@ void board::undo_move() {
   piece_board[from] = piece_moved;
   hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][from];
 
+  // update W or B bitboards:
+  if (turn == WHITE) B ^= (1L << to) | (1L << from);
+  else W ^= (1L << to) | (1L << from);
+
   // reload castle rights:
   if (castle_rights != pcr) {
     hash ^= ZOBRIST_CASTLE_RIGHTS_KEYS[castle_rights];
@@ -387,6 +419,9 @@ void board::undo_move() {
     hash ^= ZOBRIST_SQUARE_KEYS[captured][to];
 
     material += PIECE_TO_MATERIAL[captured];
+
+    if (turn == WHITE) W ^= (1L << to);
+    else B ^= (1L << to);
   }
 
   // if this was an en passant, put the pawn back on the board:
@@ -394,29 +429,37 @@ void board::undo_move() {
     // then we flipped the wrong bit in the 'captured' section and need to flip it again:
     bitboard[captured] ^= (1L << to);
 
+    // we have to flip it in the W or B bitboard as well:
+    if (turn == WHITE) W ^= (1L << to);
+    else B ^= (1L << to);
+
     // in which direction was the capture?
     switch (from - to) {
       case 7:
         // white en passant captures right
         bitboard[BP] ^= (1L << (from + 1));
+        B ^= (1L << (from + 1));
         piece_board[from - 7] = NONE;
         piece_board[from + 1] = BP;
         break;
       case 9:
         // white en passant captures left
         bitboard[BP] ^= (1L << (from - 1));
+        B ^= (1L << (from - 1));
         piece_board[from - 9] = NONE;
         piece_board[from - 1] = BP;
         break;
       case -9:
         // black en passant captures right
         bitboard[WP] ^= (1L << (from + 1));
+        W ^= (1L << (from + 1));
         piece_board[from + 9] = NONE;
         piece_board[from + 1] = WP;
         break;
       case -7:
         // black en passant captures left
         bitboard[WP] ^= (1L << (from - 1));
+        W ^= (1L << (from - 1));
         piece_board[from + 7] = NONE;
         piece_board[from - 1] = WP;
         break;
@@ -428,25 +471,29 @@ void board::undo_move() {
     switch (to) {
       case 62:
         // white kingside castle
-        bitboard[WR] ^= 0xA000000000000000L; // (1 << 61) | (1 << 63) to flip both bits at once
+        bitboard[WR] ^= CWK_ROOK_MASK; // (1 << 61) | (1 << 63) to flip both bits at once
+        W ^= CWK_ROOK_MASK;
         piece_board[63] = WR;
         piece_board[61] = NONE;
         break;
       case 58:
         // white queenside castle
-        bitboard[WR] ^= 0x900000000000000L; // (1 << 56) | (1 << 59) to flip both bits at once
+        bitboard[WR] ^= CWQ_ROOK_MASK; // (1 << 56) | (1 << 59) to flip both bits at once
+        W ^= CWQ_ROOK_MASK;
         piece_board[56] = WR;
         piece_board[59] = NONE;
         break;
       case 6:
         // black kingside castle
-        bitboard[BR] ^= 0xA0L; // (1 << 5) | (1 << 7) to flip both bits at once
+        bitboard[BR] ^= CBK_ROOK_MASK; // (1 << 5) | (1 << 7) to flip both bits at once
+        B ^= CBK_ROOK_MASK;
         piece_board[7] = BR;
         piece_board[5] = NONE;
         break;
       case 2:
         // black queenside castle
-        bitboard[BR] ^= 0x9L; // (1 << 0) | (1 << 3) to flip both bits at once
+        bitboard[BR] ^= CBQ_ROOK_MASK; // (1 << 0) | (1 << 3) to flip both bits at once
+        B ^= CBQ_ROOK_MASK;
         piece_board[0] = BR;
         piece_board[3] = NONE;
         break;
@@ -924,18 +971,16 @@ void board::add_king_moves(int* move_list, int& num_moves) {
   }
 }
 
+// update_move_info_bitboards(): updates the move info bitboards (which pieces can
+// and can't be captured, etc.)
 inline void board::update_move_info_bitboards() {
   if (turn == WHITE) {
-    CANT_CAPTURE = bitboard[WP] | bitboard[WN] | bitboard[WB] | bitboard[WR] |
-                   bitboard[WQ] | bitboard[WK] | bitboard[BK];
-    CAN_CAPTURE  = bitboard[BP] | bitboard[BN] | bitboard[BB] | bitboard[BR] |
-                   bitboard[BQ];
+    CANT_CAPTURE = W;
+    CAN_CAPTURE  = B;
   }
   else {
-    CANT_CAPTURE = bitboard[BP] | bitboard[BN] | bitboard[BB] | bitboard[BR] |
-                   bitboard[BQ] | bitboard[BK] | bitboard[WK];
-    CAN_CAPTURE  = bitboard[WP] | bitboard[WN] | bitboard[WB] | bitboard[WR] |
-                   bitboard[WQ];
+    CANT_CAPTURE = B;
+    CAN_CAPTURE  = W;
   }
 
   CAN_MOVE_TO = ~CANT_CAPTURE;

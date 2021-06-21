@@ -29,6 +29,8 @@ struct board {
   U64 OCCUPIED_SQUARES;
   U64 EMPTY_SQUARES;
   U64 UNSAFE;
+  U64 W;
+  U64 B;
 
   // main board functions:
   board(char* FEN);

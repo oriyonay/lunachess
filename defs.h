@@ -62,4 +62,10 @@ enum {INIT_WK = 0x1000000000000000L, INIT_BK = 0x10L};
 #define FILE_NO(idx) (idx % 8)
 #define RANK_NO(idx) ((idx / 8) + 1) // +1 for human indexing
 
+// defines for making castling code more readable:
+#define CWK_ROOK_MASK 0xA000000000000000L
+#define CWQ_ROOK_MASK 0x900000000000000L
+#define CBK_ROOK_MASK 0xA0L
+#define CBQ_ROOK_MASK 0x9L
+
 #endif
