@@ -10,6 +10,9 @@
 #define RESET  "\033[0m"
 
 long perft(board* b, int depth);
+long perft_verify(board* b, int depth);
+bool verify(board* b);
+void print_move(int m);
 
 struct perft_test {
   char* test_name;
@@ -23,7 +26,7 @@ struct perft_test {
     board b(FEN);
     printf("starting test: %s\n", test_name);
     for (int i = 1; i < results.size(); i++) {
-      if (perft(&b, i) != results[i]) {
+      if (perft_verify(&b, i) != results[i]) {
         printf("%s %sFAILED%s at depth %d\n", test_name, RED, RESET, i);
         return false;
       }
@@ -84,13 +87,13 @@ int main() {
   timer t;
   t.start();
   bool all_tests_passed = true;
-  all_tests_passed &= initial_position.test();
+  // all_tests_passed &= initial_position.test();
   all_tests_passed &= pt2.test();
-  all_tests_passed &= pt3.test();
+  /* all_tests_passed &= pt3.test();
   all_tests_passed &= pt4.test();
   all_tests_passed &= pt5.test();
   all_tests_passed &= pt6.test();
-  all_tests_passed &= pt7.test();
+  all_tests_passed &= pt7.test(); */
   t.stop();
 
   if (all_tests_passed) printf("%sALL TESTS PASSED%s.\n", GREEN, RESET);
@@ -117,4 +120,59 @@ long perft(board* b, int depth) {
   delete[] moves;
 
   return sum;
+}
+
+// perft_verify(): perft testing using the verify() method
+long perft_verify(board* b, int depth) {
+  if (depth == 0) {
+    verify(b);
+    return 1;
+  }
+  int num_moves;
+  int* moves = b->get_moves(num_moves);
+
+  long sum = 0;
+  for (int i = 0; i < num_moves; i++) {
+    b->make_move(moves[i]);
+    sum += perft_verify(b, depth - 1);
+    b->undo_move();
+  }
+
+  delete[] moves;
+  return sum;
+}
+
+// verify(): verifies that the board's base_score equals its actual base score
+bool verify(board* b) {
+  int total = 0;
+  for (int i = 0; i < 64; i++) {
+    if (b->piece_board[i] == NONE) continue;
+    total += PIECE_SQUARE_TABLE[b->piece_board[i]][i];
+  }
+
+  printf("%d != %d\n", total, b->base_score);
+  printf("LAST MOVE: ");
+  print_move(b->move_history[b->num_moves_played - 1]);
+  b->print();
+  if (total != b->base_score) assert(false);
+}
+
+// print_move(): prints a given a move int. placed here temporarily, since there
+// isn't a utils file. this exact code is also in main.cpp for now
+void print_move(int m) {
+  int to = MOVE_TO(m);
+  int from = MOVE_FROM(m);
+
+  char* move_str = new char[6];
+  move_str[5] = '\0';
+  move_str[4] = '\0'; // TODO: REMOVE THIS
+
+  move_str[0] = ((from % 8) + 'a');
+  move_str[1] = (8 - (from / 8) + '0');
+  move_str[2] = ((to % 8) + 'a');
+  move_str[3] = (8 - (to / 8) + '0');
+
+  // TODO: promotion piece
+  std::string moveinfo = (MOVE_IS_EP(m)) ? " EP" : "";
+  printf("%s%s\n", move_str, moveinfo.c_str());
 }

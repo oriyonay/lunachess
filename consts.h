@@ -110,4 +110,17 @@ extern U64 CBQ_SAFE_SPACES;
 extern U64 CWQ_EMPTY_SPACES;
 extern U64 CBQ_EMPTY_SPACES;
 
+// constants for differences in PST values for rooks after castling. used to
+// slightly optimize updating the base_score with rooks (so instead of doing
+// base_score -= PST[ROOK][OLD POSITION] and then
+// base_score += PST[ROOK][NEW POSITION]), we just precalculate the sum.
+extern int CWK_ROOK_PST_DIFFERENCE;
+extern int CWQ_ROOK_PST_DIFFERENCE;
+extern int CBK_ROOK_PST_DIFFERENCE;
+extern int CBQ_ROOK_PST_DIFFERENCE;
+
+// miscellaneous pre-calculated constants:
+// extern char FILE_OF[64];
+// extern char RANK_OF[64];
+
 #endif

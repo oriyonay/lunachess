@@ -228,16 +228,16 @@ bool board::make_move(int move) {
 
   // update castle rights (in case a piece took one of the rooks):
   switch(to) {
-    case 63:
+    case H1:
       castle_rights &= 0x7;
       break;
-    case 56:
+    case A1:
       castle_rights &= 0xB;
       break;
-    case 7:
+    case H8:
       castle_rights &= 0xD;
       break;
-    case 0:
+    case A8:
       castle_rights &= 0xE;
       break;
   }
@@ -245,13 +245,13 @@ bool board::make_move(int move) {
   // update castle rights (in case either the king or one of the rooks moved):
   if (turn == WHITE) {
     if (!(bitboard[WK] & INIT_WK)) castle_rights &= 0x3;
-    if ((from == 63 || to == 63) && CAN_CWK(castle_rights)) castle_rights &= 0x7;
-    if ((from == 56 || to == 56) && CAN_CWQ(castle_rights)) castle_rights &= 0xB;
+    if ((from == H1 || to == H1) && CAN_CWK(castle_rights)) castle_rights &= 0x7;
+    if ((from == A1 || to == A1) && CAN_CWQ(castle_rights)) castle_rights &= 0xB;
   }
   else {
     if (!(bitboard[BK] & INIT_BK)) castle_rights &= 0xC;
-    if ((from == 7 || to == 7) && CAN_CBK(castle_rights)) castle_rights &= 0xD;
-    if ((from == 0 || to == 0) && CAN_CBQ(castle_rights)) castle_rights &= 0xE;
+    if ((from == H8 || to == H8) && CAN_CBK(castle_rights)) castle_rights &= 0xD;
+    if ((from == A8 || to == A8) && CAN_CBQ(castle_rights)) castle_rights &= 0xE;
   }
 
   // if a piece was captured, update the board and base_score, and hash out the piece:
@@ -268,8 +268,11 @@ bool board::make_move(int move) {
 
   // if this was an en passant, remove the piece from the board:
   if (ep) {
-    // then we flipped the wrong bit earlier. let's flip it again:
+    // then we flipped the wrong bit earlier. let's flip it again & undo
+    // incorrect zobrist hashing and base_score scoring:
     bitboard[captured] ^= (1L << to);
+    hash ^= ZOBRIST_SQUARE_KEYS[captured][to];
+    base_score += PIECE_SQUARE_TABLE[captured][to];
 
     // we have to flip it again in the W or B bitboard as well:
     if (turn == WHITE) B ^= (1L << to);
@@ -282,24 +285,40 @@ bool board::make_move(int move) {
         bitboard[BP] ^= (1L << (from + 1));
         B ^= (1L << (from + 1));
         piece_board[from + 1] = NONE;
+
+        // hash out the captured pawn and update base score:
+        hash ^= ZOBRIST_SQUARE_KEYS[BP][from+1];
+        base_score -= PIECE_SQUARE_TABLE[BP][from+1];
         break;
       case 9:
         // white en passant captures left
         bitboard[BP] ^= (1L << (from - 1));
         B ^= (1L << (from - 1));
         piece_board[from - 1] = NONE;
+
+        // hash out the captured pawn and update base score:
+        hash ^= ZOBRIST_SQUARE_KEYS[BP][from-1];
+        base_score -= PIECE_SQUARE_TABLE[BP][from-1];
         break;
       case -9:
         // black en passant captures right
         bitboard[WP] ^= (1L << (from + 1));
         W ^= (1L << (from + 1));
         piece_board[from + 1] = NONE;
+
+        // hash out the captured pawn and update base score:
+        hash ^= ZOBRIST_SQUARE_KEYS[WP][from+1];
+        base_score -= PIECE_SQUARE_TABLE[WP][from+1];
         break;
       case -7:
         // black en passant captures left
         bitboard[WP] ^= (1L << (from - 1));
         W ^= (1L << (from - 1));
         piece_board[from - 1] = NONE;
+
+        // hash out the captured pawn and update base score:
+        hash ^= ZOBRIST_SQUARE_KEYS[WP][from-1];
+        base_score -= PIECE_SQUARE_TABLE[WP][from-1];
         break;
     }
   }
@@ -307,37 +326,49 @@ bool board::make_move(int move) {
   if (castle) {
     // move the rook:
     switch (to) {
-      case 62:
+      case G1:
         // white kingside castle
         bitboard[WR] ^= CWK_ROOK_MASK; // (1 << 61) | (1 << 63) to flip both bits at once
         W ^= CWK_ROOK_MASK;
-        piece_board[61] = WR;
-        piece_board[63] = NONE;
+        piece_board[F1] = WR;
+        piece_board[H1] = NONE;
         castle_rights &= 0x3; // cancel out castle rights
+
+        // update hash and base_score:
+        base_score += CWK_ROOK_PST_DIFFERENCE;
         break;
-      case 58:
+      case C1:
         // white queenside castle
         bitboard[WR] ^= CWQ_ROOK_MASK; // (1 << 56) | (1 << 59) to flip both bits at once
         W ^= CWQ_ROOK_MASK;
-        piece_board[59] = WR;
-        piece_board[56] = NONE;
+        piece_board[D1] = WR;
+        piece_board[A1] = NONE;
         castle_rights &= 0x3; // cancel out castle rights
+
+        // update hash and base_score:
+        base_score += CWQ_ROOK_PST_DIFFERENCE;
         break;
-      case 6:
+      case G8:
         // black kingside castle
         bitboard[BR] ^= CBK_ROOK_MASK; // (1 << 5) | (1 << 7) to flip both bits at once
         B ^= CBK_ROOK_MASK;
-        piece_board[5] = BR;
-        piece_board[7] = NONE;
+        piece_board[F8] = BR;
+        piece_board[H8] = NONE;
         castle_rights &= 0xC; // cancel out castle rights
+
+        // update hash and base_score:
+        base_score += CBK_ROOK_PST_DIFFERENCE;
         break;
-      case 2:
+      case C8:
         // black queenside castle
         bitboard[BR] ^= CBQ_ROOK_MASK; // (1 << 0) | (1 << 3) to flip both bits at once
         B ^= CBQ_ROOK_MASK;
-        piece_board[3] = BR;
-        piece_board[0] = NONE;
+        piece_board[D8] = BR;
+        piece_board[A8] = NONE;
         castle_rights &= 0xC; // cancel out castle rights
+
+        // update hash and base_score:
+        base_score += CBQ_ROOK_PST_DIFFERENCE;
         break;
     }
   }
@@ -430,8 +461,11 @@ void board::undo_move() {
 
   // if this was an en passant, put the pawn back on the board:
   if (ep) {
-    // then we flipped the wrong bit in the 'captured' section and need to flip it again:
+    // then we flipped the wrong bit in the 'captured' section and need to flip
+    // it again, as well as undo the incorrect zobrist hashing and base_score scoring:
     bitboard[captured] ^= (1L << to);
+    hash ^= ZOBRIST_SQUARE_KEYS[captured][to];
+    base_score -= PIECE_SQUARE_TABLE[captured][to];
 
     // we have to flip it in the W or B bitboard as well:
     if (turn == WHITE) W ^= (1L << to);
@@ -445,6 +479,10 @@ void board::undo_move() {
         B ^= (1L << (from + 1));
         piece_board[from - 7] = NONE;
         piece_board[from + 1] = BP;
+
+        // hash in the captured pawn and update base score:
+        hash ^= ZOBRIST_SQUARE_KEYS[BP][from+1];
+        base_score += PIECE_SQUARE_TABLE[BP][from+1];
         break;
       case 9:
         // white en passant captures left
@@ -452,6 +490,10 @@ void board::undo_move() {
         B ^= (1L << (from - 1));
         piece_board[from - 9] = NONE;
         piece_board[from - 1] = BP;
+
+        // hash in the captured pawn and update base score:
+        hash ^= ZOBRIST_SQUARE_KEYS[BP][from-1];
+        base_score += PIECE_SQUARE_TABLE[BP][from-1];
         break;
       case -9:
         // black en passant captures right
@@ -459,6 +501,10 @@ void board::undo_move() {
         W ^= (1L << (from + 1));
         piece_board[from + 9] = NONE;
         piece_board[from + 1] = WP;
+
+        // hash in the captured pawn and update base score:
+        hash ^= ZOBRIST_SQUARE_KEYS[WP][from+1];
+        base_score += PIECE_SQUARE_TABLE[WP][from+1];
         break;
       case -7:
         // black en passant captures left
@@ -466,6 +512,10 @@ void board::undo_move() {
         W ^= (1L << (from - 1));
         piece_board[from + 7] = NONE;
         piece_board[from - 1] = WP;
+
+        // hash in the captured pawn and update base score:
+        hash ^= ZOBRIST_SQUARE_KEYS[WP][from-1];
+        base_score += PIECE_SQUARE_TABLE[WP][from-1];
         break;
     }
   }
@@ -473,33 +523,45 @@ void board::undo_move() {
   if (castle) {
     // move the rook:
     switch (to) {
-      case 62:
+      case G1:
         // white kingside castle
         bitboard[WR] ^= CWK_ROOK_MASK; // (1 << 61) | (1 << 63) to flip both bits at once
         W ^= CWK_ROOK_MASK;
-        piece_board[63] = WR;
-        piece_board[61] = NONE;
+        piece_board[H1] = WR;
+        piece_board[F1] = NONE;
+
+        // update hash and base_score:
+        base_score -= CWK_ROOK_PST_DIFFERENCE;
         break;
-      case 58:
+      case C1:
         // white queenside castle
         bitboard[WR] ^= CWQ_ROOK_MASK; // (1 << 56) | (1 << 59) to flip both bits at once
         W ^= CWQ_ROOK_MASK;
-        piece_board[56] = WR;
-        piece_board[59] = NONE;
+        piece_board[A1] = WR;
+        piece_board[C1] = NONE;
+
+        // update hash and base_score:
+        base_score -= CWQ_ROOK_PST_DIFFERENCE;
         break;
-      case 6:
+      case G8:
         // black kingside castle
         bitboard[BR] ^= CBK_ROOK_MASK; // (1 << 5) | (1 << 7) to flip both bits at once
         B ^= CBK_ROOK_MASK;
-        piece_board[7] = BR;
-        piece_board[5] = NONE;
+        piece_board[H8] = BR;
+        piece_board[F8] = NONE;
+
+        // update hash and base_score:
+        base_score -= CBK_ROOK_PST_DIFFERENCE;
         break;
-      case 2:
+      case C8:
         // black queenside castle
         bitboard[BR] ^= CBQ_ROOK_MASK; // (1 << 0) | (1 << 3) to flip both bits at once
         B ^= CBQ_ROOK_MASK;
-        piece_board[0] = BR;
-        piece_board[3] = NONE;
+        piece_board[A8] = BR;
+        piece_board[C8] = NONE;
+
+        // update hash and base_score:
+        base_score -= CBQ_ROOK_PST_DIFFERENCE;
         break;
     }
   }

@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdio.h>
+#include <string>
 
 #include "board.h"
 #include "consts.h"
@@ -12,9 +13,6 @@ int perft(board* b, int depth);
 
 int main(int argc, char** argv) {
   init_consts();
-
-  board q(FEN_START);
-  printf("score: %d\n", q.base_score);
 
   char* FEN = "r1b1kbnr/pppp1Npp/8/8/3nq3/8/PPPPBP1P/RNBQKR2 b Qkq - 1 7";
   board b(FEN);
@@ -32,8 +30,8 @@ int main(int argc, char** argv) {
 }
 
 void print_move(int m) {
-  int to = (m >> 26) & 0x3F;
-  int from = (m >> 20) & 0x3F;
+  int to = MOVE_TO(m);
+  int from = MOVE_FROM(m);
 
   char* move_str = new char[6];
   move_str[5] = '\0';
@@ -45,21 +43,6 @@ void print_move(int m) {
   move_str[3] = (8 - (to / 8) + '0');
 
   // TODO: promotion piece
-
-  printf("%s\n", move_str);
-}
-
-int perft(board* b, int depth) {
-  int num_moves;
-  int* moves = b->get_moves(num_moves);
-  if (depth == 1) return num_moves;
-
-  int sum = 0;
-  for (int i = 0; i < num_moves; i++) {
-    b->make_move(moves[i]);
-    sum += perft(b, depth - 1);
-    b->undo_move();
-  }
-
-  return sum;
+  std::string moveinfo = (MOVE_IS_EP(m)) ? " EP" : "";
+  printf("%s%s\n", move_str, moveinfo.c_str());
 }

@@ -34,6 +34,12 @@ extern void init_consts() {
     }
   }
 
+  // now that we've initialized all PSTs, let's get the rook differences:
+  CWK_ROOK_PST_DIFFERENCE = PIECE_SQUARE_TABLE[WR][F1] - PIECE_SQUARE_TABLE[WR][H1];
+  CWQ_ROOK_PST_DIFFERENCE = PIECE_SQUARE_TABLE[WR][D1] - PIECE_SQUARE_TABLE[WR][A1];
+  CBK_ROOK_PST_DIFFERENCE = PIECE_SQUARE_TABLE[BR][F8] - PIECE_SQUARE_TABLE[BR][H8];
+  CBQ_ROOK_PST_DIFFERENCE = PIECE_SQUARE_TABLE[BR][D8] - PIECE_SQUARE_TABLE[BR][A8];
+
   // round transposition table size down to nearest power of 2 & initialize index mask:
   while (TT_SIZE & (TT_SIZE-1)) POP_LSB(TT_SIZE);
   TT_INDEX_MASK = TT_SIZE - 1;
@@ -439,6 +445,12 @@ U64 CBQ_SAFE_SPACES = (1L << 2) | (1L << 3);
 U64 CWQ_EMPTY_SPACES = (1L << 57) | (1L << 58) | (1L << 59);
 U64 CBQ_EMPTY_SPACES = (1L << 1) | (1L << 2) | (1L << 3);
 
+// constants for differences in PST values for rooks after castling:
+int CWK_ROOK_PST_DIFFERENCE;
+int CWQ_ROOK_PST_DIFFERENCE;
+int CBK_ROOK_PST_DIFFERENCE;
+int CBQ_ROOK_PST_DIFFERENCE;
+
 // miscellaneous pre-calculated constants:
-char FILE_OF[64];
-char RANK_OF[64];
+// char FILE_OF[64];
+// char RANK_OF[64];
