@@ -89,13 +89,13 @@ int main() {
   timer t;
   t.start();
   bool all_tests_passed = true;
-  // all_tests_passed &= initial_position.test();
+  all_tests_passed &= initial_position.test();
   all_tests_passed &= pt2.test();
-  /* all_tests_passed &= pt3.test();
+  all_tests_passed &= pt3.test();
   all_tests_passed &= pt4.test();
   all_tests_passed &= pt5.test();
   all_tests_passed &= pt6.test();
-  all_tests_passed &= pt7.test(); */
+  all_tests_passed &= pt7.test();
   t.stop();
 
   if (all_tests_passed) printf("%sALL TESTS PASSED%s.\n", GREEN, RESET);
@@ -176,11 +176,13 @@ bool verify(board* b) {
     total += PIECE_SQUARE_TABLE[b->piece_board[i]][i];
   }
 
-  printf("%d != %d\n", total, b->base_score);
-  printf("LAST MOVE: ");
-  print_move(b->move_history[b->num_moves_played - 1]);
-  b->print();
-  if (total != b->base_score) assert(false);
+  if (total != b->base_score) {
+    printf("%d != %d\n", total, b->base_score);
+    printf("LAST MOVE: ");
+    print_move(b->move_history[b->num_moves_played - 1]);
+    b->print();
+    assert(false);
+  }
 }
 
 // print_move(): prints a given a move int. placed here temporarily, since there

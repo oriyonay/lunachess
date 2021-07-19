@@ -210,23 +210,17 @@ bool board::make_move(int move) {
   int castle = MOVE_IS_CASTLE(move);
   int promotion = MOVE_IS_PROMOTION(move);
 
-  printf("at start: %d\n", base_score);
-
   // move the piece to its new board location:
   bitboard[piece_moved] |= (1L << to);
   piece_board[to] = piece_moved;
   hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][to];
   base_score += PIECE_SQUARE_TABLE[piece_moved][to];
 
-  printf("move to new location: %d\n", base_score);
-
   // remove the piece from its old location:
   bitboard[piece_moved] ^= (1L << from);
   piece_board[from] = NONE;
   hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][from];
   base_score -= PIECE_SQUARE_TABLE[piece_moved][from];
-
-  printf("remove from old location: %d\n", base_score);
 
   // update W and B bitboards:
   if (turn == WHITE) W ^= (1L << to) | (1L << from);
@@ -392,11 +386,9 @@ bool board::make_move(int move) {
     hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][to];
     hash ^= ZOBRIST_SQUARE_KEYS[promoted_piece][to];
 
-    printf("in promotion: %d\n", base_score);
-
     // update base_score:
     base_score += PIECE_SQUARE_TABLE[promoted_piece][to] - // new promotion piece
-                  PIECE_SQUARE_TABLE[piece_moved][from]; // old pawn position
+                  PIECE_SQUARE_TABLE[piece_moved][to]; // remove pawn from promotion square
   }
 
   // hash in new castle rights (if they were changed);
@@ -590,7 +582,7 @@ void board::undo_move() {
 
     // update base_score:
     base_score -= PIECE_SQUARE_TABLE[promoted_piece][to] - // new promotion piece
-                  PIECE_SQUARE_TABLE[piece_moved][from]; // old pawn position
+                  PIECE_SQUARE_TABLE[piece_moved][to]; // pawn in promotion position
   }
 
   // flip the turn:
