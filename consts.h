@@ -37,6 +37,9 @@ extern std::unordered_map<char, int> MATERIAL;
 // maps piece types (enums) to their material value
 extern const int PIECE_TO_MATERIAL[13];
 
+// the piece-square tables
+extern int PIECE_SQUARE_TABLE[12][64];
+
 // maps board::bitboard indices to their piece character
 extern char* PIECE_CHARS;
 

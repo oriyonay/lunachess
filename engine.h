@@ -9,7 +9,7 @@
 #include "board.h"
 
 // evaluate(): the board evaluation function
-inline int evaluate();
+static inline int evaluate();
 
 // search: a class for searching a board
 class search {

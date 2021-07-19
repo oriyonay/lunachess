@@ -13,7 +13,8 @@ int perft(board* b, int depth);
 int main(int argc, char** argv) {
   init_consts();
 
-  printf("%d\n", sizeof(tt_entry));
+  board q(FEN_START);
+  printf("score: %d\n", q.base_score);
 
   char* FEN = "r1b1kbnr/pppp1Npp/8/8/3nq3/8/PPPPBP1P/RNBQKR2 b Qkq - 1 7";
   board b(FEN);

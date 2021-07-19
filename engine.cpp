@@ -18,9 +18,9 @@ char* pm(int m) {
   return move_str;
 }
 
-inline int evaluate(board* b) {
+static inline int evaluate(board* b) {
   // naive evaluation for now:
-  return (b->turn == WHITE) ? b->material : -b->material;
+  return (b->turn == WHITE) ? b->base_score : -b->base_score;
 }
 
 /* int search::iterative_deepening(int max_depth) {

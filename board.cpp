@@ -1,7 +1,7 @@
 #include "board.h"
 
 // the board constructor, which parses a FEN-string:
-board::board(char* FEN) : material(0), num_moves_played(0), castle_rights(0),
+board::board(char* FEN) : base_score(0), num_moves_played(0), castle_rights(0),
   CANT_CAPTURE(0L), CAN_CAPTURE(0L), EMPTY_SQUARES(0L), CAN_MOVE_TO(0L),
   OCCUPIED_SQUARES(0L), hash(0L) {
   // clear the bitboards:
@@ -23,7 +23,7 @@ board::board(char* FEN) : material(0), num_moves_played(0), castle_rights(0),
       piece_type = PIECE_INDICES.find(*FEN)->second;
       bitboard[piece_type] |= (1L << i);
       piece_board[i] = piece_type;
-      material += MATERIAL.find(*FEN)->second;
+      base_score += PIECE_SQUARE_TABLE[piece_type][i];
       hash ^= ZOBRIST_SQUARE_KEYS[piece_type][i];
     }
     else i--; // to handle '/' (we -1 to cancel out the i++)
@@ -214,11 +214,13 @@ bool board::make_move(int move) {
   bitboard[piece_moved] |= (1L << to);
   piece_board[to] = piece_moved;
   hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][to];
+  base_score += PIECE_SQUARE_TABLE[piece_moved][to];
 
   // remove the piece from its old location:
   bitboard[piece_moved] ^= (1L << from);
   piece_board[from] = NONE;
   hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][from];
+  base_score -= PIECE_SQUARE_TABLE[piece_moved][from];
 
   // update W and B bitboards:
   if (turn == WHITE) W ^= (1L << to) | (1L << from);
@@ -252,12 +254,12 @@ bool board::make_move(int move) {
     if ((from == 0 || to == 0) && CAN_CBQ(castle_rights)) castle_rights &= 0xE;
   }
 
-  // if a piece was captured, update the board and material, and hash out the piece:
+  // if a piece was captured, update the board and base_score, and hash out the piece:
   if (captured != NONE) {
     bitboard[captured] ^= (1L << to);
     hash ^= ZOBRIST_SQUARE_KEYS[captured][to];
 
-    material -= PIECE_TO_MATERIAL[captured];
+    base_score -= PIECE_SQUARE_TABLE[captured][to];
 
     // update the W or B bitboard:
     if (turn == WHITE) B ^= (1L << to);
@@ -353,8 +355,8 @@ bool board::make_move(int move) {
     hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][to];
     hash ^= ZOBRIST_SQUARE_KEYS[promoted_piece][to];
 
-    // update material:
-    material += PIECE_TO_MATERIAL[promoted_piece] - PIECE_TO_MATERIAL[piece_moved];
+    // update base_score:
+    base_score += PIECE_SQUARE_TABLE[promoted_piece][to] - PIECE_SQUARE_TABLE[piece_moved][to];
   }
 
   // hash in new castle rights (if they were changed);
@@ -395,11 +397,13 @@ void board::undo_move() {
   bitboard[piece_moved] ^= (1L << to);
   piece_board[to] = NONE;
   hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][to];
+  base_score -= PIECE_SQUARE_TABLE[piece_moved][to];
 
   // put the piece back in its previous location:
   bitboard[piece_moved] |= (1L << from);
   piece_board[from] = piece_moved;
   hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][from];
+  base_score += PIECE_SQUARE_TABLE[piece_moved][from];
 
   // update W or B bitboards:
   if (turn == WHITE) B ^= (1L << to) | (1L << from);
@@ -412,13 +416,13 @@ void board::undo_move() {
     castle_rights = pcr;
   }
 
-  // if a piece was captured, update the board and material:
+  // if a piece was captured, update the board and base_score:
   if (captured != NONE) {
     bitboard[captured] |= (1L << to);
     piece_board[to] = captured;
     hash ^= ZOBRIST_SQUARE_KEYS[captured][to];
 
-    material += PIECE_TO_MATERIAL[captured];
+    base_score += PIECE_SQUARE_TABLE[captured][to];
 
     if (turn == WHITE) W ^= (1L << to);
     else B ^= (1L << to);
@@ -513,8 +517,8 @@ void board::undo_move() {
     hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][to];
     hash ^= ZOBRIST_SQUARE_KEYS[promoted_piece][to];
 
-    // update material:
-    material -= PIECE_TO_MATERIAL[promoted_piece] - PIECE_TO_MATERIAL[piece_moved];
+    // update base_score:
+    base_score += PIECE_SQUARE_TABLE[promoted_piece][to] - PIECE_SQUARE_TABLE[piece_moved][to];
   }
 
   // flip the turn:
@@ -538,7 +542,7 @@ void board::print() {
   }
 
   printf("\nturn: %c\n", (turn == WHITE) ? 'W' : 'B');
-  printf("material: %d\n", material);
+  printf("base_score: %d\n", base_score);
 }
 
 // add all possible pawn moves to the stack:

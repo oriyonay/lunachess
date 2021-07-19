@@ -14,7 +14,7 @@ struct board {
   char piece_board[64];
   int move_history[MAX_GAME_MOVES];
   int num_moves_played;
-  int material;
+  int base_score; // material + PST score
   char turn;
   char castle_rights; // bits: 0 0 0 0 K Q k q
   U64 hash;
