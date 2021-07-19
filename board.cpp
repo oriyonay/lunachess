@@ -210,17 +210,23 @@ bool board::make_move(int move) {
   int castle = MOVE_IS_CASTLE(move);
   int promotion = MOVE_IS_PROMOTION(move);
 
+  printf("at start: %d\n", base_score);
+
   // move the piece to its new board location:
   bitboard[piece_moved] |= (1L << to);
   piece_board[to] = piece_moved;
   hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][to];
   base_score += PIECE_SQUARE_TABLE[piece_moved][to];
 
+  printf("move to new location: %d\n", base_score);
+
   // remove the piece from its old location:
   bitboard[piece_moved] ^= (1L << from);
   piece_board[from] = NONE;
   hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][from];
   base_score -= PIECE_SQUARE_TABLE[piece_moved][from];
+
+  printf("remove from old location: %d\n", base_score);
 
   // update W and B bitboards:
   if (turn == WHITE) W ^= (1L << to) | (1L << from);
@@ -386,8 +392,11 @@ bool board::make_move(int move) {
     hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][to];
     hash ^= ZOBRIST_SQUARE_KEYS[promoted_piece][to];
 
+    printf("in promotion: %d\n", base_score);
+
     // update base_score:
-    base_score += PIECE_SQUARE_TABLE[promoted_piece][to] - PIECE_SQUARE_TABLE[piece_moved][to];
+    base_score += PIECE_SQUARE_TABLE[promoted_piece][to] - // new promotion piece
+                  PIECE_SQUARE_TABLE[piece_moved][from]; // old pawn position
   }
 
   // hash in new castle rights (if they were changed);
@@ -538,7 +547,7 @@ void board::undo_move() {
         bitboard[WR] ^= CWQ_ROOK_MASK; // (1 << 56) | (1 << 59) to flip both bits at once
         W ^= CWQ_ROOK_MASK;
         piece_board[A1] = WR;
-        piece_board[C1] = NONE;
+        piece_board[D1] = NONE;
 
         // update hash and base_score:
         base_score -= CWQ_ROOK_PST_DIFFERENCE;
@@ -558,7 +567,7 @@ void board::undo_move() {
         bitboard[BR] ^= CBQ_ROOK_MASK; // (1 << 0) | (1 << 3) to flip both bits at once
         B ^= CBQ_ROOK_MASK;
         piece_board[A8] = BR;
-        piece_board[C8] = NONE;
+        piece_board[D8] = NONE;
 
         // update hash and base_score:
         base_score -= CBQ_ROOK_PST_DIFFERENCE;
@@ -580,7 +589,8 @@ void board::undo_move() {
     hash ^= ZOBRIST_SQUARE_KEYS[promoted_piece][to];
 
     // update base_score:
-    base_score += PIECE_SQUARE_TABLE[promoted_piece][to] - PIECE_SQUARE_TABLE[piece_moved][to];
+    base_score -= PIECE_SQUARE_TABLE[promoted_piece][to] - // new promotion piece
+                  PIECE_SQUARE_TABLE[piece_moved][from]; // old pawn position
   }
 
   // flip the turn:

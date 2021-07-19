@@ -241,6 +241,7 @@ const int PIECE_TO_MATERIAL[13] = {100, 275, 325, 500, 900, 100000,
 // piece-square table values (from the sunfish engine)
 int PIECE_SQUARE_TABLE[12][64] = {
   // WHITE PAWN PST
+  // NOTE: FIRST AND LAST ROWS MUST BE ZERO!!!
   { 0,   0,   0,   0,   0,   0,   0,   0,
    78,  83,  86,  73, 102,  82,  85,  90,
     7,  29,  21,  44,  40,  31,  44,   7,

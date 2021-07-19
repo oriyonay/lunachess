@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string>
 #include <vector>
 
 #include "board.h"
@@ -25,6 +26,7 @@ struct perft_test {
   bool test() {
     board b(FEN);
     printf("starting test: %s\n", test_name);
+    verify(&b);
     for (int i = 1; i < results.size(); i++) {
       if (perft_verify(&b, i) != results[i]) {
         printf("%s %sFAILED%s at depth %d\n", test_name, RED, RESET, i);
@@ -142,8 +144,32 @@ long perft_verify(board* b, int depth) {
   return sum;
 }
 
-// verify(): verifies that the board's base_score equals its actual base score
+// verify(): verifies the validity of the state of the board
 bool verify(board* b) {
+  // make sure the bitboard and the piece board (mailbox piece list) are synced:
+  for (int sq = 0; sq < 64; sq++) {
+    if (b->piece_board[sq] != NONE) {
+      if (!((b->bitboard[b->piece_board[sq]] >> (sq)) & 1)) {
+        printf("BOARD AND MAILBOX LIST ARE INCONSISTENT\n");
+        printf("bitboard does not contain bit for piece_board[%d]\n", sq);
+        b->print();
+        assert(false);
+      }
+    }
+    // otherwise, verify that no bitboard contains a 1 here:
+    else {
+      for (int piece = 0; piece < 12; piece++) {
+        if ((b->bitboard[piece] >> sq) & 1) {
+          printf("BOARD AND MAILBOX LIST ARE INCONSISTENT\n");
+          printf("bitboard[%d] contains set bit for empty piece_board entry [%d]", piece, sq);
+          b->print();
+          assert(false);
+        }
+      }
+    }
+  }
+
+  // make sure the board's base_score equals its actual base score:
   int total = 0;
   for (int i = 0; i < 64; i++) {
     if (b->piece_board[i] == NONE) continue;
@@ -173,6 +199,7 @@ void print_move(int m) {
   move_str[3] = (8 - (to / 8) + '0');
 
   // TODO: promotion piece
-  std::string moveinfo = (MOVE_IS_EP(m)) ? " EP" : "";
-  printf("%s%s\n", move_str, moveinfo.c_str());
+  std::string epinfo = MOVE_IS_EP(m) ? " EP" : "";
+  std::string capinfo = (MOVE_CAPTURED(m) != NONE) ? " CAPTURE" : "";
+  printf("%s%s%s\n", move_str, epinfo.c_str(), capinfo.c_str());
 }
