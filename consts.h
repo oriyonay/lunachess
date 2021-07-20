@@ -8,6 +8,8 @@
 
 #include "defs.h"
 
+#define BISHOP_PAIR_BONUS 20
+
 // initializes all uninitialized constants (bitmasks, etc.)
 extern void init_consts();
 
@@ -124,6 +126,9 @@ extern U64 CWK_ROOK_ZOBRIST;
 extern U64 CWQ_ROOK_ZOBRIST;
 extern U64 CBK_ROOK_ZOBRIST;
 extern U64 CBQ_ROOK_ZOBRIST;
+
+/* -------------------- CONSTANTS FOR ENGINE EVALUATION -------------------- */
+extern int MVV_LVA_SCORE[12][13]; // contains MVV/LVA precalculated scores
 
 // miscellaneous pre-calculated constants:
 // extern char FILE_OF[64];

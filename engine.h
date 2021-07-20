@@ -11,6 +11,9 @@
 // evaluate(): the board evaluation function
 static inline int evaluate();
 
+// score_move(): the move scoring function
+static inline int score_move(int move);
+
 // search: a class for searching a board
 class search {
 public:
