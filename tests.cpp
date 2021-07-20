@@ -28,7 +28,7 @@ struct perft_test {
     printf("starting test: %s\n", test_name);
     verify(&b);
     for (int i = 1; i < results.size(); i++) {
-      if (perft_verify(&b, i) != results[i]) {
+      if (perft(&b, i) != results[i]) {
         printf("%s %sFAILED%s at depth %d\n", test_name, RED, RESET, i);
         return false;
       }

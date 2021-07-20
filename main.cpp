@@ -12,17 +12,49 @@ void print_move(int m);
 
 int main(int argc, char** argv) {
   init_consts();
+  init_search();
 
-  char* FEN = "r1b1kbnr/pppp1Npp/8/8/3nq3/8/PPPPBP1P/RNBQKR2 b Qkq - 1 7";
-  board b(FEN);
+  // char* FEN = "r1bqkbnr/ppp2ppp/2n5/3pp3/3PP3/5N2/PPP2PPP/RNBQKB1R w KQkq d6 0 4";
+  // board b(FEN);
 
-  timer t;
+  /* timer t;
   t.start();
   search s(&b);
   print_move(s.negamax(4));
   printf("evaluated %d nodes\n", s.nodes_evaluated);
+
+  printf("PV: ");
+  for (int i = 0; i < s.pv_length[0]; i++) {
+    print_move(s.pv_table[0][i]);
+  }
+  printf("\n");
+
   t.stop();
-  t.print_duration();
+  t.print_duration(); */
+
+  b = board(FEN_START);
+  b.print();
+  timer t;
+  int move;
+
+  while (true) {
+    // human makes move:
+    char human_move[6];
+    scanf("%s", human_move);
+    b.make_move(human_move);
+    b.print();
+
+    // engine makes move:
+    t.start();
+    move = negamax(5);
+    print_move(move);
+    printf("evaluated %d nodes\n", nodes_evaluated);
+    b.make_move(move);
+    b.print();
+
+    t.stop();
+    t.print_duration();
+  }
 
   return 0;
 }
