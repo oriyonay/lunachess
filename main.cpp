@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
   timer t;
   t.start();
   search s(&b);
-  print_move(s.negamax(5));
+  print_move(s.negamax(4));
   printf("evaluated %d nodes\n", s.nodes_evaluated);
   t.stop();
   t.print_duration();

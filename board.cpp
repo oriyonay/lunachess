@@ -142,6 +142,57 @@ int* board::get_moves(int& num_moves) {
   return move_list;
 }
 
+int* board::get_nonquiet_moves(int& num_moves) {
+  int* move_list = new int[MAX_POSITION_MOVES];
+  num_moves = 0;
+
+  // update move generation bitboards:
+  update_move_info_bitboards();
+
+  add_nonquiet_pawn_moves(move_list, num_moves);
+  add_nonquiet_diag_moves(move_list, num_moves);
+  add_nonquiet_line_moves(move_list, num_moves);
+  add_nonquiet_knight_moves(move_list, num_moves);
+  add_nonquiet_king_moves(move_list, num_moves);
+
+  // now we have all pseudo-legal moves. let's eliminate illegal moves!
+  // we only need to check moves in four conditions: en passant, pinned piece is
+  // moved, when we're in check, and when the king moves.
+  bool valid[num_moves];
+  int num_invalid = 0;
+  bool check = is_check();
+  U64 pinned = pinned_pieces();
+  for (int i = 0; i < num_moves; i++) {
+    // determine if a move is valid:
+    valid[i] = true;
+
+    // we only need to actually check a move in these conditions:
+    if (check || MOVE_PIECEMOVED(move_list[i]) - turn == KING ||
+       (pinned & (1L << MOVE_FROM(move_list[i]))) || MOVE_IS_EP(move_list[i])) {
+         valid[i] = make_move(move_list[i]);
+         undo_move();
+    }
+  }
+
+  // now we push invalid moves to the end of the move stack, then shorten its
+  // length (essentially removing them):
+  int j = 0; // always <= i
+  for (int i = 0; i < num_moves; i++) {
+    if (valid[i] && !valid[j]) {
+      std::swap(move_list[i], move_list[j]);
+      std::swap(valid[i], valid[j]);
+    }
+    if (valid[j]) j++;
+  }
+
+  // update the number of moves to eliminate invalid moves.
+  // j here always = human index of the first invalid move, which is the
+  // number of valid moves:
+  num_moves = j;
+
+  return move_list;
+}
+
 // make_move(char* move): converts the given human-formatted (i.e., e4e5) move
 // to our machine-formatted (int) move, and makes the move.
 bool board::make_move(char* move) {
@@ -1044,6 +1095,337 @@ void board::add_king_moves(int* move_list, int& num_moves) {
                                           NONE, castle_rights, BK);
       }
     }
+  }
+}
+
+// add all possible pawn moves to the stack:
+void board::add_nonquiet_pawn_moves(int* move_list, int& num_moves) {
+  U64 moves;
+  char idx;
+  if (turn == WHITE) {
+    // ----- look for captures in both directions: -----
+    // every 1 in this bitboard corresponds to a piece that can be captured:
+    moves = (bitboard[WP] >> 7) & CAN_CAPTURE & ~RANKS[8] & ~FILES[A]; // capture right
+
+    // bitscan to find these captures:
+    while (moves) {
+      idx = LSB(moves);
+      POP_LSB(moves);
+
+      // the captured piece is piece_board[idx]
+      move_list[num_moves++] = move_int(idx, idx+7, piece_board[idx], castle_rights, WP);
+    }
+
+    moves = (bitboard[WP] >> 9) & CAN_CAPTURE & ~RANKS[8] & ~FILES[H];  // capture left
+
+    // bitscan to find these captures:
+    while (moves) {
+      idx = LSB(moves);
+      POP_LSB(moves);
+
+      move_list[num_moves++] = move_int(idx, idx+9, piece_board[idx], castle_rights, WP);
+    }
+
+    // ----- look for pawn promotion by push: -----
+    moves = (bitboard[WP] >> 8) & EMPTY_SQUARES & RANKS[8];
+
+    while (moves) {
+      idx = LSB(moves);
+      POP_LSB(moves);
+
+      move_list[num_moves++] = move_int(idx, idx+8, NONE, 0, 0, 0,
+                                        1, WQ, castle_rights, WP);
+      move_list[num_moves++] = move_int(idx, idx+8, NONE, 0, 0, 0,
+                                        1, WN, castle_rights, WP);
+      move_list[num_moves++] = move_int(idx, idx+8, NONE, 0, 0, 0,
+                                        1, WR, castle_rights, WP);
+      move_list[num_moves++] = move_int(idx, idx+8, NONE, 0, 0, 0,
+                                        1, WB, castle_rights, WP);
+    }
+
+    // ----- look for pawn promotion by capture: -----
+    moves = (bitboard[WP] >> 7) & CAN_CAPTURE & RANKS[8] & ~FILES[A]; // capture right
+
+    while (moves) {
+      idx = LSB(moves);
+      POP_LSB(moves);
+
+      move_list[num_moves++] = move_int(idx, idx+7, piece_board[idx], 0, 0, 0,
+                                        1, WQ, castle_rights, WP);
+      move_list[num_moves++] = move_int(idx, idx+7, piece_board[idx], 0, 0, 0,
+                                        1, WN, castle_rights, WP);
+      move_list[num_moves++] = move_int(idx, idx+7, piece_board[idx], 0, 0, 0,
+                                        1, WR, castle_rights, WP);
+      move_list[num_moves++] = move_int(idx, idx+7, piece_board[idx], 0, 0, 0,
+                                        1, WB, castle_rights, WP);
+    }
+
+    moves = (bitboard[WP] >> 9) & CAN_CAPTURE & RANKS[8] & ~FILES[H]; // capture left
+
+    while (moves) {
+      idx = LSB(moves);
+      POP_LSB(moves);
+
+      move_list[num_moves++] = move_int(idx, idx+9, piece_board[idx], 0, 0, 0,
+                                        1, WQ, castle_rights, WP);
+      move_list[num_moves++] = move_int(idx, idx+9, piece_board[idx], 0, 0, 0,
+                                        1, WN, castle_rights, WP);
+      move_list[num_moves++] = move_int(idx, idx+9, piece_board[idx], 0, 0, 0,
+                                        1, WR, castle_rights, WP);
+      move_list[num_moves++] = move_int(idx, idx+9, piece_board[idx], 0, 0, 0,
+                                        1, WB, castle_rights, WP);
+    }
+
+    // ----- look for a possible en passant capture: -----
+    if (MOVE_IS_PAWNFIRST(move_history[num_moves_played-1])) {
+      char ep_file = FILE_NO(MOVE_TO(move_history[num_moves_played-1]));
+      // look for en passant to the right:
+      moves = (bitboard[WP] << 1) & bitboard[BP] & RANKS[5] & ~FILES[A] & FILES[ep_file];
+      if (moves) {
+        idx = LSB(moves);
+
+        move_list[num_moves++] = move_int(idx-8, idx-1, BP, 1, 0, 0,
+                                          0, NONE, castle_rights, WP);
+      }
+
+      // look for en passant to the left:
+      moves = (bitboard[WP] >> 1) & bitboard[BP] & RANKS[5] & ~FILES[H] & FILES[ep_file];
+      if (moves) {
+        idx = LSB(moves);
+
+        move_list[num_moves++] = move_int(idx-8, idx+1, BP, 1, 0, 0,
+                                          0, NONE, castle_rights, WP);
+      }
+    }
+  }
+
+  else {
+    // ----- look for captures in both directions: -----
+    // every 1 in this bitboard corresponds to a piece that can be captured:
+    moves = (bitboard[BP] << 7) & CAN_CAPTURE & ~RANKS[1] & ~FILES[H]; // capture left
+
+    // bitscan to find these captures:
+    while (moves) {
+      idx = LSB(moves);
+      POP_LSB(moves);
+
+      move_list[num_moves++] = move_int(idx, idx-7, piece_board[idx], castle_rights, BP);
+    }
+
+    moves = (bitboard[BP] << 9) & CAN_CAPTURE & ~RANKS[1] & ~FILES[A];  // capture right
+
+    // bitscan to find these captures:
+    while (moves) {
+      idx = LSB(moves);
+      POP_LSB(moves);
+
+      move_list[num_moves++] = move_int(idx, idx-9, piece_board[idx], castle_rights, BP);
+    }
+
+    // ----- look for pawn promotion by push: -----
+    moves = (bitboard[BP] << 8) & EMPTY_SQUARES & RANKS[1];
+
+    while (moves) {
+      idx = LSB(moves);
+      POP_LSB(moves);
+
+      move_list[num_moves++] = move_int(idx, idx-8, NONE, 0, 0, 0,
+                                        1, BQ, castle_rights, BP);
+      move_list[num_moves++] = move_int(idx, idx-8, NONE, 0, 0, 0,
+                                        1, BN, castle_rights, BP);
+      move_list[num_moves++] = move_int(idx, idx-8, NONE, 0, 0, 0,
+                                        1, BR, castle_rights, BP);
+      move_list[num_moves++] = move_int(idx, idx-8, NONE, 0, 0, 0,
+                                        1, BB, castle_rights, BP);
+    }
+
+    // ----- look for pawn promotion by capture: -----
+    moves = ((bitboard[BP] << 7) & CAN_CAPTURE & RANKS[1] & ~FILES[H]); // capture left
+
+    while (moves) {
+      idx = LSB(moves);
+      POP_LSB(moves);
+
+      move_list[num_moves++] = move_int(idx, idx-7, piece_board[idx], 0, 0, 0,
+                                        1, BQ, castle_rights, BP);
+      move_list[num_moves++] = move_int(idx, idx-7, piece_board[idx], 0, 0, 0,
+                                        1, BN, castle_rights, BP);
+      move_list[num_moves++] = move_int(idx, idx-7, piece_board[idx], 0, 0, 0,
+                                        1, BR, castle_rights, BP);
+      move_list[num_moves++] = move_int(idx, idx-7, piece_board[idx], 0, 0, 0,
+                                        1, BB, castle_rights, BP);
+    }
+
+    moves = (bitboard[BP] << 9) & CAN_CAPTURE & RANKS[1] & ~FILES[A]; // capture right
+
+    while (moves) {
+      idx = LSB(moves);
+      POP_LSB(moves);
+
+      move_list[num_moves++] = move_int(idx, idx-9, piece_board[idx], 0, 0, 0,
+                                        1, BQ, castle_rights, BP);
+      move_list[num_moves++] = move_int(idx, idx-9, piece_board[idx], 0, 0, 0,
+                                        1, BN, castle_rights, BP);
+      move_list[num_moves++] = move_int(idx, idx-9, piece_board[idx], 0, 0, 0,
+                                        1, BR, castle_rights, BP);
+      move_list[num_moves++] = move_int(idx, idx-9, piece_board[idx], 0, 0, 0,
+                                        1, BB, castle_rights, BP);
+    }
+
+    // ----- look for a possible en passant capture: -----
+    if (MOVE_IS_PAWNFIRST(move_history[num_moves_played-1])) {
+      char ep_file = FILE_NO(MOVE_TO(move_history[num_moves_played-1]));
+
+      // look for en passant capture to the right:
+      moves = (bitboard[BP] << 1) & bitboard[WP] & RANKS[4] & ~FILES[A] & FILES[ep_file];
+      if (moves) {
+        idx = LSB(moves);
+
+        move_list[num_moves++] = move_int(idx+8, idx-1, WP, 1, 0, 0,
+                                          0, NONE, castle_rights, BP);
+      }
+
+      // look for en passant capture to the left:
+      moves = (bitboard[BP] >> 1) & bitboard[WP] & RANKS[4] & ~FILES[H] & FILES[ep_file];
+      if (moves) {
+        idx = LSB(moves);
+
+        move_list[num_moves++] = move_int(idx+8, idx+1, WP, 1, 0, 0,
+                                          0, NONE, castle_rights, BP);
+      }
+    }
+  }
+}
+
+// add all possible bishop-like moves to the stack:
+void board::add_nonquiet_diag_moves(int* move_list, int& num_moves) {
+  // we include the queen in the 'bishop bitboard' and calculate queen moves as well:
+  U64 bishop_bitboard = (turn == WHITE) ?
+    bitboard[WB] | bitboard[WQ] :
+    bitboard[BB] | bitboard[BQ];
+
+  // in this nested loop, i loops through every individual bishop on the board,
+  // and j loops through every possible location that bishop can travel to.
+  // idx and idx2 represent the beginning and ending square indices of each move, respectively
+  U64 i = ISOLATE_LSB(bishop_bitboard);
+  U64 j;
+  U64 possible;
+  char idx;
+  char idx2;
+
+  while (i) {
+    idx = LSB(i);
+    possible = diag_moves_magic(idx, OCCUPIED_SQUARES) & CAN_MOVE_TO & OCCUPIED_SQUARES;
+
+    j = ISOLATE_LSB(possible);
+    while (j) {
+      idx2 = LSB(j);
+
+      // add the move to the move list
+      move_list[num_moves++] = move_int(idx2, idx, piece_board[idx2], castle_rights, piece_board[idx]);
+
+      // remove this position from possible (equivalent to POP_LSB macro but we already have j)
+      possible &= ~j;
+      j = ISOLATE_LSB(possible);
+    }
+
+    bishop_bitboard &= ~i;
+    i = ISOLATE_LSB(bishop_bitboard);
+  }
+}
+
+// add all possible rook-like moves to the stack:
+void board::add_nonquiet_line_moves(int* move_list, int& num_moves) {
+  // we include the queen in the 'rook bitboard' and calculate queen moves as well:
+  U64 rook_bitboard = (turn == WHITE) ?
+    bitboard[WR] | bitboard[WQ] :
+    bitboard[BR] | bitboard[BQ];
+
+  // in this nested loop, i loops through every individual rook on the board,
+  // and j loops through every possible location that rook can travel to.
+  // idx and idx2 represent the beginning and ending square indices of each move, respectively
+  U64 i = ISOLATE_LSB(rook_bitboard);
+  U64 j;
+  U64 possible;
+  char idx;
+  char idx2;
+
+  while (i) {
+    idx = LSB(i);
+    possible = line_moves_magic(idx, OCCUPIED_SQUARES) & CAN_MOVE_TO & OCCUPIED_SQUARES;
+
+    j = ISOLATE_LSB(possible);
+    while (j) {
+      idx2 = LSB(j);
+
+      // add the move to the move list
+      move_list[num_moves++] = move_int(idx2, idx, piece_board[idx2], castle_rights, piece_board[idx]);
+
+      // remove this position from possible (equivalent to POP_LSB macro but we already have j)
+      possible &= ~j;
+      j = ISOLATE_LSB(possible);
+    }
+
+    rook_bitboard &= ~i;
+    i = ISOLATE_LSB(rook_bitboard);
+  }
+}
+
+// add all possible knight moves to the stack:
+void board::add_nonquiet_knight_moves(int* move_list, int& num_moves) {
+  U64 knight_bitboard = (turn == WHITE) ? bitboard[WN] : bitboard[BN];
+
+  // in this nested loop, i loops through every individual knight on the board,
+  // and j loops through every possible location that knight can travel to.
+  // idx and idx2 represent the beginning and ending square indices of each move, respectively
+  U64 i = ISOLATE_LSB(knight_bitboard);
+  U64 j;
+  U64 possible;
+  char idx;
+  char idx2;
+
+  while (i) {
+    idx = LSB(i);
+
+    // figure out how to shift the knight span bitboard to get possible moves:
+    possible = KNIGHT_MOVES[idx] & CAN_MOVE_TO & OCCUPIED_SQUARES;
+
+    j = ISOLATE_LSB(possible);
+    while (j) {
+      idx2 = LSB(j);
+
+      // add the move to the move list
+      move_list[num_moves++] = move_int(idx2, idx, piece_board[idx2], castle_rights, KNIGHT + turn);
+
+      // remove this position from possible (equivalent to POP_LSB macro but we already have j)
+      possible &= ~j;
+      j = ISOLATE_LSB(possible);
+    }
+
+    knight_bitboard &= ~i;
+    i = ISOLATE_LSB(knight_bitboard);
+  }
+}
+
+// add all possible knight moves to the stack:
+void board::add_nonquiet_king_moves(int* move_list, int& num_moves) {
+  U64 king_bitboard = (turn == WHITE) ? bitboard[WK] : bitboard[BK];
+  char idx = LSB(king_bitboard);
+  char idx2;
+
+  // figure out how to shift the king span bitboard to get possible moves:
+  U64 possible = KING_MOVES[idx] & CAN_MOVE_TO & OCCUPIED_SQUARES;
+
+  U64 j = ISOLATE_LSB(possible);
+  while (j) {
+    idx2 = LSB(j);
+
+    // add the move to the move list
+    move_list[num_moves++] = move_int(idx2, idx, piece_board[idx2], castle_rights, KING + turn);
+
+    // remove this position from possible (equivalent to POP_LSB macro but we already have j)
+    possible &= ~j;
+    j = ISOLATE_LSB(possible);
   }
 }
 

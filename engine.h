@@ -18,15 +18,11 @@ public:
   search(board* b);
 
   // the search algorithm for finding the best move:
-  // int iterative_deepening(int max_depth);
   int negamax(int depth);
-  int negamax_helper(int depth, int alpha, int beta);
-
-  // to stop the search at any time:
-  void stop();
+  inline int negamax_helper(int depth, int alpha, int beta);
+  inline int quiescence(int depth, int alpha, int beta);
 
 private:
-  bool abort;
   int best_move;
   int best_score;
   board* b;

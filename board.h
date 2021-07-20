@@ -35,6 +35,7 @@ struct board {
   // main board functions:
   board(char* FEN);
   int* get_moves(int& num_moves);
+  int* get_nonquiet_moves(int& num_moves);
   bool make_move(char* move);
   bool make_move(int move);
   void undo_move();
@@ -46,6 +47,13 @@ struct board {
   void add_line_moves(int* move_list, int& num_moves);
   void add_knight_moves(int* move_list, int& num_moves);
   void add_king_moves(int* move_list, int& num_moves);
+
+  // quiescence search utility functions:
+  void add_nonquiet_pawn_moves(int* move_list, int& num_moves);
+  void add_nonquiet_diag_moves(int* move_list, int& num_moves);
+  void add_nonquiet_line_moves(int* move_list, int& num_moves);
+  void add_nonquiet_knight_moves(int* move_list, int& num_moves);
+  void add_nonquiet_king_moves(int* move_list, int& num_moves);
 
   inline void update_move_info_bitboards();
   inline void update_unsafe();

@@ -12,6 +12,7 @@ typedef uint64_t U64;
 
 // engine settings:
 #define DEFAULT_TT_SIZE (1 << 20)
+#define DEFAULT_QSEARCH_DEPTH 4
 
 #define INF 2147483647
 
