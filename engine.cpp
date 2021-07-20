@@ -18,12 +18,11 @@ static inline int evaluate(board* b) {
   }
 }
 
-// score_move(): the move scoring function
-static inline int score_move(int move) {
-  return MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)];
+search::search(board* b) : best_move(NULL), best_score(-INF), b(b) {
+  // zero killer and history tables:
+  memset(killer_moves, 0, sizeof(int) * 2 * MAX_GAME_MOVES);
+  memset(history_moves, 0, sizeof(int) * 12 * 64);
 }
-
-search::search(board* b) : best_move(NULL), best_score(-INF), b(b) {}
 
 int search::negamax(int depth) {
   nodes_evaluated = 0;
@@ -118,10 +117,21 @@ inline int search::negamax_helper(int depth, int alpha, int beta) {
     b->undo_move();
 
     // fail-hard beta cutoff (node fails high)
-    if (score >= beta) return beta;
+    if (score >= beta) {
+      // add this move to the killer move list
+      killer_moves[1][b->num_moves_played] = killer_moves[0][b->num_moves_played];
+      killer_moves[0][b->num_moves_played] = move;
+
+      return beta;
+    }
 
     // if we found a better move (PV node):
-    if (score > alpha) alpha = score;
+    if (score > alpha) {
+      // add this move to the history move list:
+      history_moves[MOVE_PIECEMOVED(move)][MOVE_TO(move)] += depth;
+
+      alpha = score;
+    }
   }
 
   // node fails low:
@@ -183,4 +193,17 @@ inline int search::quiescence(int depth, int alpha, int beta) {
 
   // node fails low:
   return alpha;
+}
+
+// score_move(): the move scoring function
+inline int search::score_move(int move) {
+  // MVV/LVA scoring
+  int score = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)];
+  if (score) return score;
+
+  // killer move heuristic for quiet moves:
+  if (move == killer_moves[0][b->num_moves_played]) return 50;
+  if (move == killer_moves[1][b->num_moves_played]) return 40;
+
+  return history_moves[MOVE_PIECEMOVED(move)][MOVE_TO(move)];
 }

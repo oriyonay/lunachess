@@ -11,9 +11,6 @@
 // evaluate(): the board evaluation function
 static inline int evaluate();
 
-// score_move(): the move scoring function
-static inline int score_move(int move);
-
 // search: a class for searching a board
 class search {
 public:
@@ -25,10 +22,16 @@ public:
   inline int negamax_helper(int depth, int alpha, int beta);
   inline int quiescence(int depth, int alpha, int beta);
 
+  // score_move(): the move scoring function
+  inline int score_move(int move);
+
 private:
+  board* b;
   int best_move;
   int best_score;
-  board* b;
+
+  int killer_moves[2][MAX_GAME_MOVES]; // [move_id][ply]
+  int history_moves[12][64]; // [piece][square]
 };
 
 #endif
