@@ -40,6 +40,12 @@ extern void init_consts() {
   CBK_ROOK_PST_DIFFERENCE = PIECE_SQUARE_TABLE[BR][F8] - PIECE_SQUARE_TABLE[BR][H8];
   CBQ_ROOK_PST_DIFFERENCE = PIECE_SQUARE_TABLE[BR][D8] - PIECE_SQUARE_TABLE[BR][A8];
 
+  // precalculate castling rook zobrist keys:
+  CWK_ROOK_ZOBRIST = ZOBRIST_SQUARE_KEYS[WR][F1] ^ ZOBRIST_SQUARE_KEYS[WR][H1];
+  CWQ_ROOK_ZOBRIST = ZOBRIST_SQUARE_KEYS[WR][D1] ^ ZOBRIST_SQUARE_KEYS[WR][A1];
+  CBK_ROOK_ZOBRIST = ZOBRIST_SQUARE_KEYS[BR][F8] ^ ZOBRIST_SQUARE_KEYS[BR][H8];
+  CBQ_ROOK_ZOBRIST = ZOBRIST_SQUARE_KEYS[BR][D8] ^ ZOBRIST_SQUARE_KEYS[BR][A8];
+
   // round transposition table size down to nearest power of 2 & initialize index mask:
   while (TT_SIZE & (TT_SIZE-1)) POP_LSB(TT_SIZE);
   TT_INDEX_MASK = TT_SIZE - 1;
@@ -451,6 +457,12 @@ int CWK_ROOK_PST_DIFFERENCE;
 int CWQ_ROOK_PST_DIFFERENCE;
 int CBK_ROOK_PST_DIFFERENCE;
 int CBQ_ROOK_PST_DIFFERENCE;
+
+// precalculation of zobrist keys of rook positions before and after castling:
+U64 CWK_ROOK_ZOBRIST;
+U64 CWQ_ROOK_ZOBRIST;
+U64 CBK_ROOK_ZOBRIST;
+U64 CBQ_ROOK_ZOBRIST;
 
 // miscellaneous pre-calculated constants:
 // char FILE_OF[64];

@@ -336,6 +336,7 @@ bool board::make_move(int move) {
 
         // update hash and base_score:
         base_score += CWK_ROOK_PST_DIFFERENCE;
+        hash ^= CWK_ROOK_ZOBRIST;
         break;
       case C1:
         // white queenside castle
@@ -347,6 +348,7 @@ bool board::make_move(int move) {
 
         // update hash and base_score:
         base_score += CWQ_ROOK_PST_DIFFERENCE;
+        hash ^= CWQ_ROOK_ZOBRIST;
         break;
       case G8:
         // black kingside castle
@@ -358,6 +360,7 @@ bool board::make_move(int move) {
 
         // update hash and base_score:
         base_score += CBK_ROOK_PST_DIFFERENCE;
+        hash ^= CBK_ROOK_ZOBRIST;
         break;
       case C8:
         // black queenside castle
@@ -369,6 +372,7 @@ bool board::make_move(int move) {
 
         // update hash and base_score:
         base_score += CBQ_ROOK_PST_DIFFERENCE;
+        hash ^= CBQ_ROOK_ZOBRIST;
         break;
     }
   }
@@ -533,6 +537,7 @@ void board::undo_move() {
 
         // update hash and base_score:
         base_score -= CWK_ROOK_PST_DIFFERENCE;
+        hash ^= CWK_ROOK_ZOBRIST;
         break;
       case C1:
         // white queenside castle
@@ -543,6 +548,7 @@ void board::undo_move() {
 
         // update hash and base_score:
         base_score -= CWQ_ROOK_PST_DIFFERENCE;
+        hash ^= CWQ_ROOK_ZOBRIST;
         break;
       case G8:
         // black kingside castle
@@ -553,6 +559,7 @@ void board::undo_move() {
 
         // update hash and base_score:
         base_score -= CBK_ROOK_PST_DIFFERENCE;
+        hash ^= CBK_ROOK_ZOBRIST;
         break;
       case C8:
         // black queenside castle
@@ -563,6 +570,7 @@ void board::undo_move() {
 
         // update hash and base_score:
         base_score -= CBQ_ROOK_PST_DIFFERENCE;
+        hash ^= CBQ_ROOK_ZOBRIST;
         break;
     }
   }

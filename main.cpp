@@ -9,7 +9,6 @@
 #include "timer.h"
 
 void print_move(int m);
-int perft(board* b, int depth);
 
 int main(int argc, char** argv) {
   init_consts();
@@ -19,7 +18,6 @@ int main(int argc, char** argv) {
 
   timer t;
   t.start();
-  // printf("%d positions found\n", perft(&b, 5));
   search s(&b);
   print_move(s.negamax(5));
   printf("evaluated %d nodes\n", s.nodes_evaluated);

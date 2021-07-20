@@ -152,7 +152,6 @@ bool verify(board* b) {
       if (!((b->bitboard[b->piece_board[sq]] >> (sq)) & 1)) {
         printf("BOARD AND MAILBOX LIST ARE INCONSISTENT\n");
         printf("bitboard does not contain bit for piece_board[%d]\n", sq);
-        b->print();
         assert(false);
       }
     }
@@ -162,7 +161,6 @@ bool verify(board* b) {
         if ((b->bitboard[piece] >> sq) & 1) {
           printf("BOARD AND MAILBOX LIST ARE INCONSISTENT\n");
           printf("bitboard[%d] contains set bit for empty piece_board entry [%d]", piece, sq);
-          b->print();
           assert(false);
         }
       }
@@ -177,10 +175,20 @@ bool verify(board* b) {
   }
 
   if (total != b->base_score) {
-    printf("%d != %d\n", total, b->base_score);
-    printf("LAST MOVE: ");
-    print_move(b->move_history[b->num_moves_played - 1]);
-    b->print();
+    printf("PST SCORES DIFFER\n", total, b->base_score);
+    assert(false);
+  }
+
+  // make sure zobrist keys are correctly calculated:
+  U64 zobrist = ZOBRIST_CASTLE_RIGHTS_KEYS[b->castle_rights];
+  if (b->turn == WHITE) zobrist ^= ZOBRIST_TURN_KEY;
+  for (int sq = 0; sq < 64; sq++) {
+    if (b->piece_board[sq] == NONE) continue;
+    zobrist ^= ZOBRIST_SQUARE_KEYS[b->piece_board[sq]][sq];
+  }
+
+  if (zobrist != b->hash) {
+    printf("INCORRECT ZOBRIST HASH\n");
     assert(false);
   }
 }

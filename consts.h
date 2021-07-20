@@ -119,6 +119,12 @@ extern int CWQ_ROOK_PST_DIFFERENCE;
 extern int CBK_ROOK_PST_DIFFERENCE;
 extern int CBQ_ROOK_PST_DIFFERENCE;
 
+// precalculation of zobrist keys of rook positions before and after castling:
+extern U64 CWK_ROOK_ZOBRIST;
+extern U64 CWQ_ROOK_ZOBRIST;
+extern U64 CBK_ROOK_ZOBRIST;
+extern U64 CBQ_ROOK_ZOBRIST;
+
 // miscellaneous pre-calculated constants:
 // extern char FILE_OF[64];
 // extern char RANK_OF[64];
