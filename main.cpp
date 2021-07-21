@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
   init_consts();
   init_search();
 
-  // char* FEN = "r1bqkbnr/ppp2ppp/2n5/3pp3/3PP3/5N2/PPP2PPP/RNBQKB1R w KQkq d6 0 4";
+  char* FEN = "r1bqkbnr/ppp2ppp/2n5/3pp3/3PP3/5N2/PPP2PPP/RNBQKB1R w KQkq d6 0 4";
   // board b(FEN);
 
   /* timer t;
@@ -32,9 +32,17 @@ int main(int argc, char** argv) {
   t.stop();
   t.print_duration(); */
 
-  b = board(FEN_START);
+  b = board("r1bq2r1/b4pk1/p1pp1p2/1p2pP2/1P2P1PB/3P4/1PPQ2P1/R3K2R w");
   b.print();
-  timer t;
+  search(5);
+
+  // print the principal variation:
+  for (int i = 0; i < pv_length[0]; i++) {
+    print_move(pv_table[0][i]);
+  }
+  printf("\n");
+
+  /* timer t;
   int move;
 
   while (true) {
@@ -54,7 +62,7 @@ int main(int argc, char** argv) {
 
     t.stop();
     t.print_duration();
-  }
+  } */
 
   return 0;
 }
@@ -74,5 +82,5 @@ void print_move(int m) {
 
   // TODO: promotion piece
   std::string moveinfo = (MOVE_IS_EP(m)) ? " EP" : "";
-  printf("%s%s\n", move_str, moveinfo.c_str());
+  printf("%s%s ", move_str, moveinfo.c_str());
 }

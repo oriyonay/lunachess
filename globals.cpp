@@ -1,8 +1,6 @@
 #include "globals.h"
 
 board b(FEN_START);
-int best_move;
-int best_score = -INF;
 int nodes_evaluated;
 
 // the principal variation table:

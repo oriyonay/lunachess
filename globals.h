@@ -2,8 +2,6 @@
 #include "board.h"
 
 extern board b;
-extern int best_move;
-extern int best_score;
 extern int nodes_evaluated;
 
 // the principal variation table:
