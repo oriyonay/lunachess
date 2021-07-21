@@ -10,8 +10,8 @@
 #include "globals.h"
 
 /* ---------- the search functions ---------- */
-// init_search(): to initialize search variables
-void init_search();
+// init_search(): initialize and zero-out search structures
+inline void init_search();
 
 // score_move(): the move scoring function
 inline int score_move(int move);

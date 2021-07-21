@@ -1,14 +1,39 @@
 #include "engine.h"
 
+void pm(int m) {
+  int to = MOVE_TO(m);
+  int from = MOVE_FROM(m);
+
+  char* move_str = new char[6];
+  move_str[5] = '\0';
+  move_str[4] = '\0'; // TODO: REMOVE THIS
+
+  move_str[0] = ((from % 8) + 'a');
+  move_str[1] = (8 - (from / 8) + '0');
+  move_str[2] = ((to % 8) + 'a');
+  move_str[3] = (8 - (to / 8) + '0');
+
+  // TODO: promotion piece
+  std::string moveinfo = (MOVE_IS_EP(m)) ? " EP" : "";
+  printf("%s%s ", move_str, moveinfo.c_str());
+}
+
 // init_search(): initialize search variables
-void init_search() {
-  // zero killer and history tables:
+inline void init_search() {
+  // zero pv, killer move, and history tables:
+  memset(pv_table, 0, sizeof(int) * MAX_GAME_MOVES * MAX_GAME_MOVES);
   memset(killer_moves, 0, sizeof(int) * 2 * MAX_GAME_MOVES);
   memset(history_moves, 0, sizeof(int) * 12 * 64);
+
+  // zero counter of nodes searched:
+  nodes_evaluated = 0;
 }
 
 // score_move(): the move scoring function
 inline int score_move(int move) {
+  // is this a PV move?
+  if (move == pv_table[0][b.num_moves_played]) return 1000;
+
   // MVV/LVA scoring
   int score = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)];
   if (score) return score;
@@ -39,12 +64,19 @@ inline int evaluate() {
   }
 }
 
+// search(): the main search algorithm (with iterative deepening)
 void search(int depth) {
-    // find best move within a given position
-    int score = negamax(depth, -INF, INF);
+  // clear search helper tables:
+  init_search();
 
-    // now the principal variation is in pv_table[0][:pv_length[0]]
+  // find best move within a given position
+  for (int cur_depth = 1; cur_depth <= depth; cur_depth++) {
+    // search the position at the given depth:
+    int score = negamax(cur_depth, -INF, INF);
+
+    // now the principal variation is in pv_table[0][:pv_length[0]],
     // and the best move is in pv_table[0][0]
+  }
 }
 
 // negamax_helper(): the recursively-called helper function for negamax

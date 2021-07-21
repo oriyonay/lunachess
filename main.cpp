@@ -12,9 +12,8 @@ void print_move(int m);
 
 int main(int argc, char** argv) {
   init_consts();
-  init_search();
 
-  char* FEN = "r1bqkbnr/ppp2ppp/2n5/3pp3/3PP3/5N2/PPP2PPP/RNBQKB1R w KQkq d6 0 4";
+  // char* FEN = "r1bqkbnr/ppp2ppp/2n5/3pp3/3PP3/5N2/PPP2PPP/RNBQKB1R w KQkq d6 0 4";
   // board b(FEN);
 
   /* timer t;

@@ -8,7 +8,7 @@ typedef uint64_t U64;
 #define NAME "luna"
 #define VERSION "0.0.1"
 #define MAX_POSITION_MOVES 219
-#define MAX_GAME_MOVES 2048
+#define MAX_GAME_MOVES 1024
 
 // engine settings:
 #define DEFAULT_TT_SIZE (1 << 20)
