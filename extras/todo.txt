@@ -1,0 +1,29 @@
+LUNA TODO (search):
+- PVS
+- aspiration windows
+- transposition table
+- late move reduction
+- null move pruning
+- internal iterative deepening (for move ordering)
+
+TO TRY/RESEARCH:
+- lazy SMP
+- check extensions
+- delta pruning
+- futility pruning
+- razoring
+- reverse futility pruning
+- static exchange evaluation pruning
+- multi-cut
+
+DONE:
+- implement PST
+- negamax a/b
+- qsearch
+- mvv/lva + move ordering
+- bishop pair in evaluation
+- killer/history heuristics
+- iterative deepening
+
+history move heuristic: could take it or leave it
+do we need to clear helper tables in search() ?

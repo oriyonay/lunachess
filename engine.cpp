@@ -1,23 +1,5 @@
 #include "engine.h"
 
-void pm(int m) {
-  int to = MOVE_TO(m);
-  int from = MOVE_FROM(m);
-
-  char* move_str = new char[6];
-  move_str[5] = '\0';
-  move_str[4] = '\0'; // TODO: REMOVE THIS
-
-  move_str[0] = ((from % 8) + 'a');
-  move_str[1] = (8 - (from / 8) + '0');
-  move_str[2] = ((to % 8) + 'a');
-  move_str[3] = (8 - (to / 8) + '0');
-
-  // TODO: promotion piece
-  std::string moveinfo = (MOVE_IS_EP(m)) ? " EP" : "";
-  printf("%s%s ", move_str, moveinfo.c_str());
-}
-
 // init_search(): initialize search variables
 inline void init_search() {
   // zero pv, killer move, and history tables:

@@ -1,0 +1,1079 @@
+r n b q k b n r
+p p p p p p p p
+. . . . . . . .
+. . . . . . . .
+. . . . . . . .
+. . . . . . . .
+P P P P P P P P
+R N B Q K B N R
+
+turn: W
+base_score: 0
+e2e4
+r n b q k b n r 
+p p p p p p p p
+. . . . . . . .
+. . . . . . . .
+. . . . P . . .
+. . . . . . . .
+P P P P . P P P
+R N B Q K B N R
+
+turn: B
+base_score: 42
+b7b6
+evaluated 207364 nodes
+r n b q k b n r
+p . p p p p p p
+. p . . . . . .
+. . . . . . . .
+. . . . P . . .
+. . . . . . . .
+P P P P . P P P
+R N B Q K B N R
+
+turn: W
+base_score: 41
+timer stopped at 0.125197 seconds
+d2d4
+r n b q k b n r
+p . p p p p p p
+. p . . . . . .
+. . . . . . . .
+. . . P P . . .
+. . . . . . . .
+P P P . . P P P
+R N B Q K B N R
+
+turn: B
+base_score: 87
+c8b7
+evaluated 1072422 nodes
+r n . q k b n r
+p b p p p p p p
+. p . . . . . .
+. . . . . . . .
+. . . P P . . .
+. . . . . . . .
+P P P . . P P P
+R N B Q K B N R
+
+turn: W
+base_score: 52
+timer stopped at 0.629797 seconds
+b1c3
+r n . q k b n r
+p b p p p p p p
+. p . . . . . .
+. . . . . . . .
+. . . P P . . .
+. . N . . . . .
+P P P . . P P P
+R . B Q K B N R
+
+turn: B
+base_score: 88
+a7a6
+evaluated 2612353 nodes
+r n . q k b n r
+. b p p p p p p
+p p . . . . . .
+. . . . . . . .
+. . . P P . . .
+. . N . . . . .
+P P P . . P P P
+R . B Q K B N R
+
+turn: W
+base_score: 79
+timer stopped at 1.751273 seconds
+c1f4
+r n . q k b n r
+. b p p p p p p
+p p . . . . . .
+. . . . . . . .
+. . . P P B . .
+. . N . . . . .
+P P P . . P P P
+R . . Q K B N R
+
+turn: B
+base_score: 110
+e7e6
+evaluated 3451067 nodes
+r n . q k b n r
+. b p p . p p p
+p p . . p . . .
+. . . . . . . .
+. . . P P B . .
+. . N . . . . .
+P P P . . P P P
+R . . Q K B N R
+
+turn: W
+base_score: 84
+timer stopped at 2.221290 seconds
+g1f3
+r n . q k b n r
+. b p p . p p p
+p p . . p . . .
+. . . . . . . .
+. . . P P B . .
+. . N . . N . .
+P P P . . P P P
+R . . Q K B . R
+
+turn: B
+base_score: 121
+g8e7
+evaluated 2251666 nodes
+r n . q k b . r
+. b p p n p p p
+p p . . p . . .
+. . . . . . . .
+. . . P P B . .
+. . N . . N . .
+P P P . . P P P
+R . . Q K B . R
+
+turn: W
+base_score: 97
+timer stopped at 1.351459 seconds
+f1d3
+r n . q k b . r
+. b p p n p p p
+p p . . p . . .
+. . . . . . . .
+. . . P P B . .
+. . N B . N . .
+P P P . . P P P
+R . . Q K . . R
+
+turn: B
+base_score: 127
+f7f5
+evaluated 4620930 nodes
+r n . q k b . r
+. b p p n . p p
+p p . . p . . .
+. . . . . p . .
+. . . P P B . .
+. . N B . N . .
+P P P . . P P P
+R . . Q K . . R
+
+turn: W
+base_score: 112
+timer stopped at 2.847432 seconds
+e4f5
+r n . q k b . r
+. b p p n . p p
+p p . . p . . .
+. . . . . P . .
+. . . P . B . .
+. . N B . N . .
+P P P . . P P P
+R . . Q K . . R
+
+turn: B
+base_score: 207
+e7f5
+evaluated 7943297 nodes
+r n . q k b . r
+. b p p . . p p
+p p . . p . . .
+. . . . . n . .
+. . . P . B . .
+. . N B . N . .
+P P P . . P P P
+R . . Q K . . R
+
+turn: W
+base_score: 74
+timer stopped at 5.044129 seconds
+d3f5
+r n . q k b . r
+. b p p . . p p
+p p . . p . . .
+. . . . . B . .
+. . . P . B . .
+. . N . . N . .
+P P P . . P P P
+R . . Q K . . R
+
+turn: B
+base_score: 394
+e6f5
+evaluated 1719241 nodes
+r n . q k b . r
+. b p p . . p p
+p p . . . . . .
+. . . . . p . .
+. . . P . B . .
+. . N . . N . .
+P P P . . P P P
+R . . Q K . . R
+
+turn: W
+base_score: 33
+timer stopped at 1.039103 seconds
+e1g1
+r n . q k b . r
+. b p p . . p p
+p p . . . . . .
+. . . . . p . .
+. . . P . B . .
+. . N . . N . .
+P P P . . P P P
+R . . Q . R K .
+
+turn: B
+base_score: 81
+f8e7
+evaluated 1000372 nodes
+r n . q k . . r
+. b p p b . p p
+p p . . . . . .
+. . . . . p . .
+. . . P . B . .
+. . N . . N . .
+P P P . . P P P
+R . . Q . R K .
+
+turn: W
+base_score: 59
+timer stopped at 0.678869 seconds
+f1e1
+r n . q k . . r
+. b p p b . p p
+p p . . . . . .
+. . . . . p . .
+. . . P . B . .
+. . N . . N . .
+P P P . . P P P
+R . . Q R . K .
+
+turn: B
+base_score: 75
+c7c6
+evaluated 965145 nodes
+r n . q k . . r
+. b . p b . p p
+p p p . . . . .
+. . . . . p . .
+. . . P . B . .
+. . N . . N . .
+P P P . . P P P
+R . . Q R . K .
+
+turn: W
+base_score: 63
+timer stopped at 0.622204 seconds
+d4d5
+r n . q k . . r
+. b . p b . p p
+p p p . . . . .
+. . . P . p . .
+. . . . . B . .
+. . N . . N . .
+P P P . . P P P
+R . . Q R . K .
+
+turn: B
+base_score: 69
+e8g8
+evaluated 773333 nodes
+r n . q . r k .
+. b . p b . p p
+p p p . . . . .
+. . . P . p . .
+. . . . . B . .
+. . N . . N . .
+P P P . . P P P
+R . . Q R . K .
+
+turn: W
+base_score: 21
+timer stopped at 0.472754 seconds
+d5d6
+r n . q . r k .
+. b . p b . p p
+p p p P . . . .
+. . . . . p . .
+. . . . . B . .
+. . N . . N . .
+P P P . . P P P
+R . . Q R . K .
+
+turn: B
+base_score: 50
+e7f6
+evaluated 341675 nodes
+r n . q . r k .
+. b . p . . p p
+p p p P . b . .
+. . . . . p . .
+. . . . . B . .
+. . N . . N . .
+P P P . . P P P
+R . . Q R . K .
+
+turn: W
+base_score: 32
+timer stopped at 0.194243 seconds
+f4e5
+r n . q . r k .
+. b . p . . p p
+p p p P . b . .
+. . . . B p . .
+. . . . . . . .
+. . N . . N . .
+P P P . . P P P
+R . . Q R . K .
+
+turn: B
+base_score: 42
+f6e5
+evaluated 359234 nodes
+r n . q . r k .
+. b . p . . p p
+p p p P . . . .
+. . . . b p . .
+. . . . . . . .
+. . N . . N . .
+P P P . . P P P
+R . . Q R . K .
+
+turn: W
+base_score: -301
+timer stopped at 0.219620 seconds
+e1e5
+r n . q . r k .
+. b . p . . p p
+p p p P . . . .
+. . . . R p . .
+. . . . . . . .
+. . N . . N . .
+P P P . . P P P
+R . . Q . . K .
+
+turn: B
+base_score: 61
+d8f6
+evaluated 943047 nodes
+r n . . . r k .
+. b . p . . p p
+p p p P . q . .
+. . . . R p . .
+. . . . . . . .
+. . N . . N . .
+P P P . . P P P
+R . . Q . . K .
+
+turn: W
+base_score: 59
+timer stopped at 0.615619 seconds
+d1d3
+r n . . . r k .
+. b . p . . p p
+p p p P . q . .
+. . . . R p . .
+. . . . . . . .
+. . N Q . N . .
+P P P . . P P P
+R . . . . . K .
+
+turn: B
+base_score: 61
+a6a5
+evaluated 853921 nodes
+r n . . . r k .
+. b . p . . p p
+. p p P . q . .
+p . . . R p . .
+. . . . . . . .
+. . N Q . N . .
+P P P . . P P P
+R . . . . . K .
+
+turn: W
+base_score: 65
+timer stopped at 0.504740 seconds
+a1e1
+r n . . . r k .
+. b . p . . p p
+. p p P . q . .
+p . . . R p . .
+. . . . . . . .
+. . N Q . N . .
+P P P . . P P P
+. . . . R . K .
+
+turn: B
+base_score: 93
+b7a6
+evaluated 1823668 nodes
+r n . . . r k .
+. . . p . . p p
+b p p P . q . .
+p . . . R p . .
+. . . . . . . .
+. . N Q . N . .
+P P P . . P P P
+. . . . R . K .
+
+turn: W
+base_score: 99
+timer stopped at 1.100888 seconds
+d3f5
+r n . . . r k .
+. . . p . . p p
+b p p P . q . .
+p . . . R Q . .
+. . . . . . . .
+. . N . . N . .
+P P P . . P P P
+. . . . R . K .
+
+turn: B
+base_score: 231
+f6f5
+evaluated 503578 nodes
+r n . . . r k .
+. . . p . . p p
+b p p P . . . .
+p . . . R q . .
+. . . . . . . .
+. . N . . N . .
+P P P . . P P P
+. . . . R . K .
+
+turn: W
+base_score: -690
+timer stopped at 0.294268 seconds
+e5f5
+r n . . . r k .
+. . . p . . p p
+b p p P . . . .
+p . . . . R . .
+. . . . . . . .
+. . N . . N . .
+P P P . . P P P
+. . . . R . K .
+
+turn: B
+base_score: 178
+f8f5
+evaluated 210829 nodes
+r n . . . . k .
+. . . p . . p p
+b p p P . . . .
+p . . . . r . .
+. . . . . . . .
+. . N . . N . .
+P P P . . P P P
+. . . . R . K .
+
+turn: W
+base_score: -307
+timer stopped at 0.134994 seconds
+e1e8
+r n . . R . k .
+. . . p . . p p
+b p p P . . . .
+p . . . . r . .
+. . . . . . . .
+. . N . . N . .
+P P P . . P P P
+. . . . . . K .
+
+turn: B
+base_score: -268
+f5f8
+evaluated 9327 nodes
+r n . . R r k .
+. . . p . . p p
+b p p P . . . .
+p . . . . . . .
+. . . . . . . .
+. . N . . N . .
+P P P . . P P P
+. . . . . . K .
+
+turn: W
+base_score: -279
+timer stopped at 0.006535 seconds
+e8f8
+r n . . . R k .
+. . . p . . p p
+b p p P . . . .
+p . . . . . . .
+. . . . . . . .
+. . N . . N . .
+P P P . . P P P
+. . . . . . K .
+
+turn: B
+base_score: 199
+g8f8
+evaluated 6726 nodes
+r n . . . k . .
+. . . p . . p p
+b p p P . . . .
+p . . . . . . .
+. . . . . . . .
+. . N . . N . .
+P P P . . P P P
+. . . . . . K .
+
+turn: W
+base_score: -293
+timer stopped at 0.004690 seconds
+f3e5
+r n . . . k . .
+. . . p . . p p
+b p p P . . . .
+p . . . N . . .
+. . . . . . . .
+. . N . . . . .
+P P P . . P P P
+. . . . . . K .
+
+turn: B
+base_score: -275
+g7g6
+evaluated 50234 nodes
+r n . . . k . .
+. . . p . . . p
+b p p P . . p .
+p . . . N . . .
+. . . . . . . .
+. . N . . . . .
+P P P . . P P P
+. . . . . . K .
+
+turn: W
+base_score: -275
+timer stopped at 0.031962 seconds
+c3e4
+r n . . . k . .
+. . . p . . . p
+b p p P . . p .
+p . . . N . . .
+. . . . N . . .
+. . . . . . . .
+P P P . . P P P
+. . . . . . K .
+
+turn: B
+base_score: -266
+h7h6
+evaluated 65355 nodes
+r n . . . k . .
+. . . p . . . .
+b p p P . . p p
+p . . . N . . .
+. . . . N . . .
+. . . . . . . .
+P P P . . P P P
+. . . . . . K .
+
+turn: W
+base_score: -278
+timer stopped at 0.037795 seconds
+e5g6
+r n . . . k . .
+. . . p . . . .
+b p p P . . N p
+p . . . . . . .
+. . . . N . . .
+. . . . . . . .
+P P P . . P P P
+. . . . . . K .
+
+turn: B
+base_score: -146
+f8e8
+evaluated 8256 nodes
+r n . . k . . .
+. . . p . . . .
+b p p P . . N p
+p . . . . . . .
+. . . . N . . .
+. . . . . . . .
+P P P . . P P P
+. . . . . . K .
+
+turn: W
+base_score: -153
+timer stopped at 0.007030 seconds
+f2f4
+r n . . k . . .
+. . . p . . . .
+b p p P . . N p
+p . . . . . . .
+. . . . N P . .
+. . . . . . . .
+P P P . . . P P
+. . . . . . K .
+
+turn: B
+base_score: -138
+b6b5
+evaluated 33204 nodes
+r n . . k . . .
+. . . p . . . .
+b . p P . . N p
+p p . . . . . .
+. . . . N P . .
+. . . . . . . .
+P P P . . . P P
+. . . . . . K .
+
+turn: W
+base_score: -132
+timer stopped at 0.030679 seconds
+f4f5
+r n . . k . . .
+. . . p . . . .
+b . p P . . N p
+p p . . . P . .
+. . . . N . . .
+. . . . . . . .
+P P P . . . P P
+. . . . . . K .
+
+turn: B
+base_score: -133
+c6c5
+evaluated 25198 nodes
+r n . . k . . .
+. . . p . . . .
+b . . P . . N p
+p p p . . P . .
+. . . . N . . .
+. . . . . . . .
+P P P . . . P P
+. . . . . . K .
+
+turn: W
+base_score: -138
+timer stopped at 0.016593 seconds
+e4c5
+r n . . k . . .
+. . . p . . . .
+b . . P . . N p
+p p N . . P . .
+. . . . . . . .
+. . . . . . . .
+P P P . . . P P
+. . . . . . K .
+
+turn: B
+base_score: -5
+a5a4
+evaluated 34698 nodes
+r n . . k . . .
+. . . p . . . .
+b . . P . . N p
+. p N . . P . .
+p . . . . . . .
+. . . . . . . .
+P P P . . . P P
+. . . . . . K .
+
+turn: W
+base_score: -14
+timer stopped at 0.027209 seconds
+h2h4
+r n . . k . . .
+. . . p . . . .
+b . . P . . N p
+. p N . . P . .
+p . . . . . . P
+. . . . . . . .
+P P P . . . P .
+. . . . . . K .
+
+turn: B
+base_score: -6
+h6h5
+evaluated 34365 nodes
+r n . . k . . .
+. . . p . . . .
+b . . P . . N .
+. p N . . P . p
+p . . . . . . P
+. . . . . . . .
+P P P . . . P .
+. . . . . . K .
+
+turn: W
+base_score: -2
+timer stopped at 0.026473 seconds
+g1f2
+r n . . k . . .
+. . . p . . . .
+b . . P . . N .
+. p N . . P . p
+p . . . . . . P
+. . . . . . . .
+P P P . . K P .
+. . . . . . . .
+
+turn: B
+base_score: -60
+b5b4
+evaluated 34838 nodes
+r n . . k . . .
+. . . p . . . .
+b . . P . . N .
+. . N . . P . p
+p p . . . . . P
+. . . . . . . .
+P P P . . K P .
+. . . . . . . .
+
+turn: W
+base_score: -73
+timer stopped at 0.020419 seconds
+g6f4
+r n . . k . . .
+. . . p . . . .
+b . . P . . . .
+. . N . . P . p
+p p . . . N . P
+. . . . . . . .
+P P P . . K P .
+. . . . . . . .
+
+turn: B
+base_score: -100
+a4a3
+evaluated 62172 nodes
+r n . . k . . .
+. . . p . . . .
+b . . P . . . .
+. . N . . P . p
+. p . . . N . P
+p . . . . . . .
+P P P . . K P .
+. . . . . . . .
+
+turn: W
+base_score: -124
+timer stopped at 0.036295 seconds
+b2a3
+r n . . k . . .
+. . . p . . . .
+b . . P . . . .
+. . N . . P . p
+. p . . . N . P
+P . . . . . . .
+P . P . . K P .
+. . . . . . . .
+
+turn: B
+base_score: -47
+b4a3
+evaluated 63858 nodes
+r n . . k . . .
+. . . p . . . .
+b . . P . . . .
+. . N . . P . p
+. . . . . N . P
+p . . . . . . .
+P . P . . K P .
+. . . . . . . .
+
+turn: W
+base_score: -116
+timer stopped at 0.042910 seconds
+f4h5
+r n . . k . . .
+. . . p . . . .
+b . . P . . . .
+. . N . . P . N
+. . . . . . . P
+p . . . . . . .
+P . P . . K P .
+. . . . . . . .
+
+turn: B
+base_score: -57
+a6b5
+evaluated 27289 nodes
+r n . . k . . .
+. . . p . . . .
+. . . P . . . .
+. b N . . P . N
+. . . . . . . P
+p . . . . . . .
+P . P . . K P .
+. . . . . . . .
+
+turn: W
+base_score: -53
+timer stopped at 0.017188 seconds
+g2g4
+r n . . k . . .
+. . . p . . . .
+. . . P . . . .
+. b N . . P . N
+. . . . . . P P
+p . . . . . . .
+P . P . . K . .
+. . . . . . . .
+
+turn: B
+base_score: -56
+b5a6
+evaluated 32161 nodes
+r n . . k . . .
+. . . p . . . .
+b . . P . . . .
+. . N . . P . N
+. . . . . . P P
+p . . . . . . .
+P . P . . K . .
+. . . . . . . .
+
+turn: W
+base_score: -60
+timer stopped at 0.024976 seconds
+g4g5
+r n . . k . . .
+. . . p . . . .
+b . . P . . . .
+. . N . . P P N
+. . . . . . . P
+p . . . . . . .
+P . P . . K . .
+. . . . . . . .
+
+turn: B
+base_score: -45
+a6b5
+evaluated 29210 nodes
+r n . . k . . .
+. . . p . . . .
+. . . P . . . .
+. b N . . P P N
+. . . . . . . P
+p . . . . . . .
+P . P . . K . .
+. . . . . . . .
+
+turn: W
+base_score: -41
+timer stopped at 0.024538 seconds
+g5g6
+r n . . k . . .
+. . . p . . . .
+. . . P . . P .
+. b N . . P . N
+. . . . . . . P
+p . . . . . . .
+P . P . . K . .
+. . . . . . . .
+
+turn: B
+base_score: -12
+b8a6
+evaluated 54157 nodes
+r . . . k . . .
+. . . p . . . .
+n . . P . . P .
+. b N . . P . N
+. . . . . . . P
+p . . . . . . .
+P . P . . K . .
+. . . . . . . .
+
+turn: W
+base_score: -17
+timer stopped at 0.037170 seconds
+g6g7
+r . . . k . . .
+. . . p . . P .
+n . . P . . . .
+. b N . . P . N
+. . . . . . . P
+p . . . . . . .
+P . P . . K . .
+. . . . . . . .
+
+turn: B
+base_score: 24
+b5c4
+evaluated 54058 nodes
+r . . . k . . .
+. . . p . . P .
+n . . P . . . .
+. . N . . P . N
+. . b . . . . P
+p . . . . . . .
+P . P . . K . .
+. . . . . . . .
+
+turn: W
+base_score: 14
+timer stopped at 0.035431 seconds
+f5f6
+r . . . k . . .
+. . . p . . P .
+n . . P . P . .
+. . N . . . . N
+. . b . . . . P
+p . . . . . . .
+P . P . . K . .
+. . . . . . . .
+
+turn: B
+base_score: 45
+a6c5
+evaluated 96953 nodes
+r . . . k . . .
+. . . p . . P .
+. . . P . P . .
+. . n . . . . N
+. . b . . . . P
+p . . . . . . .
+P . P . . K . .
+. . . . . . . .
+
+turn: W
+base_score: -324
+timer stopped at 0.064957 seconds
+h5f4
+r . . . k . . .
+. . . p . . P .
+. . . P . P . .
+. . n . . . . .
+. . b . . N . P
+p . . . . . . .
+P . P . . K . .
+. . . . . . . .
+
+turn: B
+base_score: -306
+c4a2
+evaluated 73179 nodes
+r . . . k . . .
+. . . p . . P .
+. . . P . P . .
+. . n . . . . .
+. . . . . N . P
+p . . . . . . .
+b . P . . K . .
+. . . . . . . .
+
+turn: W
+base_score: -344
+timer stopped at 0.051427 seconds
+h4h5
+r . . . k . . .
+. . . p . . P .
+. . . P . P . .
+. . n . . . . P
+. . . . . N . .
+p . . . . . . .
+b . P . . K . .
+. . . . . . . .
+
+turn: B
+base_score: -334
+a2g8
+evaluated 65955 nodes
+r . . . k . b .
+. . . p . . P .
+. . . P . P . .
+. . n . . . . P
+. . . . . N . .
+p . . . . . . .
+. . P . . K . .
+. . . . . . . .
+
+turn: W
+base_score: -335
+timer stopped at 0.048557 seconds
+f2g3
+r . . . k . b .
+. . . p . . P .
+. . . P . P . .
+. . n . . . . P
+. . . . . N . .
+p . . . . . K .
+. . P . . . . .
+. . . . . . . .
+
+turn: B
+base_score: -346
+a3a2
+evaluated 38047 nodes
+r . . . k . b .
+. . . p . . P .
+. . . P . P . .
+. . n . . . . P
+. . . . . N . .
+. . . . . . K .
+p . P . . . . .
+. . . . . . . .
+
+turn: W
+base_score: -417
+timer stopped at 0.029342 seconds
+g3g4
+r . . . k . b .
+. . . p . . P .
+. . . P . P . .
+. . n . . . . P
+. . . . . N K .
+. . . . . . . .
+p . P . . . . .
+. . . . . . . .
+
+turn: B
+base_score: -396
+a2a1
+evaluated 41584 nodes
+r . . . k . b .
+. . . p . . P .
+. . . P . P . .
+. . n . . . . P
+. . . . . N K .
+. . . . . . . .
+. . P . . . . .
+q . . . . . . .
+
+turn: W
+base_score: -1124
+timer stopped at 0.024600 seconds
+h5h6
+r . . . k . b .
+. . . p . . P .
+. . . P . P . P
+. . n . . . . .
+. . . . . N K .
+. . . . . . . .
+. . P . . . . .
+q . . . . . . .
+
+turn: B
+base_score: -1104
+a1f6
+evaluated 54115 nodes
+r . . . k . b .
+. . . p . . P .
+. . . P . q . P
+. . n . . . . .
+. . . . . N K .
+. . . . . . . .
+. . P . . . . .
+. . . . . . . .
+
+turn: W
+base_score: -1218
+timer stopped at 0.037171 seconds
+
+[ori resigns]
