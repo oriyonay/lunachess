@@ -8,6 +8,7 @@
 
 #include "board.h"
 #include "globals.h"
+#include "utils.h"
 
 /* ---------- the search functions ---------- */
 // init_search(): initialize and zero-out search structures

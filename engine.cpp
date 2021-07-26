@@ -58,6 +58,16 @@ void search(int depth) {
     // search the position at the given depth:
     int score = negamax(cur_depth, alpha, beta);
 
+    // print info to console:
+    printf("info score cp %d depth %d nodes %d time %d pv ",
+      score, cur_depth, nodes_evaluated, 0
+    );
+    for (int i = 0; i < pv_length[0]; i++) {
+      print_move(pv_table[0][i]);
+      printf(" ");
+    }
+    printf("\n");
+
     // if we fell outside our aspiration window, reset to -INF and INF:
     if ((score <= alpha) || (score >= beta)) {
       alpha = -INF;
@@ -72,6 +82,11 @@ void search(int depth) {
     // now the principal variation is in pv_table[0][:pv_length[0]],
     // and the best move is in pv_table[0][0]
   }
+
+  // print the best move found:
+  printf("bestmove ");
+  print_move(pv_table[0][0]);
+  printf("\n");
 }
 
 // negamax_helper(): the recursively-called helper function for negamax
