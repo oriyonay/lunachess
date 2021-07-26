@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
   t.stop();
   t.print_duration(); */
 
-  b = board("r1bq2r1/b4pk1/p1pp1p2/1p2pP2/1P2P1PB/3P4/1PPQ2P1/R3K2R w");
+  b = board("rnbqkbnr/pppp2pp/5p2/4N3/4P3/8/PPPP1PPP/RNBQKB1R b KQkq - 0 3");
   b.print();
   search(5);
 
@@ -40,6 +40,7 @@ int main(int argc, char** argv) {
     print_move(pv_table[0][i]);
   }
   printf("\n");
+  printf("nodes evaluated: %d\n", nodes_evaluated);
 
   /* timer t;
   int move;

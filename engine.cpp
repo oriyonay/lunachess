@@ -75,6 +75,11 @@ int negamax(int depth, int alpha, int beta) {
   int num_moves;
   int* moves = b.get_moves(num_moves);
 
+  // check extension:
+  // note: since we just called board::get_moves(), the board::UNSAFE bitboard
+  // is updated automatically
+  if (b.is_check()) depth++;
+
   // if we can't make any moves, it's either checkmate or stalemate:
   // (we add the ply to -INF score to help the engine detect the CLOSEST
   // checkmate possible when it's defeating its opponent)
@@ -92,6 +97,7 @@ int negamax(int depth, int alpha, int beta) {
   // recursively find the best move from here:
   int best_score = -INF;
   int move, move_index;
+  bool found_pv = false;
   for (int i = 0; i < num_moves; i++) {
     // selection sort to find the best move:
     move_index = 0; // contains the index of the best move
@@ -107,8 +113,18 @@ int negamax(int depth, int alpha, int beta) {
     move_scores[move_index] = -1;
 
     // make move & recursively call negamax helper function:
+    // we also implement the meat of PVS in this section:
     b.make_move(move);
-    int score = -negamax(depth - 1, -beta, -alpha);
+    int score;
+    if (found_pv) {
+      score = -negamax(depth - 1, -alpha - 1, -alpha);
+      if ((score > alpha) && (score < beta)) {
+        score = -negamax(depth - 1, -beta, -alpha);
+      }
+    }
+    else {
+      score = -negamax(depth - 1, -beta, -alpha);
+    }
     b.undo_move();
 
     // fail-hard beta cutoff (node fails high)
@@ -131,6 +147,9 @@ int negamax(int depth, int alpha, int beta) {
 
       // this is the PV node:
       alpha = score;
+
+      // since we found a PV node, enable the found_pv flag:
+      found_pv = true;
 
       // enter PV move into PV table:
       int ply = b.num_moves_played;

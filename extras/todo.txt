@@ -1,5 +1,4 @@
 LUNA TODO (search):
-- PVS
 - aspiration windows
 - transposition table
 - late move reduction
@@ -8,7 +7,6 @@ LUNA TODO (search):
 
 TO TRY/RESEARCH:
 - lazy SMP
-- check extensions
 - delta pruning
 - futility pruning
 - razoring
@@ -24,6 +22,8 @@ DONE:
 - bishop pair in evaluation
 - killer/history heuristics
 - iterative deepening
+- check extensions
+- PVS
 
 history move heuristic: could take it or leave it
 do we need to clear helper tables in search() ?
