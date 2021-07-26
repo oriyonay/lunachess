@@ -52,9 +52,22 @@ void search(int depth) {
   init_search();
 
   // find best move within a given position
+  int alpha = -INF;
+  int beta = INF;
   for (int cur_depth = 1; cur_depth <= depth; cur_depth++) {
     // search the position at the given depth:
-    int score = negamax(cur_depth, -INF, INF);
+    int score = negamax(cur_depth, alpha, beta);
+
+    // if we fell outside our aspiration window, reset to -INF and INF:
+    if ((score <= alpha) || (score >= beta)) {
+      alpha = -INF;
+      beta = INF;
+      continue;
+    }
+
+    // otherwise, set alpha & beta using aspiration window value:
+    alpha = score - ASPIRATION_WINDOW_VALUE;
+    beta = score + ASPIRATION_WINDOW_VALUE;
 
     // now the principal variation is in pv_table[0][:pv_length[0]],
     // and the best move is in pv_table[0][0]
@@ -70,6 +83,23 @@ int negamax(int depth, int alpha, int beta) {
 
   // base case:
   if (depth == 0) return quiescence(DEFAULT_QSEARCH_DEPTH, alpha, beta);
+
+  // null-move pruning:
+  /* if (!b.is_check() && depth >= 3) {
+    // give current side an extra turn:
+    b.turn = (b.turn == WHITE) ? BLACK : WHITE;
+    b.move_history[b.num_moves_played++] = NULL;
+
+    // search the position with a reduced depth:
+    int null_move_score = -negamax(depth - 3, -beta, -beta + 1);
+
+    // flip the turn again:
+    b.turn = (b.turn == WHITE) ? BLACK : WHITE;
+    b.num_moves_played--;
+
+    // fail-hard beta cutoff:
+    if (null_move_score >= beta) return beta;
+  } */
 
   // generate all possible moves from this position:
   int num_moves;
@@ -116,14 +146,37 @@ int negamax(int depth, int alpha, int beta) {
     // we also implement the meat of PVS in this section:
     b.make_move(move);
     int score;
-    if (found_pv) {
-      score = -negamax(depth - 1, -alpha - 1, -alpha);
-      if ((score > alpha) && (score < beta)) {
+    // search first node at full-depth:
+    if (i == 0) {
+      score = -negamax(depth - 1, -beta, -alpha);
+    }
+    // we check for potential LMR in all other nodes:
+    else {
+      // can we do LMR?
+      if (i >= LMR_FULL_DEPTH_MOVES &&
+          depth >= LMR_REDUCTION_LIMIT &&
+          !b.is_check() &&
+          MOVE_CAPTURED(move) == NONE &&
+          !MOVE_IS_PROMOTION(move)
+      ) {
+        score = -negamax(depth - 2, -alpha - 1, -alpha);
+      }
+      // if we can't, we use this trick to make sure we enter PVS and perform
+      // the full search if necessary:
+      else {
+        score = alpha + 1;
+      }
+
+      // now we perform PVS:
+      if (score > alpha) {
+        score = -negamax(depth - 1, -alpha - 1, -alpha);
+        if ((score > alpha) && (score < beta)) {
+          score = -negamax(depth - 1, -beta, -alpha);
+        }
+      }
+      else {
         score = -negamax(depth - 1, -beta, -alpha);
       }
-    }
-    else {
-      score = -negamax(depth - 1, -beta, -alpha);
     }
     b.undo_move();
 

@@ -1,9 +1,14 @@
-LUNA TODO (search):
-- aspiration windows
+TODO:
+- implement PV collection using follow_pv and score_pv flags ?
+  (random queen sacrifice bug)
 - transposition table
 - late move reduction
-- null move pruning
+- null move pruning (commented out)
 - internal iterative deepening (for move ordering)
+- experiment with LMR conditions
+- move scoring:
+  - score promotions?
+  - extra score if check? (or maybe search already has that covered)
 
 TO TRY/RESEARCH:
 - lazy SMP
@@ -24,6 +29,8 @@ DONE:
 - iterative deepening
 - check extensions
 - PVS
+- LMR
+- aspiration windows
 
 history move heuristic: could take it or leave it
 do we need to clear helper tables in search() ?

@@ -11,8 +11,11 @@ typedef uint64_t U64;
 #define MAX_GAME_MOVES 1024
 
 // engine settings:
+#define ASPIRATION_WINDOW_VALUE 50
 #define DEFAULT_TT_SIZE (1 << 20)
 #define DEFAULT_QSEARCH_DEPTH 4
+#define LMR_FULL_DEPTH_MOVES 4
+#define LMR_REDUCTION_LIMIT 3
 
 #define INF 2147483647
 
