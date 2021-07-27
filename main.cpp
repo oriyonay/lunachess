@@ -11,7 +11,7 @@
 
 int main(int argc, char** argv) {
   init_consts();
-  start_uci();
+  uci_loop();
 
   /* b = board("rnbq4/pppp3Q/3bk1p1/8/4P3/8/PPPP1PPP/RNB1KB1R w KQ - 1 9");
   b.print();

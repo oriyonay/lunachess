@@ -6,12 +6,14 @@
 typedef uint64_t U64;
 
 #define NAME "luna"
+#define AUTHOR "ori yonay"
 #define VERSION "0.0.1"
 #define MAX_POSITION_MOVES 219
 #define MAX_GAME_MOVES 1024
 
 // engine settings:
 #define ASPIRATION_WINDOW_VALUE 50
+#define DEFAULT_UCI_INPUT_BUFFER_SIZE 2048
 #define DEFAULT_TT_SIZE (1 << 20)
 #define DEFAULT_QSEARCH_DEPTH 4
 #define LMR_FULL_DEPTH_MOVES 4

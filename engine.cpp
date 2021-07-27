@@ -51,6 +51,9 @@ void search(int depth) {
   // clear search helper tables:
   init_search();
 
+  // record starting time:
+  int start_time = get_time();
+
   // find best move within a given position
   int alpha = -INF;
   int beta = INF;
@@ -60,7 +63,7 @@ void search(int depth) {
 
     // print info to console:
     printf("info score cp %d depth %d nodes %d time %d pv ",
-      score, cur_depth, nodes_evaluated, 0
+      score, cur_depth, nodes_evaluated, get_time() - start_time
     );
     for (int i = 0; i < pv_length[0]; i++) {
       print_move(pv_table[0][i]);
