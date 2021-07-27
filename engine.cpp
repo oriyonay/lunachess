@@ -57,6 +57,7 @@ void search(int depth) {
   // find best move within a given position
   int alpha = -INF;
   int beta = INF;
+  int ply = b.num_moves_played;
   for (int cur_depth = 1; cur_depth <= depth; cur_depth++) {
     // search the position at the given depth:
     int score = negamax(cur_depth, alpha, beta);
@@ -65,8 +66,8 @@ void search(int depth) {
     printf("info score cp %d depth %d nodes %d time %d pv ",
       score, cur_depth, nodes_evaluated, get_time() - start_time
     );
-    for (int i = 0; i < pv_length[0]; i++) {
-      print_move(pv_table[0][i]);
+    for (int i = ply; i < pv_length[ply]; i++) {
+      print_move(pv_table[ply][i]);
       printf(" ");
     }
     printf("\n");
@@ -83,12 +84,12 @@ void search(int depth) {
     beta = score + ASPIRATION_WINDOW_VALUE;
 
     // now the principal variation is in pv_table[0][:pv_length[0]],
-    // and the best move is in pv_table[0][0]
+    // and the best move is in pv_table[ply][0]
   }
 
   // print the best move found:
   printf("bestmove ");
-  print_move(pv_table[0][0]);
+  print_move(pv_table[ply][ply]);
   printf("\n");
 }
 
@@ -100,7 +101,7 @@ int negamax(int depth, int alpha, int beta) {
   pv_length[b.num_moves_played] = b.num_moves_played;
 
   // base case:
-  if (depth == 0) return quiescence(DEFAULT_QSEARCH_DEPTH, alpha, beta);
+  if (depth == 0) return evaluate(); // quiescence(DEFAULT_QSEARCH_DEPTH, alpha, beta);
 
   // null-move pruning:
   /* if (!b.is_check() && depth >= 3) {
