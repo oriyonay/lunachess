@@ -290,11 +290,13 @@ int quiescence(int depth, int alpha, int beta) {
     int score = -quiescence(depth - 1, -beta, -alpha);
     b.undo_move();
 
-    // fail-hard beta cutoff (node fails high)
-    if (score >= beta) return beta;
-
     // if we found a better move (PV node):
-    if (score > alpha) alpha = score;
+    if (score > alpha) {
+      alpha = score;
+
+      // fail-hard beta cutoff (node fails high)
+      if (score >= beta) return beta;
+    }
   }
 
   // node fails low:

@@ -8,7 +8,7 @@ all:
 	make main.o
 	make uci.o
 	make utils.o
-	g++ -std=c++11 -O3 board.o consts.o engine.o globals.o main.o uci.o utils.o  -o main.out
+	g++ -std=c++11 -g -O3 board.o consts.o engine.o globals.o main.o uci.o utils.o  -o main.out
 	make run
 
 run:
