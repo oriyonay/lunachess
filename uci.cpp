@@ -91,7 +91,7 @@ void parse_go(char* command) {
   int depth = -1;
   char* depth_arg = strstr(command, "depth");
   if (depth_arg) depth = atoi(depth_arg + 6);
-  else depth = 6;
+  else depth = 7;
 
   // now search the position with these parameters:
   search(depth);

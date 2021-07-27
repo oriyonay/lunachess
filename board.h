@@ -34,8 +34,8 @@ struct board {
 
   // main board functions:
   board(char* FEN);
-  int* get_moves(int& num_moves);
-  int* get_nonquiet_moves(int& num_moves);
+  int get_moves(int* move_list);
+  int get_nonquiet_moves(int* move_list);
   bool make_move(char* move);
   bool make_move(int move);
   void undo_move();

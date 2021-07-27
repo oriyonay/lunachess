@@ -91,9 +91,8 @@ board::board(char* FEN) : base_score(0), num_moves_played(0), castle_rights(0),
  * 0000 0000 0000 0000 0000 0000 1111 0000 -> previous castle rights (4 bits)
  * 0000 0000 0000 0000 0000 0000 0000 1111 -> piece moved, i.e., a white knight (4 bits)
 */
-int* board::get_moves(int& num_moves) {
-  int* move_list = new int[MAX_POSITION_MOVES];
-  num_moves = 0;
+int board::get_moves(int* move_list) {
+  int num_moves = 0;
 
   // update move generation bitboards:
   update_move_info_bitboards();
@@ -139,12 +138,11 @@ int* board::get_moves(int& num_moves) {
   // number of valid moves:
   num_moves = j;
 
-  return move_list;
+  return num_moves;
 }
 
-int* board::get_nonquiet_moves(int& num_moves) {
-  int* move_list = new int[MAX_POSITION_MOVES];
-  num_moves = 0;
+int board::get_nonquiet_moves(int* move_list) {
+  int num_moves = 0;
 
   // update move generation bitboards:
   update_move_info_bitboards();
@@ -190,7 +188,7 @@ int* board::get_nonquiet_moves(int& num_moves) {
   // number of valid moves:
   num_moves = j;
 
-  return move_list;
+  return num_moves;
 }
 
 // make_move(char* move): converts the given human-formatted (i.e., e4e5) move
@@ -226,8 +224,8 @@ bool board::make_move(char* move) {
   }
 
   // now we need to find a matching move-int in our move-list
-  int num_moves;
-  int* moves = get_moves(num_moves);
+  int moves[MAX_POSITION_MOVES];
+  int num_moves = get_moves(moves);
   bool found = false;
   int m;
   for (int i = 0; i < num_moves; i++) {
@@ -241,7 +239,6 @@ bool board::make_move(char* move) {
   }
 
   if (!found) return false;
-  delete[] moves;
 
   return make_move(m);
 }

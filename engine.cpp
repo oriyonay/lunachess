@@ -101,7 +101,7 @@ int negamax(int depth, int alpha, int beta) {
   pv_length[b.num_moves_played] = b.num_moves_played;
 
   // base case:
-  if (depth == 0) return evaluate(); // quiescence(DEFAULT_QSEARCH_DEPTH, alpha, beta);
+  if (depth == 0) return quiescence(alpha, beta);
 
   // null-move pruning:
   /* if (!b.is_check() && depth >= 3) {
@@ -121,8 +121,8 @@ int negamax(int depth, int alpha, int beta) {
   } */
 
   // generate all possible moves from this position:
-  int num_moves;
-  int* moves = b.get_moves(num_moves);
+  int moves[MAX_POSITION_MOVES];
+  int num_moves = b.get_moves(moves);
 
   // check extension:
   // note: since we just called board::get_moves(), the board::UNSAFE bitboard
@@ -242,7 +242,7 @@ int negamax(int depth, int alpha, int beta) {
 }
 
 // quiescence(): the quiescence search algorithm
-int quiescence(int depth, int alpha, int beta) {
+int quiescence(int alpha, int beta) {
   nodes_evaluated++;
 
   // static evaluation:
@@ -253,14 +253,11 @@ int quiescence(int depth, int alpha, int beta) {
   if (eval > alpha) alpha = eval;
 
   // generate all possible moves from this position:
-  int num_moves;
-  int* moves = b.get_nonquiet_moves(num_moves);
+  int moves[MAX_POSITION_MOVES];
+  int num_moves = b.get_nonquiet_moves(moves);
 
-  // check for checkmate/stalemate:
-  if (num_moves == 0) {
-    b.update_unsafe();
-    return b.is_check() ? -INF + b.num_moves_played : 0;
-  }
+  // if there are no more nonquiet moves to make, return the current static eval:
+  if (num_moves == 0) return eval;
 
   // score the moves:
   int move_scores[MAX_POSITION_MOVES];
@@ -287,16 +284,14 @@ int quiescence(int depth, int alpha, int beta) {
 
     // make move & recursively call negamax helper function:
     b.make_move(move);
-    int score = -quiescence(depth - 1, -beta, -alpha);
+    int score = -quiescence(-beta, -alpha);
     b.undo_move();
 
-    // if we found a better move (PV node):
-    if (score > alpha) {
-      alpha = score;
+    // fail-hard beta cutoff (node fails high)
+    if (score >= beta) return beta;
 
-      // fail-hard beta cutoff (node fails high)
-      if (score >= beta) return beta;
-    }
+    // if we found a better move (PV node):
+    if (score > alpha) alpha = score;
   }
 
   // node fails low:
