@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "board.h"
-#include "timer.h"
+#include "utils.h"
 
 #define GREEN  "\033[32m"
 #define RED    "\033[31m"
@@ -86,8 +86,7 @@ int main() {
   );
 
   // run all tests:
-  timer t;
-  t.start();
+  int start_time = get_time();
   bool all_tests_passed = true;
   all_tests_passed &= initial_position.test();
   all_tests_passed &= pt2.test();
@@ -96,21 +95,18 @@ int main() {
   all_tests_passed &= pt5.test();
   all_tests_passed &= pt6.test();
   all_tests_passed &= pt7.test();
-  t.stop();
+  int time_ms = get_time() - start_time;
 
   if (all_tests_passed) printf("%sALL TESTS PASSED%s.\n", GREEN, RESET);
   else printf("%sNOT ALL TESTS PASSED%s.\n", YELLOW, RESET);
-  t.print_duration();
+  printf("test took %.4f seconds\n", (time_ms / 1000.0));
 }
 
 // perft(): the perft test function
 long perft(board* b, int depth) {
-  int num_moves;
-  int* moves = b->get_moves(num_moves);
-  if (depth == 1) {
-    delete[] moves;
-    return num_moves;
-  }
+  int moves[MAX_POSITION_MOVES];
+  int num_moves = b->get_moves(moves);
+  if (depth == 1) return num_moves;
 
   long sum = 0;
   for (int i = 0; i < num_moves; i++) {
@@ -118,8 +114,6 @@ long perft(board* b, int depth) {
     sum += perft(b, depth - 1);
     b->undo_move();
   }
-
-  delete[] moves;
 
   return sum;
 }
@@ -130,8 +124,8 @@ long perft_verify(board* b, int depth) {
     verify(b);
     return 1;
   }
-  int num_moves;
-  int* moves = b->get_moves(num_moves);
+  int moves[MAX_POSITION_MOVES];
+  int num_moves = b->get_moves(moves);
 
   long sum = 0;
   for (int i = 0; i < num_moves; i++) {
@@ -140,7 +134,6 @@ long perft_verify(board* b, int depth) {
     b->undo_move();
   }
 
-  delete[] moves;
   return sum;
 }
 
@@ -191,25 +184,4 @@ bool verify(board* b) {
     printf("INCORRECT ZOBRIST HASH\n");
     assert(false);
   }
-}
-
-// print_move(): prints a given a move int. placed here temporarily, since there
-// isn't a utils file. this exact code is also in main.cpp for now
-void print_move(int m) {
-  int to = MOVE_TO(m);
-  int from = MOVE_FROM(m);
-
-  char* move_str = new char[6];
-  move_str[5] = '\0';
-  move_str[4] = '\0'; // TODO: REMOVE THIS
-
-  move_str[0] = ((from % 8) + 'a');
-  move_str[1] = (8 - (from / 8) + '0');
-  move_str[2] = ((to % 8) + 'a');
-  move_str[3] = (8 - (to / 8) + '0');
-
-  // TODO: promotion piece
-  std::string epinfo = MOVE_IS_EP(m) ? " EP" : "";
-  std::string capinfo = (MOVE_CAPTURED(m) != NONE) ? " CAPTURE" : "";
-  printf("%s%s%s\n", move_str, epinfo.c_str(), capinfo.c_str());
 }

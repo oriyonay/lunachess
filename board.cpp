@@ -665,6 +665,18 @@ void board::print() {
   printf("base_score: %d\n", base_score);
 }
 
+void board::make_nullmove() {
+  turn = (turn == WHITE) ? BLACK : WHITE;
+  hash ^= ZOBRIST_TURN_KEY;
+  move_history[num_moves_played++] = NULL;
+}
+
+void board::undo_nullmove() {
+  turn = (turn == WHITE) ? BLACK : WHITE;
+  hash ^= ZOBRIST_TURN_KEY;
+  num_moves_played--;
+}
+
 // add all possible pawn moves to the stack:
 void board::add_pawn_moves(int* move_list, int& num_moves) {
   U64 moves;

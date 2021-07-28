@@ -6,9 +6,11 @@ TODO:
 - null move pruning (commented out)
 - internal iterative deepening (for move ordering)
 - experiment with LMR conditions
+- in move generation function end we return num_moves instead of just j
 - move scoring:
   - score promotions?
   - extra score if check? (or maybe search already has that covered)
+- add 'go perft' functionality
 
 TO TRY/RESEARCH:
 - lazy SMP
@@ -23,7 +25,7 @@ DONE:
 - implement PST
 - negamax a/b
 - qsearch
-- mvv/lva + move ordering
+- mvv/lva move ordering
 - bishop pair in evaluation
 - killer/history heuristics
 - iterative deepening

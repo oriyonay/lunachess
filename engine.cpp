@@ -4,6 +4,7 @@
 inline void init_search() {
   // zero pv, killer move, and history tables:
   memset(pv_table, 0, sizeof(int) * MAX_GAME_MOVES * MAX_GAME_MOVES);
+  memset(pv_length, 0, sizeof(int) * MAX_GAME_MOVES);
   memset(killer_moves, 0, sizeof(int) * 2 * MAX_GAME_MOVES);
   memset(history_moves, 0, sizeof(int) * 12 * 64);
 
@@ -104,21 +105,23 @@ int negamax(int depth, int alpha, int beta) {
   if (depth == 0) return quiescence(alpha, beta);
 
   // null-move pruning:
-  /* if (!b.is_check() && depth >= 3) {
+  if (!b.is_check() &&
+      depth >= NULL_MOVE_PRUNING_DEPTH &&
+      b.move_history[b.num_moves_played] != NULL &&
+      b.num_moves_played > 0
+  ) {
     // give current side an extra turn:
-    b.turn = (b.turn == WHITE) ? BLACK : WHITE;
-    b.move_history[b.num_moves_played++] = NULL;
+    b.make_nullmove();
 
     // search the position with a reduced depth:
     int null_move_score = -negamax(depth - 3, -beta, -beta + 1);
 
     // flip the turn again:
-    b.turn = (b.turn == WHITE) ? BLACK : WHITE;
-    b.num_moves_played--;
+    b.undo_nullmove();
 
     // fail-hard beta cutoff:
     if (null_move_score >= beta) return beta;
-  } */
+  }
 
   // generate all possible moves from this position:
   int moves[MAX_POSITION_MOVES];
@@ -144,7 +147,6 @@ int negamax(int depth, int alpha, int beta) {
   }
 
   // recursively find the best move from here:
-  int best_score = -INF;
   int move, move_index;
   bool found_pv = false;
   for (int i = 0; i < num_moves; i++) {
@@ -256,8 +258,9 @@ int quiescence(int alpha, int beta) {
   int moves[MAX_POSITION_MOVES];
   int num_moves = b.get_nonquiet_moves(moves);
 
-  // if there are no more nonquiet moves to make, return the current static eval:
-  if (num_moves == 0) return eval;
+  // stop the search early if we're in check (by choice - we could alternatively
+  // call negamax here instead or do something special)
+  if (b.is_check()) return alpha;
 
   // score the moves:
   int move_scores[MAX_POSITION_MOVES];
@@ -266,7 +269,6 @@ int quiescence(int alpha, int beta) {
   }
 
   // recursively qsearch the horizon:
-  int best_score = -INF;
   int move, move_index;
   for (int i = 0; i < num_moves; i++) {
     // selection sort to find the best move:
@@ -282,7 +284,7 @@ int quiescence(int alpha, int beta) {
     move = moves[move_index];
     move_scores[move_index] = -1;
 
-    // make move & recursively call negamax helper function:
+    // make move & recursively call qsearch:
     b.make_move(move);
     int score = -quiescence(-beta, -alpha);
     b.undo_move();

@@ -39,6 +39,8 @@ struct board {
   bool make_move(char* move);
   bool make_move(int move);
   void undo_move();
+  void make_nullmove();
+  void undo_nullmove();
   void print();
 
   // move generation utility functions:

@@ -17,6 +17,7 @@ typedef uint64_t U64;
 #define DEFAULT_TT_SIZE (1 << 20)
 #define LMR_FULL_DEPTH_MOVES 4
 #define LMR_REDUCTION_LIMIT 3
+#define NULL_MOVE_PRUNING_DEPTH 3
 
 #define INF 2147483647
 
