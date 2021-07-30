@@ -7,6 +7,10 @@
 extern board b;
 extern int nodes_evaluated;
 
+// for following and scoring the PV:
+extern bool follow_pv;
+extern bool score_pv;
+
 // the principal variation table:
 extern int pv_length[MAX_GAME_MOVES];
 extern int pv_table[MAX_GAME_MOVES][MAX_GAME_MOVES];

@@ -1,3 +1,5 @@
+// ENGINE.CPP/H: contains the 'intelligent' parts of the engine: search algorithms,
+// move scoring/ordering, etc.
 #include "engine.h"
 
 // init_search(): initialize search variables
@@ -94,15 +96,21 @@ void search(int depth) {
   printf("\n");
 }
 
-// negamax_helper(): the recursively-called helper function for negamax
+// negamax(): the main tree-search function
 int negamax(int depth, int alpha, int beta) {
+  // update the UNSAFE bitboard, since it's not updating elsewhere for some reason:
+  b.update_move_info_bitboards();
+
   nodes_evaluated++;
 
   // initialize PV length:
   pv_length[b.num_moves_played] = b.num_moves_played;
 
+  // check extension:
+  if (b.is_check()) depth = std::max(depth+1, 1);
+
   // base case:
-  if (depth == 0) return quiescence(alpha, beta);
+  if (depth <= 0 && !b.is_check()) return quiescence(alpha, beta);
 
   // null-move pruning:
   if (!b.is_check() &&
@@ -127,18 +135,10 @@ int negamax(int depth, int alpha, int beta) {
   int moves[MAX_POSITION_MOVES];
   int num_moves = b.get_moves(moves);
 
-  // check extension:
-  // note: since we just called board::get_moves(), the board::UNSAFE bitboard
-  // is updated automatically
-  if (b.is_check()) depth++;
-
   // if we can't make any moves, it's either checkmate or stalemate:
   // (we add the ply to -INF score to help the engine detect the CLOSEST
   // checkmate possible when it's defeating its opponent)
-  if (num_moves == 0) {
-    b.update_unsafe();
-    return b.is_check() ? -INF + b.num_moves_played : 0;
-  }
+  if (num_moves == 0) return b.is_check() ? -INF + b.num_moves_played : 0;
 
   // score the moves:
   int move_scores[MAX_POSITION_MOVES];
@@ -247,6 +247,13 @@ int negamax(int depth, int alpha, int beta) {
 int quiescence(int alpha, int beta) {
   nodes_evaluated++;
 
+  // update the UNSAFE bitboard, since it's not updating elsewhere for some reason:
+  b.update_move_info_bitboards();
+
+  // call negamax if we're in check, to make sure we don't get ourselves in a
+  // mating net
+  if (b.is_check()) return negamax(1, alpha, beta);
+
   // static evaluation:
   int eval = evaluate();
 
@@ -257,10 +264,6 @@ int quiescence(int alpha, int beta) {
   // generate all possible moves from this position:
   int moves[MAX_POSITION_MOVES];
   int num_moves = b.get_nonquiet_moves(moves);
-
-  // stop the search early if we're in check (by choice - we could alternatively
-  // call negamax here instead or do something special)
-  if (b.is_check()) return alpha;
 
   // score the moves:
   int move_scores[MAX_POSITION_MOVES];

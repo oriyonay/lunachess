@@ -1,6 +1,6 @@
 TODO:
-- implement PV collection using follow_pv and score_pv flags ?
-  (random queen sacrifice bug)
+- fix UNSAFE bitboard updating problem in negamax?
+- QSEARCH: CALL NEGAMAX IF IN CHECK (currently returning alpha)
 - transposition table
 - late move reduction
 - null move pruning (commented out)
@@ -36,3 +36,5 @@ DONE:
 
 history move heuristic: could take it or leave it
 do we need to clear helper tables in search() ?
+
+question: why does stockfish use depth-limited qsearch?

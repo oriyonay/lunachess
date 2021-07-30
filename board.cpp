@@ -71,8 +71,6 @@ board::board(char* FEN) : base_score(0), num_moves_played(0), castle_rights(0),
 
   // update move information bitboards:
   update_move_info_bitboards();
-
-  // parse the rest of the FEN-string: TODO
 }
 
 /* get_moves(): generates and returns a list of all possible legal moves
@@ -1440,7 +1438,7 @@ void board::add_nonquiet_king_moves(int* move_list, int& num_moves) {
 
 // update_move_info_bitboards(): updates the move info bitboards (which pieces can
 // and can't be captured, etc.)
-inline void board::update_move_info_bitboards() {
+void board::update_move_info_bitboards() {
   if (turn == WHITE) {
     CANT_CAPTURE = W;
     CAN_CAPTURE  = B;
@@ -1457,7 +1455,7 @@ inline void board::update_move_info_bitboards() {
   update_unsafe();
 }
 
-inline void board::update_unsafe() {
+void board::update_unsafe() {
   int NOT_TURN = (turn == WHITE) ? BLACK : WHITE;
 
   U64 opp_knight = bitboard[KNIGHT + NOT_TURN];
@@ -1467,12 +1465,12 @@ inline void board::update_unsafe() {
 
   // pawn attacks:
   if (turn == WHITE) {
-    UNSAFE  = ((bitboard[PAWN + NOT_TURN] << 7) & ~FILES[H]);
-    UNSAFE |= ((bitboard[PAWN + NOT_TURN] << 9) & ~FILES[A]);
+    UNSAFE  = ((bitboard[BP] << 7) & ~FILES[H]);
+    UNSAFE |= ((bitboard[BP] << 9) & ~FILES[A]);
   }
   else {
-    UNSAFE  = ((bitboard[PAWN + NOT_TURN] >> 7) & ~FILES[A]);
-    UNSAFE |= ((bitboard[PAWN + NOT_TURN] >> 9) & ~FILES[H]);
+    UNSAFE  = ((bitboard[WP] >> 7) & ~FILES[A]);
+    UNSAFE |= ((bitboard[WP] >> 9) & ~FILES[H]);
   }
 
   // knight attacks:

@@ -20,7 +20,7 @@ inline int score_move(int move);
 // evaluate(): the board evaluation function
 inline int evaluate();
 
-// the search algorithm for finding the best move:
+// the search algorithms for finding the best move:
 void search(int depth);
 int negamax(int depth, int alpha, int beta);
 int quiescence(int alpha, int beta);

@@ -2,6 +2,7 @@
 #define BOARD_H
 
 #include <algorithm>
+#include <assert.h>
 #include <cstring>
 
 #include "consts.h"
@@ -57,8 +58,8 @@ struct board {
   void add_nonquiet_knight_moves(int* move_list, int& num_moves);
   void add_nonquiet_king_moves(int* move_list, int& num_moves);
 
-  inline void update_move_info_bitboards();
-  inline void update_unsafe();
+  void update_move_info_bitboards();
+  void update_unsafe();
   U64 pinned_pieces();
   bool is_check();
 };
