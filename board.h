@@ -7,7 +7,6 @@
 
 #include "consts.h"
 #include "defs.h"
-#include "tt.h"
 
 struct board {
   // main board data:
@@ -19,9 +18,6 @@ struct board {
   char turn;
   char castle_rights; // bits: 0 0 0 0 K Q k q
   U64 hash;
-
-  // the transposition table:
-  tt_entry* TT;
 
   // data used to generate moves:
   U64 CANT_CAPTURE;

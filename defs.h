@@ -5,13 +5,15 @@
 
 typedef uint64_t U64;
 
+// general definitions:
 #define NAME "luna"
 #define AUTHOR "ori yonay"
 #define VERSION "0.0.1"
 #define MAX_POSITION_MOVES 219
 #define MAX_GAME_MOVES 1024
 
-// engine settings:
+// tuneable engine settings:
+// (note: TT size is in number of entries)
 #define ASPIRATION_WINDOW_VALUE 50
 #define DEFAULT_UCI_INPUT_BUFFER_SIZE 2048
 #define DEFAULT_TT_SIZE (1 << 20)
@@ -19,9 +21,15 @@ typedef uint64_t U64;
 #define LMR_REDUCTION_LIMIT 3
 #define NULL_MOVE_PRUNING_DEPTH 3
 
-#define INF 2147483647
+#define INF 2147483500
 
 #define FEN_START "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
+// transposition table definitions:
+#define TT_EXACT 0
+#define TT_ALPHA 1
+#define TT_BETA 2
+#define TT_NO_MATCH 2147483600
 
 // these are set up in a clever way so that we can add them up -
 // for example, WHITE + KNIGHT = WN, BLACK + ROOK = BR, etc.

@@ -1,4 +1,3 @@
-#include "board.h"
 #include "consts.h"
 
 extern void init_consts() {
@@ -46,9 +45,8 @@ extern void init_consts() {
   CBK_ROOK_ZOBRIST = ZOBRIST_SQUARE_KEYS[BR][F8] ^ ZOBRIST_SQUARE_KEYS[BR][H8];
   CBQ_ROOK_ZOBRIST = ZOBRIST_SQUARE_KEYS[BR][D8] ^ ZOBRIST_SQUARE_KEYS[BR][A8];
 
-  // round transposition table size down to nearest power of 2 & initialize index mask:
-  while (TT_SIZE & (TT_SIZE-1)) POP_LSB(TT_SIZE);
-  TT_INDEX_MASK = TT_SIZE - 1;
+  // set up transposition table size and calculate number of entries:
+  NUM_TT_ENTRIES = DEFAULT_TT_SIZE;
 
   // ----- initialize file bitmasks: -----
   FILES[0] = 0L;
@@ -229,6 +227,7 @@ std::mt19937_64 generator(rd());
 /* ---------- end of functions for calculating constants ---------- */
 
 unsigned int TT_SIZE = DEFAULT_TT_SIZE;
+unsigned int NUM_TT_ENTRIES;
 unsigned int TT_INDEX_MASK;
 
 std::unordered_map<char, int> PIECE_INDICES = {

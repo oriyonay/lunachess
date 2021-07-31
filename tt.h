@@ -2,22 +2,31 @@
 #ifndef TT_H
 #define TT_H
 
-#include "defs.h"
+// macro to clear the transposition table
+#define CLEAR_TT() (memset(TT, 0, TT_SIZE))
+
+#include "consts.h"
+#include "globals.h"
 
 struct tt_entry {
   // the hash of the position:
   U64 hash;
 
-  // the bitboard of occupied pieces in the position. used as an extra
-  // measure of confidence that this is NOT a collision:
-  // U64 occupied;
-
-  // the best move (and its score) in this position:
-  int best_move;
-  int move_score;
-
-  // the depth to which we explored the position:
+  // the depth to which the engine analyzed this position:
   char depth;
+
+  // the transposition table flag (either TT_EXACT, TT_ALPHA, or TT_BETA):
+  char flag;
+
+  // the move value and the best move found:
+  int value;
+  int best_move;
 };
+
+// probe_tt(): probe the transposition table for the given position:
+int probe_tt(int depth, int alpha, int beta);
+
+// update_tt(): write a new entry to the transposition table:
+void update_tt(int depth, int value, char flag);
 
 #endif

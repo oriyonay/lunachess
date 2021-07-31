@@ -17,7 +17,10 @@ inline void init_search() {
 // score_move(): the move scoring function
 inline int score_move(int move) {
   // is this a PV move?
-  if (move == pv_table[0][b.num_moves_played]) return 1000;
+  if (score_pv && (move == pv_table[0][b.num_moves_played])) {
+    score_pv = false;
+    return 1000;
+  }
 
   // MVV/LVA scoring
   int score = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)];
@@ -98,8 +101,10 @@ void search(int depth) {
 
 // negamax(): the main tree-search function
 int negamax(int depth, int alpha, int beta) {
-  // update the UNSAFE bitboard, since it's not updating elsewhere for some reason:
+  // update the UNSAFE bitboard, and a local is_check variable,
+  // since it's not updating elsewhere for some reason:
   b.update_move_info_bitboards();
+  bool is_check = b.is_check();
 
   nodes_evaluated++;
 
@@ -107,13 +112,13 @@ int negamax(int depth, int alpha, int beta) {
   pv_length[b.num_moves_played] = b.num_moves_played;
 
   // check extension:
-  if (b.is_check()) depth = std::max(depth+1, 1);
+  if (is_check) depth = std::max(depth+1, 1);
 
   // base case:
-  if (depth <= 0 && !b.is_check()) return quiescence(alpha, beta);
+  if (depth <= 0 && !is_check) return quiescence(alpha, beta);
 
   // null-move pruning:
-  if (!b.is_check() &&
+  if (!is_check &&
       depth >= NULL_MOVE_PRUNING_DEPTH &&
       b.move_history[b.num_moves_played] != NULL &&
       b.num_moves_played > 0
@@ -138,7 +143,7 @@ int negamax(int depth, int alpha, int beta) {
   // if we can't make any moves, it's either checkmate or stalemate:
   // (we add the ply to -INF score to help the engine detect the CLOSEST
   // checkmate possible when it's defeating its opponent)
-  if (num_moves == 0) return b.is_check() ? -INF + b.num_moves_played : 0;
+  if (num_moves == 0) return is_check ? -INF + b.num_moves_played : 0;
 
   // score the moves:
   int move_scores[MAX_POSITION_MOVES];
@@ -176,7 +181,7 @@ int negamax(int depth, int alpha, int beta) {
       // can we do LMR?
       if (i >= LMR_FULL_DEPTH_MOVES &&
           depth >= LMR_REDUCTION_LIMIT &&
-          !b.is_check() &&
+          !is_check &&
           MOVE_CAPTURED(move) == NONE &&
           !MOVE_IS_PROMOTION(move)
       ) {
@@ -252,10 +257,13 @@ int quiescence(int alpha, int beta) {
 
   // call negamax if we're in check, to make sure we don't get ourselves in a
   // mating net
-  if (b.is_check()) return negamax(1, alpha, beta);
+  if (b.is_check()) return negamax(0, alpha, beta);
 
   // static evaluation:
   int eval = evaluate();
+
+  // eval pruning:
+  if (std::max(alpha, eval) >= beta) return eval;
 
   // alpha/beta escape conditions:
   if (eval >= beta) return beta;

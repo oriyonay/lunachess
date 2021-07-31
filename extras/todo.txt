@@ -11,6 +11,13 @@ TODO:
   - score promotions?
   - extra score if check? (or maybe search already has that covered)
 - add 'go perft' functionality
+- add "board has non-pawn material" condition in null move pruning
+- experiment with tt structure to reduce size
+- clear the TT on UCI position command
+
+RENAMES:
+- engine.cpp/h -> search.cpp/h
+- board::num_moves_played -> board::ply
 
 TO TRY/RESEARCH:
 - lazy SMP

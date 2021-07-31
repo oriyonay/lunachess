@@ -42,6 +42,8 @@ void parse_position(char* command) {
   // move command pointer to the point immediately after 'position ':
   command += 9;
 
+  // clear the transposition table: TODO
+
   // handle 'position startpos':
   if (!strncmp(command, "startpos", 8)) {
     b = board(FEN_START);
