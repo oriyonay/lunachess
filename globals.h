@@ -37,7 +37,10 @@ extern tt_entry* TT;
 /* ---------- TIME CONTROL RELATED GLOBALS ---------- */
 
 // if this flag is turned on, quit the search as soon as possible
-/* extern bool stop_search;
+extern bool stop_search;
+
+// did we get the quit command while thinking?
+extern bool quit_flag;
 
 // are we using time control?
 extern bool time_set;
@@ -51,6 +54,7 @@ extern int move_time;
 // extern int time;
 extern int time_increment;
 extern int start_time;
-extern int stop_time; */
+extern int stop_time;
+extern int time_limit;
 
 #endif

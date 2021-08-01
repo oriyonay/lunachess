@@ -5,6 +5,7 @@
 
 #include "consts.h"
 #include "defs.h"
+#include "globals.h"
 
 #ifdef WIN32
   #include <Windows.h>
@@ -22,9 +23,13 @@ int get_time();
 
 // listen to GUI input while in search. OS-dependent:
 // (code is from VICE engine by richard allbert)
-// bool listen();
+bool input_waiting();
 
 // read GUI input:
-// void read_input();
+// (code is from BBC engine)
+void read_input();
+
+// make sure we didn't get any stop or quit command, and that we still have time:
+void communicate();
 
 #endif

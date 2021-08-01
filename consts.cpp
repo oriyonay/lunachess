@@ -46,7 +46,8 @@ extern void init_consts() {
   CBQ_ROOK_ZOBRIST = ZOBRIST_SQUARE_KEYS[BR][D8] ^ ZOBRIST_SQUARE_KEYS[BR][A8];
 
   // set up transposition table size and calculate number of entries:
-  NUM_TT_ENTRIES = DEFAULT_TT_SIZE;
+  // (16 = sizeof(tt_entry))
+  NUM_TT_ENTRIES = DEFAULT_TT_SIZE / 16;
 
   // ----- initialize file bitmasks: -----
   FILES[0] = 0L;

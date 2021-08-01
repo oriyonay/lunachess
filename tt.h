@@ -18,9 +18,8 @@ struct tt_entry {
   // the transposition table flag (either TT_EXACT, TT_ALPHA, or TT_BETA):
   char flag;
 
-  // the move value and the best move found:
+  // the move value:
   int value;
-  int best_move;
 };
 
 // probe_tt(): probe the transposition table for the given position:

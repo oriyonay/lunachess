@@ -12,6 +12,9 @@ inline void init_search() {
 
   // zero counter of nodes searched:
   nodes_evaluated = 0;
+
+  // reset time control flag:
+  stop_search = false;
 }
 
 // score_move(): the move scoring function
@@ -19,11 +22,12 @@ inline int score_move(int move) {
   // is this a PV move?
   if (score_pv && (move == pv_table[0][b.num_moves_played])) {
     score_pv = false;
-    return 1000;
+    return 10000;
   }
 
   // MVV/LVA scoring
-  int score = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)];
+  int score = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)] +
+              (MOVE_IS_PROMOTION(move) ? 900 : 0);
   if (score) return score;
 
   // killer move heuristic for quiet moves:
@@ -57,9 +61,6 @@ void search(int depth) {
   // clear search helper tables:
   init_search();
 
-  // record starting time:
-  int start_time = get_time();
-
   // find best move within a given position
   int alpha = -INF;
   int beta = INF;
@@ -67,6 +68,9 @@ void search(int depth) {
   for (int cur_depth = 1; cur_depth <= depth; cur_depth++) {
     // search the position at the given depth:
     int score = negamax(cur_depth, alpha, beta);
+
+    // if we have to stop, stop the search:
+    if (stop_search) break;
 
     // print info to console:
     printf("info score cp %d depth %d nodes %d time %d pv ",
@@ -101,12 +105,26 @@ void search(int depth) {
 
 // negamax(): the main tree-search function
 int negamax(int depth, int alpha, int beta) {
+  // every 2048 nodes, communicate with the GUI / check time:
+  if (nodes_evaluated % 2048 == 0) communicate();
+
+  // if we have to stop, stop the search:
+  if (stop_search) return 0;
+
   // update the UNSAFE bitboard, and a local is_check variable,
   // since it's not updating elsewhere for some reason:
   b.update_move_info_bitboards();
   bool is_check = b.is_check();
 
+  // increment node counter and initialize score variable
   nodes_evaluated++;
+  int score;
+
+  // initialize the transposition table flag for this position, and look up the
+  // position in the TT:
+  char tt_flag = TT_ALPHA;
+  score = probe_tt(depth, alpha, beta);
+  if (score != TT_NO_MATCH) return score;
 
   // initialize PV length:
   pv_length[b.num_moves_played] = b.num_moves_played;
@@ -127,13 +145,18 @@ int negamax(int depth, int alpha, int beta) {
     b.make_nullmove();
 
     // search the position with a reduced depth:
-    int null_move_score = -negamax(depth - 3, -beta, -beta + 1);
+    int null_move_score = -negamax(depth - 4, -beta, -beta + 1);
 
     // flip the turn again:
     b.undo_nullmove();
 
+    // if we have to stop, stop the search:
+    if (stop_search) return 0;
+
     // fail-hard beta cutoff:
-    if (null_move_score >= beta) return beta;
+    if (null_move_score >= beta) {
+      return beta;
+    }
   }
 
   // generate all possible moves from this position:
@@ -171,7 +194,6 @@ int negamax(int depth, int alpha, int beta) {
     // make move & recursively call negamax helper function:
     // we also implement the meat of PVS in this section:
     b.make_move(move);
-    int score;
     // search first node at full-depth:
     if (i == 0) {
       score = -negamax(depth - 1, -beta, -alpha);
@@ -193,21 +215,31 @@ int negamax(int depth, int alpha, int beta) {
         score = alpha + 1;
       }
 
-      // now we perform PVS:
+      // now we perform PVS with temperature pruning:
+      // (temperature pruning is my own idea, where later moves are searched to
+      // lower depths. in this case, we search one move shallower every 4 moves tried.
+      // this of course would be useless in state-of-the-art engines since their
+      // expected branching factor is close to 2, but makes a huge difference here).
       if (score > alpha) {
-        score = -negamax(depth - 1, -alpha - 1, -alpha);
+        score = -negamax(depth - 1 - (i / 6), -alpha - 1, -alpha);
         if ((score > alpha) && (score < beta)) {
-          score = -negamax(depth - 1, -beta, -alpha);
+          score = -negamax(depth - 1 - (i / 6), -beta, -alpha);
         }
       }
       else {
-        score = -negamax(depth - 1, -beta, -alpha);
+        score = -negamax(depth - 1 - (i / 6), -beta, -alpha);
       }
     }
     b.undo_move();
 
+    // if we have to stop, stop the search:
+    if (stop_search) return 0;
+
     // fail-hard beta cutoff (node fails high)
     if (score >= beta) {
+      // store beta in the transposition table for this position:
+      update_tt(depth, beta, TT_BETA);
+
       // add this move to the killer move list, only if it's a quiet move
       if (MOVE_CAPTURED(move) == NONE) {
         killer_moves[1][b.num_moves_played] = killer_moves[0][b.num_moves_played];
@@ -219,6 +251,10 @@ int negamax(int depth, int alpha, int beta) {
 
     // if we found a better move (PV node):
     if (score > alpha) {
+      // switch the TT flag to indicate storing the exact value of this position,
+      // since it's a PV node:
+      tt_flag = TT_EXACT;
+
       // add this move to the history move list, only if it's a quiet move:
       if (MOVE_CAPTURED(move) == NONE) {
         history_moves[MOVE_PIECEMOVED(move)][MOVE_TO(move)] += depth;
@@ -244,12 +280,16 @@ int negamax(int depth, int alpha, int beta) {
     }
   }
 
-  // node fails low:
+  // node fails low. store the value in the transposition table first, then exit:
+  update_tt(depth, alpha, tt_flag);
   return alpha;
 }
 
 // quiescence(): the quiescence search algorithm
 int quiescence(int alpha, int beta) {
+  // every 2048 nodes, communicate with the GUI / check time:
+  if (nodes_evaluated % 2048 == 0) communicate();
+
   nodes_evaluated++;
 
   // update the UNSAFE bitboard, since it's not updating elsewhere for some reason:
@@ -281,6 +321,7 @@ int quiescence(int alpha, int beta) {
 
   // recursively qsearch the horizon:
   int move, move_index;
+  int best_case;
   for (int i = 0; i < num_moves; i++) {
     // selection sort to find the best move:
     move_index = 0; // contains the index of the best move
@@ -295,10 +336,18 @@ int quiescence(int alpha, int beta) {
     move = moves[move_index];
     move_scores[move_index] = -1;
 
+    // delta pruning: could this move improve alpha, in the best case?
+    /* best_case = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)] +
+                (MOVE_IS_PROMOTION(move) ? 900 : 0);
+    if (eval + best_case + DELTA_VALUE < alpha) return alpha; */
+
     // make move & recursively call qsearch:
     b.make_move(move);
     int score = -quiescence(-beta, -alpha);
     b.undo_move();
+
+    // if we have to stop, stop the search:
+    if (stop_search) return 0;
 
     // fail-hard beta cutoff (node fails high)
     if (score >= beta) return beta;

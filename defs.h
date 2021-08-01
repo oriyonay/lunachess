@@ -13,13 +13,14 @@ typedef uint64_t U64;
 #define MAX_GAME_MOVES 1024
 
 // tuneable engine settings:
-// (note: TT size is in number of entries)
+// (note: TT size is in bytes)
 #define ASPIRATION_WINDOW_VALUE 50
 #define DEFAULT_UCI_INPUT_BUFFER_SIZE 2048
-#define DEFAULT_TT_SIZE (1 << 20)
+#define DEFAULT_TT_SIZE (1 << 24)
+#define DELTA_VALUE 150
 #define LMR_FULL_DEPTH_MOVES 4
 #define LMR_REDUCTION_LIMIT 3
-#define NULL_MOVE_PRUNING_DEPTH 3
+#define NULL_MOVE_PRUNING_DEPTH 4
 
 #define INF 2147483500
 

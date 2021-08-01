@@ -42,7 +42,8 @@ void parse_position(char* command) {
   // move command pointer to the point immediately after 'position ':
   command += 9;
 
-  // clear the transposition table: TODO
+  // clear the transposition table:
+  CLEAR_TT();
 
   // handle 'position startpos':
   if (!strncmp(command, "startpos", 8)) {
@@ -89,11 +90,53 @@ void parse_position(char* command) {
 
 // parse 'go' command:
 void parse_go(char* command) {
-  // get depth:
+  // initialize variables:
+  time_set = false;
+  moves_to_go = 30;
+  move_time = -1;
+  time_limit = -1;
+  time_increment = 0;
+  start_time = get_time();
+
+  // parse depth command:
   int depth = -1;
-  char* depth_arg = strstr(command, "depth");
-  if (depth_arg) depth = atoi(depth_arg + 6);
-  else depth = 7;
+  char* arg = strstr(command, "depth");
+  if (arg) depth = atoi(arg + 6);
+
+  arg = strstr(command, "binc");
+  if (arg && (b.turn == BLACK)) time_increment = atoi(arg + 5);
+
+  arg = strstr(command, "winc");
+  if (arg && (b.turn == WHITE)) time_increment = atoi(arg + 5);
+
+  arg = strstr(command, "btime");
+  if (arg && (b.turn == BLACK)) time_limit = atoi(arg + 6);
+
+  arg = strstr(command, "wtime");
+  if (arg && (b.turn == WHITE)) time_limit = atoi(arg + 6);
+
+  arg = strstr(command, "movestogo");
+  if (arg) moves_to_go = atoi(arg + 10);
+
+  arg = strstr(command, "movetime");
+  if (arg) move_time = atoi(arg + 9);
+
+  if (move_time != -1) {
+    time_limit = move_time;
+    moves_to_go = 1;
+  }
+
+  if (time_limit != -1) {
+    time_set = true;
+
+    // set up timing:
+    time_limit /= moves_to_go;
+    time_limit -= 50;
+    stop_time = start_time + time_limit + time_increment;
+  }
+
+  // if depth is not set, search 'infinitely':
+  if (depth == -1) depth = 64;
 
   // now search the position with these parameters:
   search(depth);

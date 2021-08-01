@@ -3,8 +3,12 @@
 // init_globals(): initialize global variables:
 void init_globals() {
   b = board(FEN_START);
-  tt_entry* TT = new tt_entry[NUM_TT_ENTRIES];
+  TT = new tt_entry[NUM_TT_ENTRIES];
   CLEAR_TT();
+
+  stop_search = false;
+  quit_flag = false;
+  time_set = false;
 }
 
 /* ---------- SEARCH RELATED GLOBALS ---------- */
@@ -29,3 +33,25 @@ int history_moves[12][64]; // [piece][square]
 /* ---------- TRANSPOSITION TABLE GLOBALS ---------- */
 
 tt_entry* TT;
+
+/* ---------- TIME CONTROL RELATED GLOBALS ---------- */
+
+// if this flag is turned on, quit the search as soon as possible
+bool stop_search;
+
+// did we get the quit command while thinking?
+bool quit_flag;
+
+// are we using time control?
+bool time_set;
+
+// UCI's movestogo holder:
+int moves_to_go;
+
+// UCI's movetime counter:
+int move_time;
+
+int time_increment;
+int start_time;
+int stop_time;
+int time_limit;

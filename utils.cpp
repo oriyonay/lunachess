@@ -32,7 +32,7 @@ int get_time() {
 
 // listen to GUI input while in search. OS-dependent:
 // (code is from VICE engine by richard allbert)
-/* bool listen() {
+bool input_waiting() {
   #ifndef WIN32
     fd_set readfds;
     struct timeval tv;
@@ -65,4 +65,34 @@ int get_time() {
       return dw <= 1 ? 0 : dw;
     }
   #endif
-} */
+}
+
+// read GUI input:
+// (code is from BBC engine)
+void read_input() {
+  int bytes;
+  char input[256] = "";
+  char* endc;
+
+  if (input_waiting()) {
+    stop_search = true;
+    do {
+      bytes = read(fileno(stdin), input, 256);
+    } while (bytes < 0);
+
+    endc = strchr(input, '\n');
+    if (endc) *endc = 0;
+
+    if (strlen(input) > 0) {
+      if (!strncmp(input, "quit", 4) || !strncmp(input, "stop", 4)) {
+        quit_flag = true;
+      }
+    }
+  }
+}
+
+// make sure we didn't get any stop or quit command, and that we still have time:
+void communicate() {
+  if (time_set && (get_time() > stop_time)) stop_search = true;
+  read_input();
+}
