@@ -1,6 +1,6 @@
 TODO / NOTES:
 - fix UNSAFE bitboard updating problem in negamax?
-- QSEARCH: CALL NEGAMAX IF IN CHECK (currently returning alpha)
+- null move pruning: add 'has non-pawn material' condition
 - internal iterative deepening (for move ordering)
 - experiment with LMR conditions
 - in move generation function end we return num_moves instead of just j

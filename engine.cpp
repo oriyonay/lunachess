@@ -2,21 +2,6 @@
 // move scoring/ordering, etc.
 #include "engine.h"
 
-// init_search(): initialize search variables
-inline void init_search() {
-  // zero pv, killer move, and history tables:
-  memset(pv_table, 0, sizeof(int) * MAX_GAME_MOVES * MAX_GAME_MOVES);
-  memset(pv_length, 0, sizeof(int) * MAX_GAME_MOVES);
-  memset(killer_moves, 0, sizeof(int) * 2 * MAX_GAME_MOVES);
-  memset(history_moves, 0, sizeof(int) * 12 * 64);
-
-  // zero counter of nodes searched:
-  nodes_evaluated = 0;
-
-  // reset time control flag:
-  stop_search = false;
-}
-
 // score_move(): the move scoring function
 inline int score_move(int move) {
   // is this a PV move?
@@ -58,14 +43,23 @@ inline int evaluate() {
 
 // search(): the main search algorithm (with iterative deepening)
 void search(int depth) {
-  // clear search helper tables:
-  init_search();
+  // zero counter of nodes searched:
+  nodes_evaluated = 0;
+
+  // reset score PV flag:
+  score_pv = false;
+
+  // reset time control flag:
+  stop_search = false;
 
   // find best move within a given position
   int alpha = -INF;
   int beta = INF;
   int ply = b.num_moves_played;
   for (int cur_depth = 1; cur_depth <= depth; cur_depth++) {
+    // enable the follow_pv flag:
+    follow_pv = true;
+
     // search the position at the given depth:
     int score = negamax(cur_depth, alpha, beta);
 
@@ -111,6 +105,15 @@ int negamax(int depth, int alpha, int beta) {
   // if we have to stop, stop the search:
   if (stop_search) return 0;
 
+  // quick hack to determine whether this is a PV node:
+  bool pv = (beta - alpha) > 1;
+
+  // initialize the transposition table flag for this position, and look up the
+  // position in the TT:
+  char tt_flag = TT_ALPHA;
+  int score = probe_tt(depth, alpha, beta);
+  if (b.num_moves_played > 0 && !pv && (score != TT_NO_MATCH)) return score;
+
   // update the UNSAFE bitboard, and a local is_check variable,
   // since it's not updating elsewhere for some reason:
   b.update_move_info_bitboards();
@@ -118,13 +121,6 @@ int negamax(int depth, int alpha, int beta) {
 
   // increment node counter and initialize score variable
   nodes_evaluated++;
-  int score;
-
-  // initialize the transposition table flag for this position, and look up the
-  // position in the TT:
-  char tt_flag = TT_ALPHA;
-  score = probe_tt(depth, alpha, beta);
-  if (score != TT_NO_MATCH) return score;
 
   // initialize PV length:
   pv_length[b.num_moves_played] = b.num_moves_played;
@@ -136,7 +132,8 @@ int negamax(int depth, int alpha, int beta) {
   if (depth <= 0 && !is_check) return quiescence(alpha, beta);
 
   // null-move pruning:
-  if (!is_check &&
+  if (!pv &&
+      !is_check &&
       depth >= NULL_MOVE_PRUNING_DEPTH &&
       b.move_history[b.num_moves_played] != NULL &&
       b.num_moves_played > 0
@@ -154,9 +151,7 @@ int negamax(int depth, int alpha, int beta) {
     if (stop_search) return 0;
 
     // fail-hard beta cutoff:
-    if (null_move_score >= beta) {
-      return beta;
-    }
+    if (null_move_score >= beta) return beta;
   }
 
   // generate all possible moves from this position:
@@ -167,6 +162,17 @@ int negamax(int depth, int alpha, int beta) {
   // (we add the ply to -INF score to help the engine detect the CLOSEST
   // checkmate possible when it's defeating its opponent)
   if (num_moves == 0) return is_check ? -INF + b.num_moves_played : 0;
+
+  // if we're following the principal variation, enable PV scoring:
+  if (follow_pv) {
+    follow_pv = false;
+    for (int i = 0; i < num_moves; i++) {
+      if (pv_table[0][b.num_moves_played] == moves[i]) {
+        score_pv = true;
+        follow_pv = true;
+      }
+    }
+  }
 
   // score the moves:
   int move_scores[MAX_POSITION_MOVES];
@@ -215,39 +221,18 @@ int negamax(int depth, int alpha, int beta) {
         score = alpha + 1;
       }
 
-      // now we perform PVS with temperature pruning:
-      // (temperature pruning is my own idea, where later moves are searched to
-      // lower depths. in this case, we search one move shallower every 4 moves tried.
-      // this of course would be useless in state-of-the-art engines since their
-      // expected branching factor is close to 2, but makes a huge difference here).
+      // now we perform PVS:
       if (score > alpha) {
-        score = -negamax(depth - 1 - (i / 6), -alpha - 1, -alpha);
+        score = -negamax(depth - 1, -alpha - 1, -alpha);
         if ((score > alpha) && (score < beta)) {
-          score = -negamax(depth - 1 - (i / 6), -beta, -alpha);
+          score = -negamax(depth - 1, -beta, -alpha);
         }
-      }
-      else {
-        score = -negamax(depth - 1 - (i / 6), -beta, -alpha);
       }
     }
     b.undo_move();
 
     // if we have to stop, stop the search:
     if (stop_search) return 0;
-
-    // fail-hard beta cutoff (node fails high)
-    if (score >= beta) {
-      // store beta in the transposition table for this position:
-      update_tt(depth, beta, TT_BETA);
-
-      // add this move to the killer move list, only if it's a quiet move
-      if (MOVE_CAPTURED(move) == NONE) {
-        killer_moves[1][b.num_moves_played] = killer_moves[0][b.num_moves_played];
-        killer_moves[0][b.num_moves_played] = move;
-      }
-
-      return beta;
-    }
 
     // if we found a better move (PV node):
     if (score > alpha) {
@@ -277,6 +262,20 @@ int negamax(int depth, int alpha, int beta) {
 
       // adjust the PV length table:
       pv_length[ply] = pv_length[ply+1];
+
+      // fail-hard beta cutoff (node fails high)
+      if (score >= beta) {
+        // store beta in the transposition table for this position:
+        update_tt(depth, beta, TT_BETA);
+
+        // add this move to the killer move list, only if it's a quiet move
+        if (MOVE_CAPTURED(move) == NONE) {
+          killer_moves[1][b.num_moves_played] = killer_moves[0][b.num_moves_played];
+          killer_moves[0][b.num_moves_played] = move;
+        }
+
+        return beta;
+      }
     }
   }
 
@@ -349,11 +348,13 @@ int quiescence(int alpha, int beta) {
     // if we have to stop, stop the search:
     if (stop_search) return 0;
 
-    // fail-hard beta cutoff (node fails high)
-    if (score >= beta) return beta;
-
     // if we found a better move (PV node):
-    if (score > alpha) alpha = score;
+    if (score > alpha) {
+      alpha = score;
+
+      // fail-hard beta cutoff (node fails high)
+      if (score >= beta) return beta;
+    }
   }
 
   // node fails low:

@@ -23,10 +23,8 @@ void update_tt(int depth, int value, char flag) {
   tt_entry* entry = &TT[b.hash % NUM_TT_ENTRIES];
 
   // write the data:
-  if (depth >= entry->depth) {
-    entry->hash = b.hash;
-    entry->depth = depth;
-    entry->flag = flag;
-    entry->value = value;
-  }
+  entry->hash = b.hash;
+  entry->depth = depth;
+  entry->flag = flag;
+  entry->value = value;
 }

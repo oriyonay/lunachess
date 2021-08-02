@@ -24,7 +24,11 @@ void uci_loop() {
     // now we have the user input. start parsing commands:
     if (!strncmp(inbuf, "isready", 7)) printf("readyok\n");
     else if (!strncmp(inbuf, "position", 8)) parse_position(inbuf);
-    else if (!strncmp(inbuf, "ucinewgame", 10)) parse_position("position startpos");
+    else if (!strncmp(inbuf, "ucinewgame", 10)) {
+      // clear the transposition table and reset the board:
+      CLEAR_TT();
+      parse_position("position startpos");
+    }
     else if (!strncmp(inbuf, "go", 2)) parse_go(inbuf);
     else if (!strncmp(inbuf, "quit", 4)) break;
     else if (!strncmp(inbuf, "print", 5)) b.print();
@@ -42,8 +46,11 @@ void parse_position(char* command) {
   // move command pointer to the point immediately after 'position ':
   command += 9;
 
-  // clear the transposition table:
-  CLEAR_TT();
+  // zero pv, killer move, and history tables:
+  memset(pv_table, 0, sizeof(int) * MAX_GAME_MOVES * MAX_GAME_MOVES);
+  memset(pv_length, 0, sizeof(int) * MAX_GAME_MOVES);
+  memset(killer_moves, 0, sizeof(int) * 2 * MAX_GAME_MOVES);
+  memset(history_moves, 0, sizeof(int) * 12 * 64);
 
   // handle 'position startpos':
   if (!strncmp(command, "startpos", 8)) {
