@@ -132,7 +132,16 @@ extern U64 CBQ_ROOK_ZOBRIST;
 /* -------------------- CONSTANTS FOR ENGINE EVALUATION -------------------- */
 extern int MVV_LVA_SCORE[12][13]; // contains MVV/LVA precalculated scores
 
+extern U64 ISOLATED_MASKS[64];
+extern U64 WHITE_PASSED_PAWN_MASKS[64];
+extern U64 BLACK_PASSED_PAWN_MASKS[64];
+
+extern const int PASSED_PAWN_BONUS[9];
+
+/* -------------------- MISCELLANEOUS CONSTANTS -------------------- */
 // miscellaneous pre-calculated constants:
+extern U64 SQUARE_FILES[64];
+// extern U64 SQUARE_RANKS[64];
 // extern char FILE_OF[64];
 // extern char RANK_OF[64];
 

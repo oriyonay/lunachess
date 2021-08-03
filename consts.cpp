@@ -62,6 +62,10 @@ extern void init_consts() {
   FILE_AB = FILES[A] | FILES[B];
   FILE_GH = FILES[G] | FILES[H];
 
+  for (int sq = 0; sq < 64; sq++) {
+    SQUARE_FILES[sq] = FILES[FILE_NO(sq)];
+  }
+
   // ----- initialize rank bitmasks: -----
   RANKS[8] = (1L << 8) - 1;
   for (int i = 7; i >= 0; i--) {
@@ -130,6 +134,31 @@ extern void init_consts() {
       RECT_LOOKUP[i][j] = in_between(i, j);
     }
   }
+
+  // calculate isolated and passed pawn bitmasks:
+  for (int sq = 0; sq < 64; sq++) {
+    int file = FILE_NO(sq);
+    int rank = RANK_NO(sq);
+
+    // initialize isolated mask:
+    U64 mask = 0L;
+    if (file > 0) mask |= FILES[file-1];
+    if (file < 7) mask |= FILES[file+1];
+    ISOLATED_MASKS[sq] = mask;
+
+    // initialize passed pawn masks:
+    U64 white_mask = mask | FILES[file];
+    U64 black_mask = mask | FILES[file];
+    for (int i = 0; i < (10-rank); i++) {
+      white_mask &= ~RANKS[i];
+    }
+    for (int i = 0; i < rank; i++) {
+      black_mask &= ~RANKS[8-i];
+    }
+
+    WHITE_PASSED_PAWN_MASKS[sq] = white_mask;
+    BLACK_PASSED_PAWN_MASKS[sq] = black_mask;
+    }
 
   /* ---------- initialize magic bitboard-related tables: ---------- */
   // initialize ROOK_MASKS and BISHOP_MASKS:
@@ -483,6 +512,14 @@ int MVV_LVA_SCORE[12][13] = {
 	100, 200, 300, 400, 500, 600,  0  , 0  , 0  , 0  , 0  , 0  , 0
 };
 
+U64 ISOLATED_MASKS[64];
+U64 WHITE_PASSED_PAWN_MASKS[64];
+U64 BLACK_PASSED_PAWN_MASKS[64];
+
+const int PASSED_PAWN_BONUS[9] = {0, 0, 5, 10, 25, 35, 65, 100, 200};
+
 // miscellaneous pre-calculated constants:
+U64 SQUARE_FILES[64];
+// U64 SQUARE_RANKS[64];
 // char FILE_OF[64];
 // char RANK_OF[64];

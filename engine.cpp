@@ -24,21 +24,61 @@ inline int score_move(int move) {
 
 // evaluate(): the board evaluation function
 inline int evaluate() {
-  // start with naive evaluation:
-  int score = b.base_score;
+  // start with naive evaluation (b.base_score) and add bonus:
+  int bonus = 0;
 
   // add bishop pair bonus:
-  if (b.bitboard[WB] & (b.bitboard[WB] - 1)) score += BISHOP_PAIR_BONUS;
-  if (b.bitboard[BB] & (b.bitboard[BB] - 1)) score -= BISHOP_PAIR_BONUS;
+  if (b.bitboard[WB] & (b.bitboard[WB] - 1)) bonus += BISHOP_PAIR_BONUS;
+  if (b.bitboard[BB] & (b.bitboard[BB] - 1)) bonus -= BISHOP_PAIR_BONUS;
 
-  if (b.turn == WHITE) {
-    //
-    return score;
+  // doubled pawn penalty:
+  U64 white_pawn_file;
+  U64 black_pawn_file;
+  for (int file = 0; file < 8; file++) {
+    white_pawn_file = (WP & FILES[file]);
+    black_pawn_file = (BP & FILES[file]);
+    if (white_pawn_file &&
+       (white_pawn_file & (white_pawn_file - 1))) bonus -= DOUBLED_PAWN_PENALTY;
+    if (black_pawn_file &&
+       (black_pawn_file & (black_pawn_file - 1))) bonus += DOUBLED_PAWN_PENALTY;
   }
-  else {
-    //
-    return -score;
+
+  // isolated and passed pawn penalties:
+  U64 wp = b.bitboard[WP];
+  U64 bp = b.bitboard[BP];
+  int index;
+  while (wp) {
+    index = LSB(wp);
+    if (!(b.bitboard[WP] & ISOLATED_MASKS[index])) bonus -= ISOLATED_PAWN_PENALTY;
+    if (!(b.bitboard[BP] & WHITE_PASSED_PAWN_MASKS[index])) bonus += PASSED_PAWN_BONUS[RANK_NO(index)];
+    POP_LSB(wp);
   }
+  while (bp) {
+    index = LSB(bp);
+    if (!(b.bitboard[BP] & ISOLATED_MASKS[index])) bonus += ISOLATED_PAWN_PENALTY;
+    if (!(b.bitboard[WP] & BLACK_PASSED_PAWN_MASKS[index])) bonus -= PASSED_PAWN_BONUS[9 - RANK_NO(index)];
+    POP_LSB(bp);
+  }
+
+  // semi-open and fully-open rook files:
+  U64 wr = b.bitboard[WR];
+  U64 br = b.bitboard[BR];
+  while (wr) {
+    index = LSB(wr);
+    if (!((b.bitboard[WP] | b.bitboard[BP]) & SQUARE_FILES[index])) bonus += FULLY_OPEN_FILE_BONUS;
+    else if (!(b.bitboard[WP] & SQUARE_FILES[index])) bonus += SEMI_OPEN_FILE_BONUS;
+    POP_LSB(wr);
+  }
+  while (br) {
+    index = LSB(br);
+    if (!((b.bitboard[WP] | b.bitboard[BP]) & SQUARE_FILES[index])) bonus -= FULLY_OPEN_FILE_BONUS;
+    else if (!(b.bitboard[BP] & SQUARE_FILES[index])) bonus -= SEMI_OPEN_FILE_BONUS;
+    POP_LSB(br);
+  }
+
+  // return the evaluation relative to the side whose turn it is:
+  if (b.turn == WHITE) return b.base_score + bonus;
+  else return -b.base_score - bonus;
 }
 
 // search(): the main search algorithm (with iterative deepening)
@@ -213,7 +253,7 @@ int negamax(int depth, int alpha, int beta) {
           MOVE_CAPTURED(move) == NONE &&
           !MOVE_IS_PROMOTION(move)
       ) {
-        score = -negamax(depth - 2, -alpha - 1, -alpha);
+        score = -negamax(depth - 3, -alpha - 1, -alpha);
       }
       // if we can't, we use this trick to make sure we enter PVS and perform
       // the full search if necessary:
