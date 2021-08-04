@@ -10,7 +10,7 @@ typedef uint64_t U64;
 #define AUTHOR "ori yonay"
 #define VERSION "0.0.1"
 #define MAX_POSITION_MOVES 219
-#define MAX_GAME_MOVES 1024
+#define MAX_GAME_MOVES 512
 
 // tuneable engine settings:
 // (note: TT size is in bytes)

@@ -13,7 +13,8 @@ struct board {
   U64 bitboard[12];
   char piece_board[64];
   int move_history[MAX_GAME_MOVES];
-  int num_moves_played;
+  U64 repetition_history[MAX_GAME_MOVES];
+  int ply;
   int base_score_opening; // material + PST score for opening phase
   int base_score_endgame; // material + PST score for endgame phase
   int game_phase_score;
@@ -60,6 +61,7 @@ struct board {
   void update_unsafe();
   U64 pinned_pieces();
   bool is_check();
+  bool is_repetition();
 };
 
 // utility functions for board class:

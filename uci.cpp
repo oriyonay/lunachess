@@ -138,7 +138,7 @@ void parse_go(char* command) {
 
     // set up timing:
     time_limit /= moves_to_go;
-    if (time_limit > 1500) time_limit -= 50;
+    time_limit -= 50;
     stop_time = start_time + time_limit + time_increment;
   }
 

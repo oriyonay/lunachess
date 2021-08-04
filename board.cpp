@@ -2,7 +2,7 @@
 
 // the board constructor, which parses a FEN-string:
 board::board(char* FEN) : base_score_opening(0), base_score_endgame(0), game_phase_score(0),
-  num_moves_played(0), castle_rights(0), CANT_CAPTURE(0L), CAN_CAPTURE(0L),
+  ply(0), castle_rights(0), CANT_CAPTURE(0L), CAN_CAPTURE(0L),
   EMPTY_SQUARES(0L), CAN_MOVE_TO(0L), OCCUPIED_SQUARES(0L), hash(0L) {
   // clear the bitboards:
   memset(bitboard, 0, 12 * sizeof(U64));
@@ -11,8 +11,9 @@ board::board(char* FEN) : base_score_opening(0), base_score_endgame(0), game_pha
   // NOTE: the piece board is used for quick piece-square lookup
   memset(piece_board, 12, 64 * sizeof(int));
 
-  // clear the move history list:
+  // clear the move and repetition history list:
   memset(move_history, 0, MAX_GAME_MOVES * sizeof(int));
+  memset(repetition_history, 0, MAX_GAME_MOVES * sizeof(U64));
 
   // parse the main FEN. (i is the shift index)
   int i = 0;
@@ -247,7 +248,8 @@ bool board::make_move(char* move) {
 // it's legal. returns true if legal, false otherwise.
 bool board::make_move(int move) {
   // first of all, let's push the move to our move_history stack:
-  move_history[num_moves_played++] = move;
+  repetition_history[ply] = hash;
+  move_history[ply++] = move;
 
   // get move info:
   int to = MOVE_TO(move);
@@ -480,9 +482,9 @@ bool board::make_move(int move) {
 // undo_move(): undoes the last move made
 void board::undo_move() {
   // first of all, let's pop the move off our move_history stack:
-  num_moves_played--;
+  ply--;
 
-  int move = move_history[num_moves_played];
+  int move = move_history[ply];
 
   // get move info:
   int to = MOVE_TO(move);
@@ -701,13 +703,14 @@ void board::print() {
 void board::make_nullmove() {
   turn = (turn == WHITE) ? BLACK : WHITE;
   hash ^= ZOBRIST_TURN_KEY;
-  move_history[num_moves_played++] = NULL;
+  repetition_history[ply] = 0L;
+  move_history[ply++] = NULL;
 }
 
 void board::undo_nullmove() {
   turn = (turn == WHITE) ? BLACK : WHITE;
   hash ^= ZOBRIST_TURN_KEY;
-  num_moves_played--;
+  ply--;
 }
 
 // add all possible pawn moves to the stack:
@@ -813,8 +816,8 @@ void board::add_pawn_moves(int* move_list, int& num_moves) {
     }
 
     // ----- look for a possible en passant capture: -----
-    if (MOVE_IS_PAWNFIRST(move_history[num_moves_played-1])) {
-      char ep_file = FILE_NO(MOVE_TO(move_history[num_moves_played-1]));
+    if (MOVE_IS_PAWNFIRST(move_history[ply-1])) {
+      char ep_file = FILE_NO(MOVE_TO(move_history[ply-1]));
       // look for en passant to the right:
       moves = (bitboard[WP] << 1) & bitboard[BP] & RANKS[5] & ~FILES[A] & FILES[ep_file];
       if (moves) {
@@ -933,8 +936,8 @@ void board::add_pawn_moves(int* move_list, int& num_moves) {
     }
 
     // ----- look for a possible en passant capture: -----
-    if (MOVE_IS_PAWNFIRST(move_history[num_moves_played-1])) {
-      char ep_file = FILE_NO(MOVE_TO(move_history[num_moves_played-1]));
+    if (MOVE_IS_PAWNFIRST(move_history[ply-1])) {
+      char ep_file = FILE_NO(MOVE_TO(move_history[ply-1]));
 
       // look for en passant capture to the right:
       moves = (bitboard[BP] << 1) & bitboard[WP] & RANKS[4] & ~FILES[A] & FILES[ep_file];
@@ -1219,8 +1222,8 @@ void board::add_nonquiet_pawn_moves(int* move_list, int& num_moves) {
     }
 
     // ----- look for a possible en passant capture: -----
-    if (MOVE_IS_PAWNFIRST(move_history[num_moves_played-1])) {
-      char ep_file = FILE_NO(MOVE_TO(move_history[num_moves_played-1]));
+    if (MOVE_IS_PAWNFIRST(move_history[ply-1])) {
+      char ep_file = FILE_NO(MOVE_TO(move_history[ply-1]));
       // look for en passant to the right:
       moves = (bitboard[WP] << 1) & bitboard[BP] & RANKS[5] & ~FILES[A] & FILES[ep_file];
       if (moves) {
@@ -1315,8 +1318,8 @@ void board::add_nonquiet_pawn_moves(int* move_list, int& num_moves) {
     }
 
     // ----- look for a possible en passant capture: -----
-    if (MOVE_IS_PAWNFIRST(move_history[num_moves_played-1])) {
-      char ep_file = FILE_NO(MOVE_TO(move_history[num_moves_played-1]));
+    if (MOVE_IS_PAWNFIRST(move_history[ply-1])) {
+      char ep_file = FILE_NO(MOVE_TO(move_history[ply-1]));
 
       // look for en passant capture to the right:
       moves = (bitboard[BP] << 1) & bitboard[WP] & RANKS[4] & ~FILES[A] & FILES[ep_file];
@@ -1575,6 +1578,18 @@ U64 board::pinned_pieces() {
 // called get_moves())
 bool board::is_check() {
   return UNSAFE & bitboard[KING + turn];
+}
+
+bool board::is_repetition() {
+  // try to find two other instances of the current position in our repetition history list:
+  int repetitions = 0;
+  for (int i = 0; i < ply; i++) {
+    if (repetition_history[i] == hash) {
+      repetitions++;
+      if (repetitions == 2) break;
+    }
+  }
+  return (repetitions >= 2) && ply;
 }
 
 /* ---------- BOARD UTILITY FUNCTIONS ---------- */

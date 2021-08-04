@@ -5,7 +5,7 @@
 // score_move(): the move scoring function
 inline int score_move(int move) {
   // is this a PV move?
-  if (score_pv && (move == pv_table[0][b.num_moves_played])) {
+  if (score_pv && (move == pv_table[0][b.ply])) {
     score_pv = false;
     return 10000;
   }
@@ -19,8 +19,8 @@ inline int score_move(int move) {
   if (score) return score;
 
   // killer move heuristic for quiet moves:
-  if (move == killer_moves[0][b.num_moves_played]) return 50;
-  if (move == killer_moves[1][b.num_moves_played]) return 40;
+  if (move == killer_moves[0][b.ply]) return 50;
+  if (move == killer_moves[1][b.ply]) return 40;
 
   return history_moves[MOVE_PIECEMOVED(move)][MOVE_TO(move)];
 }
@@ -53,13 +53,13 @@ inline int evaluate() {
   while (wp) {
     index = LSB(wp);
     if (!(b.bitboard[WP] & ISOLATED_MASKS[index])) bonus -= ISOLATED_PAWN_PENALTY;
-    if (!(b.bitboard[BP] & WHITE_PASSED_PAWN_MASKS[index])) bonus += PASSED_PAWN_BONUS[RANK_NO(index)];
+    // if (!(b.bitboard[BP] & WHITE_PASSED_PAWN_MASKS[index])) bonus += PASSED_PAWN_BONUS[RANK_NO(index)];
     POP_LSB(wp);
   }
   while (bp) {
     index = LSB(bp);
     if (!(b.bitboard[BP] & ISOLATED_MASKS[index])) bonus += ISOLATED_PAWN_PENALTY;
-    if (!(b.bitboard[WP] & BLACK_PASSED_PAWN_MASKS[index])) bonus -= PASSED_PAWN_BONUS[9 - RANK_NO(index)];
+    // if (!(b.bitboard[WP] & BLACK_PASSED_PAWN_MASKS[index])) bonus -= PASSED_PAWN_BONUS[9 - RANK_NO(index)];
     POP_LSB(bp);
   }
 
@@ -128,7 +128,6 @@ void search(int depth) {
   // find best move within a given position
   int alpha = -INF;
   int beta = INF;
-  int ply = b.num_moves_played;
   for (int cur_depth = 1; cur_depth <= depth; cur_depth++) {
     // enable the follow_pv flag:
     follow_pv = true;
@@ -143,8 +142,8 @@ void search(int depth) {
     printf("info score cp %d depth %d nodes %d time %d pv ",
       score, cur_depth, nodes_evaluated, get_time() - start_time
     );
-    for (int i = ply; i < pv_length[ply]; i++) {
-      print_move(pv_table[ply][i]);
+    for (int i = b.ply; i < pv_length[b.ply]; i++) {
+      print_move(pv_table[b.ply][i]);
       printf(" ");
     }
     printf("\n");
@@ -166,38 +165,28 @@ void search(int depth) {
 
   // print the best move found:
   printf("bestmove ");
-  print_move(pv_table[ply][ply]);
+  print_move(pv_table[b.ply][b.ply]);
   printf("\n");
 }
 
 // negamax(): the main tree-search function
 int negamax(int depth, int alpha, int beta) {
-  // every 2048 nodes, communicate with the GUI / check time:
-  if (nodes_evaluated % 2048 == 0) communicate();
-
-  // if we have to stop, stop the search:
-  if (stop_search) return 0;
+  // if this is a repetition, return 0:
+  if (b.is_repetition()) return 0;
 
   // quick hack to determine whether this is a PV node:
   bool pv = (beta - alpha) > 1;
-
-  // initialize the transposition table flag for this position, and look up the
-  // position in the TT:
-  char tt_flag = TT_ALPHA;
-  int score = probe_tt(depth, alpha, beta);
-  if (b.num_moves_played > 0 && !pv && (score != TT_NO_MATCH)) return score;
 
   // update the UNSAFE bitboard, and a local is_check variable,
   // since it's not updating elsewhere for some reason:
   b.update_move_info_bitboards();
   bool is_check = b.is_check();
-  int ply = b.num_moves_played;
 
   // increment node counter and initialize score variable
   nodes_evaluated++;
 
   // initialize PV length:
-  pv_length[b.num_moves_played] = b.num_moves_played;
+  pv_length[b.ply] = b.ply;
 
   // check extension:
   if (is_check) depth = std::max(depth+1, 1);
@@ -205,12 +194,38 @@ int negamax(int depth, int alpha, int beta) {
   // base case:
   if (depth <= 0 && !is_check) return quiescence(alpha, beta);
 
+  // every 2048 nodes, communicate with the GUI / check time:
+  if (nodes_evaluated % 2048 == 0) communicate();
+
+  // if we have to stop, stop the search:
+  if (stop_search) return 0;
+
+  // beta pruning:
+  int eval = evaluate();
+  if (!pv &&
+      !is_check &&
+      depth <= 4 &&
+      eval - (75 * depth) > beta
+    ) return eval;
+
+  // initialize the transposition table flag for this position, and look up the
+  // position in the TT:
+  char tt_flag = TT_ALPHA;
+  int score = probe_tt(depth, alpha, beta);
+  if (b.ply > 0 && !pv && (score != TT_NO_MATCH)) return score;
+
+  // for null-move pruning, we need to figure out whether our side has any major pieces:
+  U64 majors = (b.turn == WHITE) ?
+                  b.bitboard[WN] | b.bitboard[WB] | b.bitboard[WR] | b.bitboard[WQ] :
+                  b.bitboard[BN] | b.bitboard[BB] | b.bitboard[BR] | b.bitboard[BQ];
+
   // null-move pruning:
   if (!pv &&
       !is_check &&
       depth >= NULL_MOVE_PRUNING_DEPTH &&
-      b.move_history[b.num_moves_played] != NULL &&
-      b.num_moves_played > 0
+      b.move_history[b.ply] != NULL &&
+      majors &&
+      b.ply > 0
   ) {
     // give current side an extra turn:
     b.make_nullmove();
@@ -235,13 +250,13 @@ int negamax(int depth, int alpha, int beta) {
   // if we can't make any moves, it's either checkmate or stalemate:
   // (we add the ply to -INF score to help the engine detect the CLOSEST
   // checkmate possible when it's defeating its opponent)
-  if (num_moves == 0) return is_check ? -INF + b.num_moves_played : 0;
+  if (num_moves == 0) return is_check ? -INF + b.ply : 0;
 
   // if we're following the principal variation, enable PV scoring:
   if (follow_pv) {
     follow_pv = false;
     for (int i = 0; i < num_moves; i++) {
-      if (pv_table[0][b.num_moves_played] == moves[i]) {
+      if (pv_table[0][b.ply] == moves[i]) {
         score_pv = true;
         follow_pv = true;
       }
@@ -316,9 +331,9 @@ int negamax(int depth, int alpha, int beta) {
         update_tt(depth, beta, move, TT_BETA);
 
         // add this move to the killer move list, only if it's a quiet move
-        if (MOVE_CAPTURED(move) == NONE && (move != killer_moves[0][b.num_moves_played])) {
-          killer_moves[1][b.num_moves_played] = killer_moves[0][b.num_moves_played];
-          killer_moves[0][b.num_moves_played] = move;
+        if (MOVE_CAPTURED(move) == NONE && (move != killer_moves[0][b.ply])) {
+          killer_moves[1][b.ply] = killer_moves[0][b.ply];
+          killer_moves[0][b.ply] = move;
         }
 
         return beta;
@@ -339,20 +354,20 @@ int negamax(int depth, int alpha, int beta) {
       found_pv = true;
 
       // enter PV move into PV table:
-      pv_table[ply][ply] = move;
+      pv_table[b.ply][b.ply] = move;
 
       // copy move from deeper PV:
-      for (int next = ply + 1; next < pv_length[ply + 1]; next++) {
-        pv_table[ply][next] = pv_table[ply+1][next];
+      for (int next = b.ply + 1; next < pv_length[b.ply + 1]; next++) {
+        pv_table[b.ply][next] = pv_table[b.ply + 1][next];
       }
 
       // adjust the PV length table:
-      pv_length[ply] = pv_length[ply+1];
+      pv_length[b.ply] = pv_length[b.ply + 1];
     }
   }
 
   // node fails low. store the value in the transposition table first, then exit:
-  int best_move = pv_table[ply][ply];
+  int best_move = pv_table[b.ply][b.ply];
   update_tt(depth, alpha, best_move, tt_flag);
   return alpha;
 }
@@ -420,10 +435,10 @@ int quiescence(int alpha, int beta) {
 
     // if we found a better move (PV node):
     if (score > alpha) {
-      alpha = score;
-
       // fail-hard beta cutoff (node fails high)
       if (score >= beta) return beta;
+
+      alpha = score;
     }
   }
 
