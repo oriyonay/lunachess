@@ -1,9 +1,9 @@
 #include "board.h"
 
 // the board constructor, which parses a FEN-string:
-board::board(char* FEN) : base_score(0), num_moves_played(0), castle_rights(0),
-  CANT_CAPTURE(0L), CAN_CAPTURE(0L), EMPTY_SQUARES(0L), CAN_MOVE_TO(0L),
-  OCCUPIED_SQUARES(0L), hash(0L) {
+board::board(char* FEN) : base_score_opening(0), base_score_endgame(0), game_phase_score(0),
+  num_moves_played(0), castle_rights(0), CANT_CAPTURE(0L), CAN_CAPTURE(0L),
+  EMPTY_SQUARES(0L), CAN_MOVE_TO(0L), OCCUPIED_SQUARES(0L), hash(0L) {
   // clear the bitboards:
   memset(bitboard, 0, 12 * sizeof(U64));
 
@@ -23,7 +23,9 @@ board::board(char* FEN) : base_score(0), num_moves_played(0), castle_rights(0),
       piece_type = PIECE_INDICES.find(*FEN)->second;
       bitboard[piece_type] |= (1L << i);
       piece_board[i] = piece_type;
-      base_score += PIECE_SQUARE_TABLE[piece_type][i];
+      base_score_opening += PIECE_SQUARE_TABLE[OPENING_PHASE][piece_type][i];
+      base_score_endgame += PIECE_SQUARE_TABLE[ENDGAME_PHASE][piece_type][i];
+      game_phase_score += GAME_PHASE_MATERIAL_SCORE[piece_type];
       hash ^= ZOBRIST_SQUARE_KEYS[piece_type][i];
     }
     else i--; // to handle '/' (we -1 to cancel out the i++)
@@ -260,13 +262,15 @@ bool board::make_move(int move) {
   bitboard[piece_moved] |= (1L << to);
   piece_board[to] = piece_moved;
   hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][to];
-  base_score += PIECE_SQUARE_TABLE[piece_moved][to];
+  base_score_opening += PIECE_SQUARE_TABLE[OPENING_PHASE][piece_moved][to];
+  base_score_endgame += PIECE_SQUARE_TABLE[ENDGAME_PHASE][piece_moved][to];
 
   // remove the piece from its old location:
   bitboard[piece_moved] ^= (1L << from);
   piece_board[from] = NONE;
   hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][from];
-  base_score -= PIECE_SQUARE_TABLE[piece_moved][from];
+  base_score_opening -= PIECE_SQUARE_TABLE[OPENING_PHASE][piece_moved][from];
+  base_score_endgame -= PIECE_SQUARE_TABLE[ENDGAME_PHASE][piece_moved][from];
 
   // update W and B bitboards:
   if (turn == WHITE) W ^= (1L << to) | (1L << from);
@@ -305,7 +309,8 @@ bool board::make_move(int move) {
     bitboard[captured] ^= (1L << to);
     hash ^= ZOBRIST_SQUARE_KEYS[captured][to];
 
-    base_score -= PIECE_SQUARE_TABLE[captured][to];
+    base_score_opening -= PIECE_SQUARE_TABLE[OPENING_PHASE][captured][to];
+    base_score_endgame -= PIECE_SQUARE_TABLE[ENDGAME_PHASE][captured][to];
 
     // update the W or B bitboard:
     if (turn == WHITE) B ^= (1L << to);
@@ -318,7 +323,8 @@ bool board::make_move(int move) {
     // incorrect zobrist hashing and base_score scoring:
     bitboard[captured] ^= (1L << to);
     hash ^= ZOBRIST_SQUARE_KEYS[captured][to];
-    base_score += PIECE_SQUARE_TABLE[captured][to];
+    base_score_opening += PIECE_SQUARE_TABLE[OPENING_PHASE][captured][to];
+    base_score_endgame += PIECE_SQUARE_TABLE[ENDGAME_PHASE][captured][to];
 
     // we have to flip it again in the W or B bitboard as well:
     if (turn == WHITE) B ^= (1L << to);
@@ -334,7 +340,8 @@ bool board::make_move(int move) {
 
         // hash out the captured pawn and update base score:
         hash ^= ZOBRIST_SQUARE_KEYS[BP][from+1];
-        base_score -= PIECE_SQUARE_TABLE[BP][from+1];
+        base_score_opening -= PIECE_SQUARE_TABLE[OPENING_PHASE][BP][from+1];
+        base_score_endgame -= PIECE_SQUARE_TABLE[ENDGAME_PHASE][BP][from+1];
         break;
       case 9:
         // white en passant captures left
@@ -344,7 +351,8 @@ bool board::make_move(int move) {
 
         // hash out the captured pawn and update base score:
         hash ^= ZOBRIST_SQUARE_KEYS[BP][from-1];
-        base_score -= PIECE_SQUARE_TABLE[BP][from-1];
+        base_score_opening -= PIECE_SQUARE_TABLE[OPENING_PHASE][BP][from-1];
+        base_score_endgame -= PIECE_SQUARE_TABLE[ENDGAME_PHASE][BP][from-1];
         break;
       case -9:
         // black en passant captures right
@@ -354,7 +362,8 @@ bool board::make_move(int move) {
 
         // hash out the captured pawn and update base score:
         hash ^= ZOBRIST_SQUARE_KEYS[WP][from+1];
-        base_score -= PIECE_SQUARE_TABLE[WP][from+1];
+        base_score_opening -= PIECE_SQUARE_TABLE[OPENING_PHASE][WP][from+1];
+        base_score_endgame -= PIECE_SQUARE_TABLE[ENDGAME_PHASE][WP][from+1];
         break;
       case -7:
         // black en passant captures left
@@ -364,7 +373,8 @@ bool board::make_move(int move) {
 
         // hash out the captured pawn and update base score:
         hash ^= ZOBRIST_SQUARE_KEYS[WP][from-1];
-        base_score -= PIECE_SQUARE_TABLE[WP][from-1];
+        base_score_opening -= PIECE_SQUARE_TABLE[OPENING_PHASE][WP][from-1];
+        base_score_endgame -= PIECE_SQUARE_TABLE[ENDGAME_PHASE][WP][from-1];
         break;
     }
   }
@@ -381,7 +391,8 @@ bool board::make_move(int move) {
         castle_rights &= 0x3; // cancel out castle rights
 
         // update hash and base_score:
-        base_score += CWK_ROOK_PST_DIFFERENCE;
+        base_score_opening += CWK_ROOK_PST_DIFFERENCE_OPENING;
+        base_score_endgame += CWK_ROOK_PST_DIFFERENCE_ENDGAME;
         hash ^= CWK_ROOK_ZOBRIST;
         break;
       case C1:
@@ -393,7 +404,8 @@ bool board::make_move(int move) {
         castle_rights &= 0x3; // cancel out castle rights
 
         // update hash and base_score:
-        base_score += CWQ_ROOK_PST_DIFFERENCE;
+        base_score_opening += CWQ_ROOK_PST_DIFFERENCE_OPENING;
+        base_score_endgame += CWQ_ROOK_PST_DIFFERENCE_ENDGAME;
         hash ^= CWQ_ROOK_ZOBRIST;
         break;
       case G8:
@@ -405,7 +417,8 @@ bool board::make_move(int move) {
         castle_rights &= 0xC; // cancel out castle rights
 
         // update hash and base_score:
-        base_score += CBK_ROOK_PST_DIFFERENCE;
+        base_score_opening += CBK_ROOK_PST_DIFFERENCE_OPENING;
+        base_score_endgame += CBK_ROOK_PST_DIFFERENCE_ENDGAME;
         hash ^= CBK_ROOK_ZOBRIST;
         break;
       case C8:
@@ -417,7 +430,8 @@ bool board::make_move(int move) {
         castle_rights &= 0xC; // cancel out castle rights
 
         // update hash and base_score:
-        base_score += CBQ_ROOK_PST_DIFFERENCE;
+        base_score_opening += CBQ_ROOK_PST_DIFFERENCE_OPENING;
+        base_score_endgame += CBQ_ROOK_PST_DIFFERENCE_ENDGAME;
         hash ^= CBQ_ROOK_ZOBRIST;
         break;
     }
@@ -437,8 +451,10 @@ bool board::make_move(int move) {
     hash ^= ZOBRIST_SQUARE_KEYS[promoted_piece][to];
 
     // update base_score:
-    base_score += PIECE_SQUARE_TABLE[promoted_piece][to] - // new promotion piece
-                  PIECE_SQUARE_TABLE[piece_moved][to]; // remove pawn from promotion square
+    base_score_opening += PIECE_SQUARE_TABLE[OPENING_PHASE][promoted_piece][to] - // new promotion piece
+                  PIECE_SQUARE_TABLE[OPENING_PHASE][piece_moved][to]; // remove pawn from promotion square
+    base_score_endgame += PIECE_SQUARE_TABLE[ENDGAME_PHASE][promoted_piece][to] - // new promotion piece
+                  PIECE_SQUARE_TABLE[ENDGAME_PHASE][piece_moved][to]; // remove pawn from promotion square
   }
 
   // hash in new castle rights (if they were changed);
@@ -479,13 +495,15 @@ void board::undo_move() {
   bitboard[piece_moved] ^= (1L << to);
   piece_board[to] = NONE;
   hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][to];
-  base_score -= PIECE_SQUARE_TABLE[piece_moved][to];
+  base_score_opening -= PIECE_SQUARE_TABLE[OPENING_PHASE][piece_moved][to];
+  base_score_endgame -= PIECE_SQUARE_TABLE[ENDGAME_PHASE][piece_moved][to];
 
   // put the piece back in its previous location:
   bitboard[piece_moved] |= (1L << from);
   piece_board[from] = piece_moved;
   hash ^= ZOBRIST_SQUARE_KEYS[piece_moved][from];
-  base_score += PIECE_SQUARE_TABLE[piece_moved][from];
+  base_score_opening += PIECE_SQUARE_TABLE[OPENING_PHASE][piece_moved][from];
+  base_score_endgame += PIECE_SQUARE_TABLE[ENDGAME_PHASE][piece_moved][from];
 
   // update W or B bitboards:
   if (turn == WHITE) B ^= (1L << to) | (1L << from);
@@ -504,7 +522,8 @@ void board::undo_move() {
     piece_board[to] = captured;
     hash ^= ZOBRIST_SQUARE_KEYS[captured][to];
 
-    base_score += PIECE_SQUARE_TABLE[captured][to];
+    base_score_opening += PIECE_SQUARE_TABLE[OPENING_PHASE][captured][to];
+    base_score_endgame += PIECE_SQUARE_TABLE[ENDGAME_PHASE][captured][to];
 
     if (turn == WHITE) W ^= (1L << to);
     else B ^= (1L << to);
@@ -516,7 +535,8 @@ void board::undo_move() {
     // it again, as well as undo the incorrect zobrist hashing and base_score scoring:
     bitboard[captured] ^= (1L << to);
     hash ^= ZOBRIST_SQUARE_KEYS[captured][to];
-    base_score -= PIECE_SQUARE_TABLE[captured][to];
+    base_score_opening -= PIECE_SQUARE_TABLE[OPENING_PHASE][captured][to];
+    base_score_endgame -= PIECE_SQUARE_TABLE[ENDGAME_PHASE][captured][to];
 
     // we have to flip it in the W or B bitboard as well:
     if (turn == WHITE) W ^= (1L << to);
@@ -533,7 +553,8 @@ void board::undo_move() {
 
         // hash in the captured pawn and update base score:
         hash ^= ZOBRIST_SQUARE_KEYS[BP][from+1];
-        base_score += PIECE_SQUARE_TABLE[BP][from+1];
+        base_score_opening += PIECE_SQUARE_TABLE[OPENING_PHASE][BP][from+1];
+        base_score_endgame += PIECE_SQUARE_TABLE[ENDGAME_PHASE][BP][from+1];
         break;
       case 9:
         // white en passant captures left
@@ -544,7 +565,8 @@ void board::undo_move() {
 
         // hash in the captured pawn and update base score:
         hash ^= ZOBRIST_SQUARE_KEYS[BP][from-1];
-        base_score += PIECE_SQUARE_TABLE[BP][from-1];
+        base_score_opening += PIECE_SQUARE_TABLE[OPENING_PHASE][BP][from-1];
+        base_score_endgame += PIECE_SQUARE_TABLE[ENDGAME_PHASE][BP][from-1];
         break;
       case -9:
         // black en passant captures right
@@ -555,7 +577,8 @@ void board::undo_move() {
 
         // hash in the captured pawn and update base score:
         hash ^= ZOBRIST_SQUARE_KEYS[WP][from+1];
-        base_score += PIECE_SQUARE_TABLE[WP][from+1];
+        base_score_opening += PIECE_SQUARE_TABLE[OPENING_PHASE][WP][from+1];
+        base_score_endgame += PIECE_SQUARE_TABLE[ENDGAME_PHASE][WP][from+1];
         break;
       case -7:
         // black en passant captures left
@@ -566,7 +589,8 @@ void board::undo_move() {
 
         // hash in the captured pawn and update base score:
         hash ^= ZOBRIST_SQUARE_KEYS[WP][from-1];
-        base_score += PIECE_SQUARE_TABLE[WP][from-1];
+        base_score_opening += PIECE_SQUARE_TABLE[OPENING_PHASE][WP][from-1];
+        base_score_endgame += PIECE_SQUARE_TABLE[ENDGAME_PHASE][WP][from-1];
         break;
     }
   }
@@ -582,7 +606,8 @@ void board::undo_move() {
         piece_board[F1] = NONE;
 
         // update hash and base_score:
-        base_score -= CWK_ROOK_PST_DIFFERENCE;
+        base_score_opening -= CWK_ROOK_PST_DIFFERENCE_OPENING;
+        base_score_endgame -= CWK_ROOK_PST_DIFFERENCE_ENDGAME;
         hash ^= CWK_ROOK_ZOBRIST;
         break;
       case C1:
@@ -593,7 +618,8 @@ void board::undo_move() {
         piece_board[D1] = NONE;
 
         // update hash and base_score:
-        base_score -= CWQ_ROOK_PST_DIFFERENCE;
+        base_score_opening -= CWQ_ROOK_PST_DIFFERENCE_OPENING;
+        base_score_endgame -= CWQ_ROOK_PST_DIFFERENCE_ENDGAME;
         hash ^= CWQ_ROOK_ZOBRIST;
         break;
       case G8:
@@ -604,7 +630,8 @@ void board::undo_move() {
         piece_board[F8] = NONE;
 
         // update hash and base_score:
-        base_score -= CBK_ROOK_PST_DIFFERENCE;
+        base_score_opening -= CBK_ROOK_PST_DIFFERENCE_OPENING;
+        base_score_endgame -= CBK_ROOK_PST_DIFFERENCE_ENDGAME;
         hash ^= CBK_ROOK_ZOBRIST;
         break;
       case C8:
@@ -615,7 +642,8 @@ void board::undo_move() {
         piece_board[D8] = NONE;
 
         // update hash and base_score:
-        base_score -= CBQ_ROOK_PST_DIFFERENCE;
+        base_score_opening -= CBQ_ROOK_PST_DIFFERENCE_OPENING;
+        base_score_endgame -= CBQ_ROOK_PST_DIFFERENCE_ENDGAME;
         hash ^= CBQ_ROOK_ZOBRIST;
         break;
     }
@@ -635,8 +663,10 @@ void board::undo_move() {
     hash ^= ZOBRIST_SQUARE_KEYS[promoted_piece][to];
 
     // update base_score:
-    base_score -= PIECE_SQUARE_TABLE[promoted_piece][to] - // new promotion piece
-                  PIECE_SQUARE_TABLE[piece_moved][to]; // pawn in promotion position
+    base_score_opening -= PIECE_SQUARE_TABLE[OPENING_PHASE][promoted_piece][to] - // new promotion piece
+                          PIECE_SQUARE_TABLE[OPENING_PHASE][piece_moved][to]; // pawn in promotion position
+    base_score_endgame -= PIECE_SQUARE_TABLE[ENDGAME_PHASE][promoted_piece][to] - // new promotion piece
+                          PIECE_SQUARE_TABLE[ENDGAME_PHASE][piece_moved][to]; // pawn in promotion position
   }
 
   // flip the turn:
@@ -660,7 +690,6 @@ void board::print() {
   }
 
   printf("\nturn: %c\n", (turn == WHITE) ? 'W' : 'B');
-  printf("base_score: %d\n", base_score);
 }
 
 void board::make_nullmove() {

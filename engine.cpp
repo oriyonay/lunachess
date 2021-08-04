@@ -10,6 +10,9 @@ inline int score_move(int move) {
     return 10000;
   }
 
+  // is this move the best move for this position, as stored in our TT?
+  if (move == (&TT[b.hash % NUM_TT_ENTRIES])->best_move) return 9000;
+
   // MVV/LVA scoring
   int score = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)] +
               (MOVE_IS_PROMOTION(move) ? 900 : 0);
@@ -96,8 +99,8 @@ inline int evaluate() {
   bonus -= __builtin_popcountll(KING_MOVES[LSB(b.bitboard[BK])] & b.B) * KING_SHIELD_BONUS;
 
   // return the evaluation relative to the side whose turn it is:
-  if (b.turn == WHITE) return b.base_score + bonus;
-  else return -b.base_score - bonus;
+  if (b.turn == WHITE) return b.base_score_opening + bonus;
+  else return -b.base_score_opening - bonus;
 }
 
 // search(): the main search algorithm (with iterative deepening)
@@ -177,6 +180,7 @@ int negamax(int depth, int alpha, int beta) {
   // since it's not updating elsewhere for some reason:
   b.update_move_info_bitboards();
   bool is_check = b.is_check();
+  int ply = b.num_moves_played;
 
   // increment node counter and initialize score variable
   nodes_evaluated++;
@@ -298,7 +302,7 @@ int negamax(int depth, int alpha, int beta) {
       // fail-hard beta cutoff (node fails high)
       if (score >= beta) {
         // store beta in the transposition table for this position:
-        update_tt(depth, beta, TT_BETA);
+        update_tt(depth, beta, move, TT_BETA);
 
         // add this move to the killer move list, only if it's a quiet move
         if (MOVE_CAPTURED(move) == NONE && (move != killer_moves[0][b.num_moves_played])) {
@@ -324,7 +328,6 @@ int negamax(int depth, int alpha, int beta) {
       found_pv = true;
 
       // enter PV move into PV table:
-      int ply = b.num_moves_played;
       pv_table[ply][ply] = move;
 
       // copy move from deeper PV:
@@ -338,7 +341,8 @@ int negamax(int depth, int alpha, int beta) {
   }
 
   // node fails low. store the value in the transposition table first, then exit:
-  update_tt(depth, alpha, tt_flag);
+  int best_move = pv_table[ply][ply];
+  update_tt(depth, alpha, best_move, tt_flag);
   return alpha;
 }
 

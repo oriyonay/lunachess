@@ -19,7 +19,7 @@ int probe_tt(int depth, int alpha, int beta) {
 }
 
 // update_tt(): write a new entry to the transposition table:
-void update_tt(int depth, int value, char flag) {
+void update_tt(int depth, int value, int best_move, char flag) {
   tt_entry* entry = &TT[b.hash % NUM_TT_ENTRIES];
 
   // write the data:
@@ -27,4 +27,5 @@ void update_tt(int depth, int value, char flag) {
   entry->depth = depth;
   entry->flag = flag;
   entry->value = value;
+  entry->best_move = best_move;
 }

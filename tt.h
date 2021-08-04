@@ -20,12 +20,15 @@ struct tt_entry {
 
   // the move value:
   int value;
+
+  // the best move found in this position:
+  int best_move;
 };
 
 // probe_tt(): probe the transposition table for the given position:
 int probe_tt(int depth, int alpha, int beta);
 
 // update_tt(): write a new entry to the transposition table:
-void update_tt(int depth, int value, char flag);
+void update_tt(int depth, int value, int best_move, char flag);
 
 #endif

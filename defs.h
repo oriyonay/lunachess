@@ -37,6 +37,9 @@ typedef uint64_t U64;
 #define TT_BETA 2
 #define TT_NO_MATCH 2147483600
 
+// game phase enums:
+enum {OPENING_PHASE, ENDGAME_PHASE};
+
 // these are set up in a clever way so that we can add them up -
 // for example, WHITE + KNIGHT = WN, BLACK + ROOK = BR, etc.
 enum {WHITE, BLACK = 6};

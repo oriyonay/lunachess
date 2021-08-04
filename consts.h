@@ -35,17 +35,22 @@ extern std::mt19937_64 generator;
 // maps piece characters to their index in the board::bitboard array
 extern std::unordered_map<char, int> PIECE_INDICES;
 
-// maps piece names to their material value
-extern std::unordered_map<char, int> MATERIAL;
+// just the positive version of PIECE_TO_MATERIAL[0][:] with king & pawn values set to 0,
+// for faster game phase score calculation
+extern const int GAME_PHASE_MATERIAL_SCORE[13];
 
 // maps piece types (enums) to their material value
-extern const int PIECE_TO_MATERIAL[13];
+extern const int PIECE_TO_MATERIAL[2][13];
 
 // the piece-square tables
-extern int PIECE_SQUARE_TABLE[12][64];
+extern int PIECE_SQUARE_TABLE[2][12][64];
 
 // maps board::bitboard indices to their piece character
 extern char* PIECE_CHARS;
+
+// for tapered evaluation:
+extern const int OPENING_PHASE_SCORE;
+extern const int ENDGAME_PHASE_SCORE;
 
 // bitmasks for files and ranks:
 extern U64 FILES[8];
@@ -118,10 +123,15 @@ extern U64 CBQ_EMPTY_SPACES;
 // slightly optimize updating the base_score with rooks (so instead of doing
 // base_score -= PST[ROOK][OLD POSITION] and then
 // base_score += PST[ROOK][NEW POSITION]), we just precalculate the sum.
-extern int CWK_ROOK_PST_DIFFERENCE;
-extern int CWQ_ROOK_PST_DIFFERENCE;
-extern int CBK_ROOK_PST_DIFFERENCE;
-extern int CBQ_ROOK_PST_DIFFERENCE;
+extern int CWK_ROOK_PST_DIFFERENCE_OPENING;
+extern int CWQ_ROOK_PST_DIFFERENCE_OPENING;
+extern int CBK_ROOK_PST_DIFFERENCE_OPENING;
+extern int CBQ_ROOK_PST_DIFFERENCE_OPENING;
+
+extern int CWK_ROOK_PST_DIFFERENCE_ENDGAME;
+extern int CWQ_ROOK_PST_DIFFERENCE_ENDGAME;
+extern int CBK_ROOK_PST_DIFFERENCE_ENDGAME;
+extern int CBQ_ROOK_PST_DIFFERENCE_ENDGAME;
 
 // precalculation of zobrist keys of rook positions before and after castling:
 extern U64 CWK_ROOK_ZOBRIST;
