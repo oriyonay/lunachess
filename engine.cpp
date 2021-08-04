@@ -295,6 +295,19 @@ int negamax(int depth, int alpha, int beta) {
 
     // if we found a better move (PV node):
     if (score > alpha) {
+      // fail-hard beta cutoff (node fails high)
+      if (score >= beta) {
+        // store beta in the transposition table for this position:
+        update_tt(depth, beta, TT_BETA);
+
+        // add this move to the killer move list, only if it's a quiet move
+        if (MOVE_CAPTURED(move) == NONE && (move != killer_moves[0][b.num_moves_played])) {
+          killer_moves[1][b.num_moves_played] = killer_moves[0][b.num_moves_played];
+          killer_moves[0][b.num_moves_played] = move;
+        }
+
+        return beta;
+      }
       // switch the TT flag to indicate storing the exact value of this position,
       // since it's a PV node:
       tt_flag = TT_EXACT;
@@ -321,20 +334,6 @@ int negamax(int depth, int alpha, int beta) {
 
       // adjust the PV length table:
       pv_length[ply] = pv_length[ply+1];
-
-      // fail-hard beta cutoff (node fails high)
-      if (score >= beta) {
-        // store beta in the transposition table for this position:
-        update_tt(depth, beta, TT_BETA);
-
-        // add this move to the killer move list, only if it's a quiet move
-        if (MOVE_CAPTURED(move) == NONE) {
-          killer_moves[1][b.num_moves_played] = killer_moves[0][b.num_moves_played];
-          killer_moves[0][b.num_moves_played] = move;
-        }
-
-        return beta;
-      }
     }
   }
 
@@ -359,9 +358,6 @@ int quiescence(int alpha, int beta) {
 
   // static evaluation:
   int eval = evaluate();
-
-  // eval pruning:
-  // if (std::max(alpha, eval) >= beta) return eval;
 
   // alpha/beta escape conditions:
   if (eval >= beta) return beta;
