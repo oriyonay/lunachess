@@ -632,7 +632,7 @@ U64 ISOLATED_MASKS[64];
 U64 WHITE_PASSED_PAWN_MASKS[64];
 U64 BLACK_PASSED_PAWN_MASKS[64];
 
-const int PASSED_PAWN_BONUS[9] = {0, 0, 5, 10, 25, 35, 65, 100, 160};
+const int PASSED_PAWN_BONUS[9] = {0, 0, 2, 5, 10, 17, 30, 45, 70};
 
 // miscellaneous pre-calculated constants:
 U64 SQUARE_FILES[64];

@@ -98,9 +98,20 @@ inline int evaluate() {
   bonus += __builtin_popcountll(KING_MOVES[LSB(b.bitboard[WK])] & b.W) * KING_SHIELD_BONUS;
   bonus -= __builtin_popcountll(KING_MOVES[LSB(b.bitboard[BK])] & b.B) * KING_SHIELD_BONUS;
 
+  // calculate base score based on game phase (tapered evaluation):
+  int base_score;
+  if (b.game_phase_score > OPENING_PHASE_SCORE) base_score = b.base_score_opening;
+  else if (b.game_phase_score < ENDGAME_PHASE_SCORE) base_score = b.base_score_endgame;
+  else {
+    base_score = (
+                    b.base_score_opening * b.game_phase_score +
+                    b.base_score_endgame * (OPENING_PHASE_SCORE - b.game_phase_score)
+                 ) / OPENING_PHASE_SCORE;
+  }
+
   // return the evaluation relative to the side whose turn it is:
-  if (b.turn == WHITE) return b.base_score_opening + bonus;
-  else return -b.base_score_opening - bonus;
+  if (b.turn == WHITE) return base_score + bonus;
+  else return -base_score - bonus;
 }
 
 // search(): the main search algorithm (with iterative deepening)

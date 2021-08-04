@@ -21,9 +21,10 @@ run_test:
 test: tests.cpp
 	make board.o
 	make consts.o
+	make globals.o
 	make utils.o
 	g++ -std=c++11 -O3 -w -c tests.cpp -o tests.o
-	g++ -std=c++11 -O3 board.o consts.o tests.o utils.o -o tests.out
+	g++ -std=c++11 -O3 board.o consts.o globals.o tests.o utils.o -o tests.out
 
 clean:
 	rm *.o ||:

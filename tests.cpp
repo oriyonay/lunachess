@@ -164,11 +164,11 @@ bool verify(board* b) {
   int total = 0;
   for (int i = 0; i < 64; i++) {
     if (b->piece_board[i] == NONE) continue;
-    total += PIECE_SQUARE_TABLE[b->piece_board[i]][i];
+    total += PIECE_SQUARE_TABLE[OPENING_PHASE][b->piece_board[i]][i];
   }
 
-  if (total != b->base_score) {
-    printf("PST SCORES DIFFER\n", total, b->base_score);
+  if (total != b->base_score_opening) {
+    printf("PST SCORES DIFFER\n", total, b->base_score_opening);
     assert(false);
   }
 
@@ -182,6 +182,16 @@ bool verify(board* b) {
 
   if (zobrist != b->hash) {
     printf("INCORRECT ZOBRIST HASH\n");
+    assert(false);
+  }
+
+  // make sure game phase score calculation is correct:
+  int game_phase_score = 0;
+  for (int piece = WN; piece < BK; piece++) {
+    game_phase_score += __builtin_popcountll(b->bitboard[piece]) * GAME_PHASE_MATERIAL_SCORE[piece];
+  }
+  if (b->game_phase_score != game_phase_score) {
+    printf("WRONG GAME PHASE SCORE\n");
     assert(false);
   }
 }

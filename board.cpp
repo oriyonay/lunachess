@@ -311,6 +311,7 @@ bool board::make_move(int move) {
 
     base_score_opening -= PIECE_SQUARE_TABLE[OPENING_PHASE][captured][to];
     base_score_endgame -= PIECE_SQUARE_TABLE[ENDGAME_PHASE][captured][to];
+    game_phase_score -= GAME_PHASE_MATERIAL_SCORE[captured];
 
     // update the W or B bitboard:
     if (turn == WHITE) B ^= (1L << to);
@@ -455,6 +456,8 @@ bool board::make_move(int move) {
                   PIECE_SQUARE_TABLE[OPENING_PHASE][piece_moved][to]; // remove pawn from promotion square
     base_score_endgame += PIECE_SQUARE_TABLE[ENDGAME_PHASE][promoted_piece][to] - // new promotion piece
                   PIECE_SQUARE_TABLE[ENDGAME_PHASE][piece_moved][to]; // remove pawn from promotion square
+
+    game_phase_score += GAME_PHASE_MATERIAL_SCORE[promoted_piece];
   }
 
   // hash in new castle rights (if they were changed);
@@ -524,6 +527,7 @@ void board::undo_move() {
 
     base_score_opening += PIECE_SQUARE_TABLE[OPENING_PHASE][captured][to];
     base_score_endgame += PIECE_SQUARE_TABLE[ENDGAME_PHASE][captured][to];
+    game_phase_score += GAME_PHASE_MATERIAL_SCORE[captured];
 
     if (turn == WHITE) W ^= (1L << to);
     else B ^= (1L << to);
@@ -667,6 +671,8 @@ void board::undo_move() {
                           PIECE_SQUARE_TABLE[OPENING_PHASE][piece_moved][to]; // pawn in promotion position
     base_score_endgame -= PIECE_SQUARE_TABLE[ENDGAME_PHASE][promoted_piece][to] - // new promotion piece
                           PIECE_SQUARE_TABLE[ENDGAME_PHASE][piece_moved][to]; // pawn in promotion position
+
+    game_phase_score -= GAME_PHASE_MATERIAL_SCORE[promoted_piece];
   }
 
   // flip the turn:
