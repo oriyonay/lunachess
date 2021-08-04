@@ -66,8 +66,8 @@ inline static int move_int(char TO, char FROM, char CAPTURED, char EP, char PF, 
 inline static int move_int(char TO, char FROM, char CAPTURED, char PCR, char PM);
 inline U64 line_moves(char s, U64 OCCUPIED);
 inline U64 diag_moves(char s, U64 OCCUPIED);
-inline static U64 line_moves_magic(char s, U64 OCCUPIED);
-inline static U64 diag_moves_magic(char s, U64 OCCUPIED);
+U64 line_moves_magic(char s, U64 OCCUPIED);
+U64 diag_moves_magic(char s, U64 OCCUPIED);
 inline U64 reverse_bits(U64 n);
 
 // utility functions for determining pinned pieces, etc.:

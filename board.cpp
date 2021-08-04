@@ -1587,7 +1587,7 @@ inline U64 diag_moves(char s, U64 OCCUPIED) {
 }
 
 // line_moves_magic(): same as line_moves() but using magic bitboards (so much faster).
-inline static U64 line_moves_magic(char s, U64 OCCUPIED) {
+U64 line_moves_magic(char s, U64 OCCUPIED) {
   // mask out anything not in the possible attack set:
   OCCUPIED &= ROOK_MASKS[s];
 
@@ -1599,7 +1599,7 @@ inline static U64 line_moves_magic(char s, U64 OCCUPIED) {
 }
 
 // diag_moves_magic(): same as diag_moves() but using magic bitboards (so much faster).
-inline static U64 diag_moves_magic(char s, U64 OCCUPIED) {
+U64 diag_moves_magic(char s, U64 OCCUPIED) {
   // mask out anything not in the possible attack set:
   OCCUPIED &= BISHOP_MASKS[s];
 

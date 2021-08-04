@@ -43,7 +43,7 @@ inline int evaluate() {
        (black_pawn_file & (black_pawn_file - 1))) bonus += DOUBLED_PAWN_PENALTY;
   }
 
-  // isolated and passed pawn penalties:
+  // isolated and passed pawn penalty/bonus:
   U64 wp = b.bitboard[WP];
   U64 bp = b.bitboard[BP];
   int index;
@@ -75,6 +75,25 @@ inline int evaluate() {
     else if (!(b.bitboard[BP] & SQUARE_FILES[index])) bonus -= SEMI_OPEN_FILE_BONUS;
     POP_LSB(br);
   }
+
+  // piece mobility evaluation:
+  U64 not_pinned = ~(b.pinned_pieces());
+  U64 knights = b.bitboard[WN] & not_pinned;
+  while (knights) {
+    index = LSB(knights);
+    bonus += (__builtin_popcountll(KNIGHT_MOVES[index] & ~b.W) - 4) * 4;
+    POP_LSB(knights);
+  }
+  knights = b.bitboard[BN] & not_pinned;
+  while (knights) {
+    index = LSB(knights);
+    bonus -= (__builtin_popcountll(KNIGHT_MOVES[index] & ~b.B) - 4) * 4;
+    POP_LSB(knights);
+  }
+
+  // king safety evaluation:
+  bonus += __builtin_popcountll(KING_MOVES[LSB(b.bitboard[WK])] & b.W) * KING_SHIELD_BONUS;
+  bonus -= __builtin_popcountll(KING_MOVES[LSB(b.bitboard[BK])] & b.B) * KING_SHIELD_BONUS;
 
   // return the evaluation relative to the side whose turn it is:
   if (b.turn == WHITE) return b.base_score + bonus;
@@ -342,7 +361,7 @@ int quiescence(int alpha, int beta) {
   int eval = evaluate();
 
   // eval pruning:
-  if (std::max(alpha, eval) >= beta) return eval;
+  // if (std::max(alpha, eval) >= beta) return eval;
 
   // alpha/beta escape conditions:
   if (eval >= beta) return beta;
@@ -376,9 +395,9 @@ int quiescence(int alpha, int beta) {
     move_scores[move_index] = -1;
 
     // delta pruning: could this move improve alpha, in the best case?
-    /* best_case = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)] +
+    best_case = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)] +
                 (MOVE_IS_PROMOTION(move) ? 900 : 0);
-    if (eval + best_case + DELTA_VALUE < alpha) return alpha; */
+    if (eval + best_case + DELTA_VALUE < alpha) return alpha;
 
     // make move & recursively call qsearch:
     b.make_move(move);
