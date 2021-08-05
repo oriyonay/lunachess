@@ -62,6 +62,13 @@ board::board(char* FEN) : base_score_opening(0), base_score_endgame(0), game_pha
     FEN++;
   }
 
+  // skip en passant square (TODO: parse this):
+  FEN++;
+  if (*FEN == '-') FEN += 2;
+  else FEN += 3;
+
+  // 
+
   // hash in castling rights:
   hash ^= ZOBRIST_CASTLE_RIGHTS_KEYS[castle_rights];
 

@@ -171,10 +171,15 @@ void search(int depth) {
 
 // negamax(): the main tree-search function
 int negamax(int depth, int alpha, int beta) {
+  // every 2048 nodes, communicate with the GUI / check time:
+  if (nodes_evaluated % 2048 == 0) communicate();
+
+  // if we have to stop, stop the search:
+  if (stop_search) return 0;
+
   // if this is a draw, return 0:
   // NOTE: we don't yet count material draws
-  if (b.is_repetition()) return 0;
-  if (b.fifty_move_counter == 100) return 0;
+  if (b.is_repetition() || b.fifty_move_counter >= 100) return 0;
 
   // quick hack to determine whether this is a PV node:
   bool pv = (beta - alpha) > 1;
@@ -195,12 +200,6 @@ int negamax(int depth, int alpha, int beta) {
 
   // base case:
   if (depth <= 0 && !is_check) return quiescence(alpha, beta);
-
-  // every 2048 nodes, communicate with the GUI / check time:
-  if (nodes_evaluated % 2048 == 0) communicate();
-
-  // if we have to stop, stop the search:
-  if (stop_search) return 0;
 
   // beta pruning:
   int eval = evaluate();
@@ -225,7 +224,7 @@ int negamax(int depth, int alpha, int beta) {
   if (!pv &&
       !is_check &&
       depth >= NULL_MOVE_PRUNING_DEPTH &&
-      b.move_history[b.ply] != NULL &&
+      b.move_history[b.ply-1] != NULL &&
       majors &&
       b.ply > 0
   ) {
@@ -378,11 +377,13 @@ int negamax(int depth, int alpha, int beta) {
 int quiescence(int alpha, int beta) {
   // if this is a draw, return 0:
   // NOTE: we don't yet count material draws
-  if (b.is_repetition()) return 0;
-  if (b.fifty_move_counter == 100) return 0;
-  
+  if (b.is_repetition() || b.fifty_move_counter >= 100) return 0;
+
   // every 2048 nodes, communicate with the GUI / check time:
   if (nodes_evaluated % 2048 == 0) communicate();
+
+  // if we have to stop, stop the search:
+  if (stop_search) return 0;
 
   nodes_evaluated++;
 
@@ -407,7 +408,9 @@ int quiescence(int alpha, int beta) {
   // score the moves:
   int move_scores[MAX_POSITION_MOVES];
   for (int i = 0; i < num_moves; i++) {
-    move_scores[i] = score_move(moves[i]);
+    // move_scores[i] = score_move(moves[i]);
+    move_scores[i] = MVV_LVA_SCORE[MOVE_PIECEMOVED(moves[i])][MOVE_CAPTURED(moves[i])] +
+                (MOVE_IS_PROMOTION(moves[i]) ? 900 : 0);
   }
 
   // recursively qsearch the horizon:

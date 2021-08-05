@@ -14,7 +14,7 @@ typedef uint64_t U64;
 
 // tuneable engine settings:
 // (note: TT size is in bytes)
-#define ASPIRATION_WINDOW_VALUE 50
+#define ASPIRATION_WINDOW_VALUE 75
 #define DEFAULT_UCI_INPUT_BUFFER_SIZE 2048
 #define DEFAULT_TT_SIZE (1 << 24)
 #define DELTA_VALUE 150
