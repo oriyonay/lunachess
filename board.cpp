@@ -2,7 +2,7 @@
 
 // the board constructor, which parses a FEN-string:
 board::board(char* FEN) : base_score_opening(0), base_score_endgame(0), game_phase_score(0),
-  ply(0), castle_rights(0), CANT_CAPTURE(0L), CAN_CAPTURE(0L),
+  ply(0), castle_rights(0), CANT_CAPTURE(0L), CAN_CAPTURE(0L), fifty_move_counter(0),
   EMPTY_SQUARES(0L), CAN_MOVE_TO(0L), OCCUPIED_SQUARES(0L), hash(0L) {
   // clear the bitboards:
   memset(bitboard, 0, 12 * sizeof(U64));
@@ -259,6 +259,10 @@ bool board::make_move(int move) {
   int ep = MOVE_IS_EP(move);
   int castle = MOVE_IS_CASTLE(move);
   int promotion = MOVE_IS_PROMOTION(move);
+
+  // update fifty move rule:
+  if (captured == NONE && piece_moved != WP && piece_moved != BP) fifty_move_counter++;
+  else fifty_move_counter = 0;
 
   // move the piece to its new board location:
   bitboard[piece_moved] |= (1L << to);

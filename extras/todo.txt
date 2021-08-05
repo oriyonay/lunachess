@@ -1,6 +1,6 @@
 TODO / NOTES:
 - fix UNSAFE bitboard updating problem in negamax?
-- null move pruning: add 'has non-pawn material' condition
+- material draws
 - internal iterative deepening (for move ordering)
 - experiment with LMR conditions
 - in move generation function end we return num_moves instead of just j

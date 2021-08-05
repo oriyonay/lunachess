@@ -14,10 +14,11 @@ struct board {
   char piece_board[64];
   int move_history[MAX_GAME_MOVES];
   U64 repetition_history[MAX_GAME_MOVES];
+  int fifty_move_counter;
   int ply;
   int base_score_opening; // material + PST score for opening phase
   int base_score_endgame; // material + PST score for endgame phase
-  int game_phase_score;
+  int game_phase_score; // for tapered evaluation
   char turn;
   char castle_rights; // bits: 0 0 0 0 K Q k q
   U64 hash;

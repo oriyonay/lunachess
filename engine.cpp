@@ -171,8 +171,10 @@ void search(int depth) {
 
 // negamax(): the main tree-search function
 int negamax(int depth, int alpha, int beta) {
-  // if this is a repetition, return 0:
+  // if this is a draw, return 0:
+  // NOTE: we don't yet count material draws
   if (b.is_repetition()) return 0;
+  if (b.fifty_move_counter == 100) return 0;
 
   // quick hack to determine whether this is a PV node:
   bool pv = (beta - alpha) > 1;
@@ -374,6 +376,11 @@ int negamax(int depth, int alpha, int beta) {
 
 // quiescence(): the quiescence search algorithm
 int quiescence(int alpha, int beta) {
+  // if this is a draw, return 0:
+  // NOTE: we don't yet count material draws
+  if (b.is_repetition()) return 0;
+  if (b.fifty_move_counter == 100) return 0;
+  
   // every 2048 nodes, communicate with the GUI / check time:
   if (nodes_evaluated % 2048 == 0) communicate();
 
