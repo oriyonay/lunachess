@@ -1,5 +1,7 @@
 TODO / NOTES:
 - fix UNSAFE bitboard updating problem in negamax?
+- stacked rook bonus?
+- pawn shield vs piece shield?
 - material draws
 - internal iterative deepening (for move ordering)
 - experiment with LMR conditions

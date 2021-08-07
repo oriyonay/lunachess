@@ -148,6 +148,8 @@ extern U64 BLACK_PASSED_PAWN_MASKS[64];
 
 extern const int PASSED_PAWN_BONUS[9];
 
+extern const int RAZOR_MARGIN[10];
+
 /* -------------------- MISCELLANEOUS CONSTANTS -------------------- */
 // miscellaneous pre-calculated constants:
 extern U64 SQUARE_FILES[64];

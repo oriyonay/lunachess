@@ -634,6 +634,8 @@ U64 BLACK_PASSED_PAWN_MASKS[64];
 
 const int PASSED_PAWN_BONUS[9] = {0, 0, 2, 5, 10, 17, 30, 45, 70};
 
+const int RAZOR_MARGIN[10] = {0, 10, 50, 200, 500, 750, 1000, 1500, 2000, 2500};
+
 // miscellaneous pre-calculated constants:
 U64 SQUARE_FILES[64];
 // U64 SQUARE_RANKS[64];

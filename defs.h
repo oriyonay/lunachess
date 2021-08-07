@@ -14,6 +14,8 @@ typedef uint64_t U64;
 
 // tuneable engine settings:
 // (note: TT size is in bytes)
+#define ALPHA_PRUNING_DEPTH 5
+#define ALPHA_PRUNING_MARGIN 2000
 #define ASPIRATION_WINDOW_VALUE 75
 #define DEFAULT_UCI_INPUT_BUFFER_SIZE 2048
 #define DEFAULT_TT_SIZE (1 << 24)
@@ -22,8 +24,13 @@ typedef uint64_t U64;
 #define FULLY_OPEN_FILE_BONUS 20
 #define ISOLATED_PAWN_PENALTY 30
 #define KING_SHIELD_BONUS 7
+#define LMP_DEPTH 7
 #define LMR_FULL_DEPTH_MOVES 4
 #define LMR_REDUCTION_LIMIT 3
+#define MATE_IN_MAX -2147483470 // -INF + 30
+#define MULTICUT_M 6 // number of first moves to consider
+#define MULTICUT_C 3 // number of cutoffs to cause a multi-cut prune
+#define MULTICUT_R 4 // depth for multi-cut
 #define NULL_MOVE_PRUNING_DEPTH 4
 #define SEMI_OPEN_FILE_BONUS 10
 
