@@ -53,13 +53,13 @@ inline int evaluate() {
   while (wp) {
     index = LSB(wp);
     if (!(b.bitboard[WP] & ISOLATED_MASKS[index])) bonus -= ISOLATED_PAWN_PENALTY;
-    // if (!(b.bitboard[BP] & WHITE_PASSED_PAWN_MASKS[index])) bonus += PASSED_PAWN_BONUS[RANK_NO(index)];
+    if (!(b.bitboard[BP] & WHITE_PASSED_PAWN_MASKS[index])) bonus += PASSED_PAWN_BONUS[RANK_NO(index)];
     POP_LSB(wp);
   }
   while (bp) {
     index = LSB(bp);
     if (!(b.bitboard[BP] & ISOLATED_MASKS[index])) bonus += ISOLATED_PAWN_PENALTY;
-    // if (!(b.bitboard[WP] & BLACK_PASSED_PAWN_MASKS[index])) bonus -= PASSED_PAWN_BONUS[9 - RANK_NO(index)];
+    if (!(b.bitboard[WP] & BLACK_PASSED_PAWN_MASKS[index])) bonus -= PASSED_PAWN_BONUS[9 - RANK_NO(index)];
     POP_LSB(bp);
   }
 
@@ -158,6 +158,7 @@ void search(int depth) {
   // find best move within a given position
   int alpha = -INF;
   int beta = INF;
+  int aspiration_delta = ASPIRATION_WINDOW_VALUE;
   for (int cur_depth = 1; cur_depth <= depth; cur_depth++) {
     // enable the follow_pv flag:
     follow_pv = true;
@@ -178,16 +179,20 @@ void search(int depth) {
     }
     printf("\n");
 
+    // if we still haven't looked 6 moves deep (not enough info to use windows), or
     // if we fell outside our aspiration window, reset to -INF and INF:
-    if ((score <= alpha) || (score >= beta)) {
+    if (cur_depth < 6 || ((score <= alpha) || (score >= beta))) {
       alpha = -INF;
       beta = INF;
       continue;
     }
 
     // otherwise, set alpha & beta using aspiration window value:
-    alpha = score - ASPIRATION_WINDOW_VALUE;
-    beta = score + ASPIRATION_WINDOW_VALUE;
+    alpha = score - aspiration_delta;
+    beta = score + aspiration_delta;
+
+    // gradually widen the search window in the future, if we failed high:
+    aspiration_delta += (aspiration_delta / 2);
 
     // now the principal variation is in pv_table[0][:pv_length[0]],
     // and the best move is in pv_table[ply][0]
@@ -237,7 +242,7 @@ int negamax(int depth, int alpha, int beta, bool cut) {
       !is_check &&
       depth <= 4 &&
       eval - (75 * depth) > beta
-    ) return eval;
+  ) return eval;
 
   // initialize the transposition table flag for this position, and look up the
   // position in the TT:
@@ -275,12 +280,12 @@ int negamax(int depth, int alpha, int beta, bool cut) {
   }
 
   // razoring:
-  /* if(!is_check &&
-     !pv &&
-     b.move_history[b.ply-1] != NULL &&
-     depth < 10 &&
-     eval - RAZOR_MARGIN[depth] >= beta
-   ) return beta; */
+  /*if (!is_check &&
+      !pv &&
+      b.move_history[b.ply-1] != NULL &&
+      depth == 1 &&
+      eval - RAZOR_MARGIN[depth] >= beta
+   ) return quiescence(alpha, beta);*/
 
   // generate all possible moves from this position:
   int moves[MAX_POSITION_MOVES];
@@ -355,7 +360,6 @@ int negamax(int depth, int alpha, int beta, bool cut) {
   } */
 
   // recursively find the best move from here:
-  bool found_pv = false;
   for (int i = 0; i < num_moves; i++) {
     // selection sort to find the best move:
     move_index = 0; // contains the index of the best move
@@ -434,9 +438,6 @@ int negamax(int depth, int alpha, int beta, bool cut) {
       // this is the PV node:
       alpha = score;
 
-      // since we found a PV node, enable the found_pv flag:
-      found_pv = true;
-
       // enter PV move into PV table:
       pv_table[b.ply][b.ply] = move;
 
@@ -491,9 +492,7 @@ int quiescence(int alpha, int beta) {
   // score the moves:
   int move_scores[MAX_POSITION_MOVES];
   for (int i = 0; i < num_moves; i++) {
-    // move_scores[i] = score_move(moves[i]);
-    move_scores[i] = MVV_LVA_SCORE[MOVE_PIECEMOVED(moves[i])][MOVE_CAPTURED(moves[i])] +
-                (MOVE_IS_PROMOTION(moves[i]) ? 900 : 0);
+    move_scores[i] = score_move(moves[i]);
   }
 
   // recursively qsearch the horizon:

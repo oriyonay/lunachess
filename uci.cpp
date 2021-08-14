@@ -46,7 +46,7 @@ void parse_position(char* command) {
   // move command pointer to the point immediately after 'position ':
   command += 9;
 
-  // zero pv, killer move, and history tables:
+  // zero pv, killer move, and history tables as well as the static eval array:
   memset(pv_table, 0, sizeof(int) * MAX_GAME_MOVES * MAX_GAME_MOVES);
   memset(pv_length, 0, sizeof(int) * MAX_GAME_MOVES);
   memset(killer_moves, 0, sizeof(int) * 2 * MAX_GAME_MOVES);
@@ -138,7 +138,7 @@ void parse_go(char* command) {
 
     // set up timing:
     time_limit /= moves_to_go;
-    time_limit -= 50;
+    time_limit -= 75;
     stop_time = start_time + time_limit + time_increment;
   }
 
