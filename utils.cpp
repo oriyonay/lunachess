@@ -96,3 +96,24 @@ void communicate() {
   if (time_set && (get_time() > stop_time)) stop_search = true;
   read_input();
 }
+
+long perft(int depth, bool root) {
+  int moves[MAX_POSITION_MOVES];
+  int num_moves = b.get_moves(moves);
+  if (depth == 1) return num_moves;
+
+  long sum = 0;
+  for (int i = 0; i < num_moves; i++) {
+    b.make_move(moves[i]);
+    if (root) {
+      long branch = perft(depth - 1, false);
+      print_move(moves[i]);
+      printf(": %llu\n", branch);
+      sum += branch;
+    }
+    else sum += perft(depth - 1, false);
+    b.undo_move();
+  }
+
+  return sum;
+}

@@ -2,9 +2,6 @@
 #ifndef TT_H
 #define TT_H
 
-// macro to clear the transposition table
-#define CLEAR_TT() (memset(TT, 0, TT_SIZE))
-
 #include "consts.h"
 #include "globals.h"
 
@@ -12,23 +9,43 @@ struct tt_entry {
   // the hash of the position:
   U64 hash;
 
+  // the move value:
+  int value;
+
+  // the best move found in this position:
+  int best_move;
+
   // the depth to which the engine analyzed this position:
   char depth;
 
   // the transposition table flag (either TT_EXACT, TT_ALPHA, or TT_BETA):
   char flag;
 
-  // the move value:
-  int value;
+  // the age of the transposition table at the time of insertion:
+  char tt_age;
 
-  // the best move found in this position:
-  int best_move;
+  // is this entry a PV node?
+  bool is_pv;
 };
 
-// probe_tt(): probe the transposition table for the given position:
-int probe_tt(int depth, int alpha, int beta);
+struct transposition_table {
+  // the transposition table entries:
+  tt_entry* TT;
 
-// update_tt(): write a new entry to the transposition table:
-void update_tt(int depth, int value, int best_move, char flag);
+  // the age of the transposition table:
+  char age;
+
+  // the constructor:
+  transposition_table(int num_entries);
+
+  // probe(): probe the transposition table for the given position:
+  int probe(int depth, int alpha, int beta);
+
+  // put(): write a new entry to the transposition table:
+  void put(int depth, int value, int best_move, char flag, bool is_pv);
+
+  // clear(): clears the table:
+  void clear();
+};
 
 #endif

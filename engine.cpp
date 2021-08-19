@@ -11,7 +11,7 @@ inline int score_move(int move, int forward_ply) {
   }
 
   // is this move the best move for this position, as stored in our TT?
-  if (move == (&TT[b.hash % NUM_TT_ENTRIES])->best_move) return 9000;
+  if (move == (&TT.TT[b.hash % NUM_TT_ENTRIES])->best_move) return 9000;
 
   // MVV/LVA scoring
   int score = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)] +
@@ -80,7 +80,7 @@ inline int evaluate() {
   }
 
   // piece mobility evaluation:
-  /* U64 not_pinned_white;
+  U64 not_pinned_white;
   U64 not_pinned_black;
   if (b.turn == WHITE) {
     not_pinned_white = ~(b.pinned_pieces());
@@ -122,7 +122,7 @@ inline int evaluate() {
     index = LSB(bishops);
     bonus -= (__builtin_popcountll(diag_moves_magic(index, b.OCCUPIED_SQUARES)) - 6) * 5;
     POP_LSB(bishops);
-  } */
+  }
 
   // king safety evaluation:
   bonus += __builtin_popcountll(KING_MOVES[LSB(b.bitboard[WK])] & b.bitboard[WP]) * KING_SHIELD_BONUS;
@@ -154,6 +154,13 @@ void search(int depth) {
 
   // reset time control flag:
   stop_search = false;
+
+  // zero pv, killer move, and history tables as well as the static eval array:
+  memset(pv_table, 0, sizeof(int) * MAX_SEARCH_PLY * MAX_SEARCH_PLY);
+  memset(pv_length, 0, sizeof(int) * MAX_SEARCH_PLY);
+  memset(killer_moves, 0, sizeof(int) * 2 * MAX_SEARCH_PLY);
+  memset(history_moves, 0, sizeof(int) * 12 * 64);
+  memset(static_evals, 0, sizeof(int) * MAX_SEARCH_PLY); // is this necessary?
 
   // find best move within a given position
   int alpha = -INF;
@@ -202,32 +209,17 @@ void search(int depth) {
   printf("bestmove ");
   print_move(pv_table[0][0]);
   printf("\n");
+
+  // after this search, increment the transposition table's age:
+  TT.age++;
 }
 
 // negamax(): the main tree-search function
 int negamax(int depth, int alpha, int beta, int forward_ply) {
-  // update the UNSAFE bitboard, and a local is_check variable,
-  // since it's not updating elsewhere for some reason:
-  b.update_move_info_bitboards();
-  bool is_check = b.is_check();
-
-  // base case:
-  if (depth <= 0 && !is_check) return quiescence(alpha, beta, forward_ply);
-
-  // ensure non-negative depth:
-  depth = std::max(depth, 0);
-
-  // if this is a draw, return 0:
-  // NOTE: we don't yet count material draws
-  if (b.is_repetition() || b.fifty_move_counter >= 100) return 0;
-
   // every 2048 nodes, communicate with the GUI / check time:
   nodes_evaluated++;
   if (nodes_evaluated % 2048 == 0) communicate();
-  if (stop_search) return evaluate();
-
-  // avoid stack overflow:
-  if (forward_ply >= MAX_SEARCH_PLY) return is_check ? 0 : evaluate();
+  if (stop_search) return 0;
 
   pv_length[forward_ply] = forward_ply;
   bool pv = (beta - alpha != 1);
@@ -238,9 +230,27 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
   char tt_flag = TT_ALPHA;
 
   // look up the position in the TT:
-  score = probe_tt(depth, alpha, beta);
+  score = TT.probe(depth, alpha, beta);
   if (b.ply > 0 && !pv && (score != TT_NO_MATCH)) return score;
   score = -INF;
+
+  // update the UNSAFE bitboard, and a local is_check variable,
+  // since it's not updating elsewhere for some reason:
+  b.update_move_info_bitboards();
+  bool is_check = b.is_check();
+
+  // if this is a draw, return 0:
+  // NOTE: we don't yet count material draws
+  if (b.is_repetition() || b.fifty_move_counter >= 100) return 0;
+
+  // base case:
+  if (depth <= 0 && !is_check) return quiescence(alpha, beta, forward_ply);
+
+  // ensure non-negative depth:
+  depth = std::max(depth, 0);
+
+  // avoid stack overflow:
+  if (forward_ply >= MAX_SEARCH_PLY) return is_check ? 0 : evaluate();
 
   int eval = evaluate();
   static_evals[forward_ply] = eval;
@@ -269,7 +279,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
     b.undo_nullmove();
 
     // if we have to stop, stop the search:
-    if (stop_search) return evaluate();
+    if (stop_search) return 0;
 
     // fail-hard beta cutoff:
     if (null_move_score >= beta) return beta;
@@ -343,17 +353,23 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
     b.make_move(move);
 
     // reductions:
-    R = 1;
-    if (depth > 2 && non_pruned_moves > 1) {
+    R = (i >= LMR_FULL_DEPTH_MOVES &&
+          depth >= LMR_REDUCTION_LIMIT &&
+          !is_check &&
+          MOVE_CAPTURED(move) == NONE &&
+          !MOVE_IS_PROMOTION(move)
+      ) ? 2 : 1;
+    // R = 1;
+    /* if (depth > 2 && non_pruned_moves > 1) {
       if (!tactical) {
-        if (!b.is_check()) R += 2;
+        if (!b.is_check() && non_pruned_moves > LMR_FULL_DEPTH_MOVES) R += 2;
         if (!pv) R++;
         if (!improving) R++;
         if (is_killer) R -= 2;
       }
       else R -= pv ? 2 : 1;
       R = std::min(depth - 1, std::max(R, 1));
-    }
+    } */
 
     // PVS:
     if (pv && non_pruned_moves == 1) {
@@ -379,7 +395,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
         // fail-hard beta cutoff (node fails high)
         if (score >= beta) {
           // store beta in the transposition table for this position:
-          update_tt(depth, beta, move, TT_BETA);
+          TT.put(depth, beta, move, TT_BETA, true);
 
           // add this move to the killer move list, only if it's a quiet move
           if (!tactical && (move != killer_moves[0][forward_ply])) {
@@ -419,7 +435,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
   if (num_moves == 0) return is_check ? -INF + forward_ply : 0;
 
   // node fails low. store the value in the transposition table first, then exit:
-  update_tt(depth, alpha, best_move, tt_flag);
+  TT.put(depth, alpha, best_move, tt_flag, false);
   return alpha;
 }
 
@@ -445,7 +461,7 @@ int quiescence(int alpha, int beta, int forward_ply) {
 
   // call negamax if we're in check, to make sure we don't get ourselves in a
   // mating net
-  if (b.is_check()) return negamax(0, alpha, beta, forward_ply);
+  if (b.is_check()) return negamax(0, alpha, beta, forward_ply + 1);
 
   // static evaluation:
   int eval = evaluate();
@@ -487,14 +503,14 @@ int quiescence(int alpha, int beta, int forward_ply) {
     b.undo_move();
 
     // if we have to stop, stop the search:
-    if (stop_search) return evaluate();
+    if (stop_search) return eval;
 
     // if we found a better move (PV node):
     if (score > alpha) {
+      alpha = score;
+
       // fail-hard beta cutoff (node fails high)
       if (score >= beta) return beta;
-
-      alpha = score;
     }
   }
 

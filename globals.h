@@ -9,6 +9,7 @@
 
 // forward declaration of the transposition table object:
 struct tt_entry;
+struct transposition_table;
 
 // init_globals(): initialize global variables:
 void init_globals();
@@ -34,7 +35,7 @@ extern int static_evals[MAX_SEARCH_PLY];
 
 /* ---------- TRANSPOSITION TABLE GLOBALS ---------- */
 
-extern tt_entry* TT;
+extern transposition_table TT;
 
 /* ---------- TIME CONTROL RELATED GLOBALS ---------- */
 

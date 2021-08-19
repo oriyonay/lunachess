@@ -32,4 +32,7 @@ void read_input();
 // make sure we didn't get any stop or quit command, and that we still have time:
 void communicate();
 
+// perft function for 'go perft' command:
+long perft(int depth, bool root);
+
 #endif

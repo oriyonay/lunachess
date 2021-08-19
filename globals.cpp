@@ -3,8 +3,8 @@
 // init_globals(): initialize global variables:
 void init_globals() {
   b = board(FEN_START);
-  TT = new tt_entry[NUM_TT_ENTRIES];
-  CLEAR_TT();
+  TT = transposition_table(NUM_TT_ENTRIES);
+  TT.clear();
 
   stop_search = false;
   quit_flag = false;
@@ -34,7 +34,7 @@ int static_evals[MAX_SEARCH_PLY];
 
 /* ---------- TRANSPOSITION TABLE GLOBALS ---------- */
 
-tt_entry* TT;
+transposition_table TT(0);
 
 /* ---------- TIME CONTROL RELATED GLOBALS ---------- */
 

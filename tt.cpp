@@ -1,7 +1,13 @@
 #include "tt.h"
 
-// probe_tt(): probe the transposition table for the given position:
-int probe_tt(int depth, int alpha, int beta) {
+// the transposition table constructor:
+transposition_table::transposition_table(int num_entries) {
+  TT = new tt_entry[num_entries];
+  age = 0;
+}
+
+// probe(): probe the transposition table for the given position:
+int transposition_table::probe(int depth, int alpha, int beta) {
   tt_entry* entry = &TT[b.hash % NUM_TT_ENTRIES];
 
   // verify that the entry is not a collision:
@@ -18,14 +24,28 @@ int probe_tt(int depth, int alpha, int beta) {
   return TT_NO_MATCH;
 }
 
-// update_tt(): write a new entry to the transposition table:
-void update_tt(int depth, int value, int best_move, char flag) {
+// put(): write a new entry to the transposition table:
+void transposition_table::put(int depth, int value, int best_move, char flag, bool is_pv) {
   tt_entry* entry = &TT[b.hash % NUM_TT_ENTRIES];
 
   // write the data:
-  entry->hash = b.hash;
-  entry->depth = depth;
-  entry->flag = flag;
-  entry->value = value;
-  entry->best_move = best_move;
+  if (entry->hash == 0L ||
+      entry->tt_age != age ||
+      is_pv ||
+      (!entry->is_pv && depth >= entry->depth) ||
+      (entry->hash == b.hash && depth >= entry->depth))
+  {
+    entry->hash = b.hash;
+    entry->depth = depth;
+    entry->flag = flag;
+    entry->tt_age = age;
+    entry->value = value;
+    entry->best_move = best_move;
+    entry->is_pv = is_pv;
+  }
+}
+
+// clear(): clears the table:
+void transposition_table::clear() {
+  memset(TT, 0, TT_SIZE);
 }

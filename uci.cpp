@@ -26,7 +26,7 @@ void uci_loop() {
     else if (!strncmp(inbuf, "position", 8)) parse_position(inbuf);
     else if (!strncmp(inbuf, "ucinewgame", 10)) {
       // clear the transposition table and reset the board:
-      CLEAR_TT();
+      TT.clear();
       parse_position("position startpos");
     }
     else if (!strncmp(inbuf, "go", 2)) parse_go(inbuf);
@@ -45,13 +45,6 @@ void uci_loop() {
 void parse_position(char* command) {
   // move command pointer to the point immediately after 'position ':
   command += 9;
-
-  // zero pv, killer move, and history tables as well as the static eval array:
-  memset(pv_table, 0, sizeof(int) * MAX_SEARCH_PLY * MAX_SEARCH_PLY);
-  memset(pv_length, 0, sizeof(int) * MAX_SEARCH_PLY);
-  memset(killer_moves, 0, sizeof(int) * 2 * MAX_SEARCH_PLY);
-  memset(history_moves, 0, sizeof(int) * 12 * 64);
-  memset(static_evals, 0, sizeof(int) * MAX_SEARCH_PLY);
 
   // handle 'position startpos':
   if (!strncmp(command, "startpos", 8)) {
@@ -110,6 +103,14 @@ void parse_go(char* command) {
   int depth = -1;
   char* arg = strstr(command, "depth");
   if (arg) depth = atoi(arg + 6);
+
+  // parse perft command:
+  arg = strstr(command, "perft");
+  if (arg) {
+    depth = atoi(arg + 6);
+    printf("\nnodes searched: %llu\n", perft(depth, true));
+    return;
+  }
 
   arg = strstr(command, "binc");
   if (arg && (b.turn == BLACK)) time_increment = atoi(arg + 5);
