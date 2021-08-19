@@ -6,3 +6,4 @@
 6) ----- starting MAJOR bug-fix hunt to fix as many bugs as possible -----
    (this is what happens when one blindly implements features without testing them carefully. lesson learned!)
 7) changed entire negamax() function architecture. still working on fixing bug relating to extensions
+8) fixed lots of bugs!! still working on fixing PV collection bug

@@ -12,7 +12,7 @@
 
 /* ---------- the search functions ---------- */
 // score_move(): the move scoring function
-inline int score_move(int move);
+inline int score_move(int move, int forward_ply);
 
 // evaluate(): the board evaluation function
 inline int evaluate();

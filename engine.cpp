@@ -3,9 +3,9 @@
 #include "engine.h"
 
 // score_move(): the move scoring function
-inline int score_move(int move) {
+inline int score_move(int move, int forward_ply) {
   // is this a PV move?
-  if (score_pv && (move == pv_table[0][b.ply])) {
+  if (score_pv && (move == pv_table[0][forward_ply])) {
     score_pv = false;
     return 10000;
   }
@@ -19,8 +19,8 @@ inline int score_move(int move) {
   if (score) return score;
 
   // killer move heuristic for quiet moves:
-  if (move == killer_moves[0][b.ply]) return 50;
-  if (move == killer_moves[1][b.ply]) return 40;
+  if (move == killer_moves[0][forward_ply]) return 50;
+  if (move == killer_moves[1][forward_ply]) return 40;
 
   return history_moves[MOVE_PIECEMOVED(move)][MOVE_TO(move)];
 }
@@ -227,10 +227,10 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
   if (stop_search) return evaluate();
 
   // avoid stack overflow:
-  if (forward_ply >= MAX_SEARCH_PLY) return evaluate();
+  if (forward_ply >= MAX_SEARCH_PLY) return is_check ? 0 : evaluate();
 
   pv_length[forward_ply] = forward_ply;
-  bool pv = (beta - alpha) > 1;
+  bool pv = (beta - alpha != 1);
   bool root = (forward_ply == 0);
   int score = -INF;
   int best_score = -INF;
@@ -293,7 +293,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
   // score the moves:
   int move_scores[MAX_POSITION_MOVES];
   for (int i = 0; i < num_moves; i++) {
-    move_scores[i] = score_move(moves[i]);
+    move_scores[i] = score_move(moves[i], forward_ply);
   }
 
   // variables for move selection (selection sort, in main recursive loops):
@@ -336,7 +336,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
 
     // extensions:
     extension = 0;
-    if (MOVE_IS_CASTLE(move) || (b.is_check() && depth < 8) || (pv && recapture))
+    if (MOVE_IS_CASTLE(move) || is_check || recapture)
       if (!root) extension = 1;
     new_depth = depth + extension;
 
@@ -369,84 +369,56 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
       }
     }
 
-    // search first node at full-depth:
-    /* if (i == 0) {
-      score = -negamax(depth - 1, -beta, -alpha, forward_ply + 1);
-    }
-    // we check for potential LMR in all other nodes:
-    else {
-      // can we do LMR?
-      if (i >= LMR_FULL_DEPTH_MOVES &&
-          depth >= LMR_REDUCTION_LIMIT &&
-          !is_check &&
-          MOVE_CAPTURED(move) == NONE &&
-          !MOVE_IS_PROMOTION(move)
-      ) {
-        score = -negamax(depth - R, -alpha - 1, -alpha, forward_ply + 1);
-      }
-      // if we can't, we use this trick to make sure we enter PVS and perform
-      // the full search if necessary:
-      else {
-        score = alpha + 1;
-      }
-
-      // now we perform PVS:
-      if (score > alpha) {
-        score = -negamax(depth - 1, -alpha - 1, -alpha, forward_ply + 1);
-        if ((score > alpha) && (score < beta)) {
-          score = -negamax(depth - 1, -beta, -alpha, forward_ply + 1);
-        }
-      }
-    } */
     b.undo_move();
 
-    // if we have to stop, stop the search:
-    if (stop_search) return 0;
+    if (score > best_score) {
+      best_score = score;
+      best_move = move;
 
-    // if we found a better move (PV node):
-    if (score > alpha) {
-      // fail-hard beta cutoff (node fails high)
-      if (score >= beta) {
-        // store beta in the transposition table for this position:
-        update_tt(depth, beta, move, TT_BETA);
+      if (score > alpha) {
+        // fail-hard beta cutoff (node fails high)
+        if (score >= beta) {
+          // store beta in the transposition table for this position:
+          update_tt(depth, beta, move, TT_BETA);
 
-        // add this move to the killer move list, only if it's a quiet move
-        if (MOVE_CAPTURED(move) == NONE && (move != killer_moves[0][b.ply])) {
-          killer_moves[1][b.ply] = killer_moves[0][b.ply];
-          killer_moves[0][b.ply] = move;
+          // add this move to the killer move list, only if it's a quiet move
+          if (!tactical && (move != killer_moves[0][forward_ply])) {
+            killer_moves[1][forward_ply] = killer_moves[0][forward_ply];
+            killer_moves[0][forward_ply] = move;
+          }
+
+          return beta;
         }
 
-        return beta;
+        // switch the TT flag to indicate storing the exact value of this position,
+        // since it's a PV node:
+        tt_flag = TT_EXACT;
+
+        // add this move to the history move list, only if it's a quiet move:
+        if (MOVE_CAPTURED(move) == NONE) {
+          history_moves[MOVE_PIECEMOVED(move)][MOVE_TO(move)] += depth;
+        }
+
+        // this is the PV node:
+        alpha = score;
+
+        // enter PV move into PV table:
+        pv_table[forward_ply][forward_ply] = move;
+
+        // copy move from deeper PV:
+        for (int next = forward_ply + 1; next < pv_length[forward_ply + 1]; next++) {
+          pv_table[forward_ply][next] = pv_table[forward_ply + 1][next];
+        }
+
+        // adjust the PV length table:
+        pv_length[forward_ply] = pv_length[forward_ply + 1];
       }
-      // switch the TT flag to indicate storing the exact value of this position,
-      // since it's a PV node:
-      tt_flag = TT_EXACT;
-
-      // add this move to the history move list, only if it's a quiet move:
-      if (MOVE_CAPTURED(move) == NONE) {
-        history_moves[MOVE_PIECEMOVED(move)][MOVE_TO(move)] += depth;
-      }
-
-      // this is the PV node:
-      alpha = score;
-
-      // enter PV move into PV table:
-      pv_table[forward_ply][forward_ply] = move;
-
-      // copy move from deeper PV:
-      for (int next = forward_ply + 1; next < pv_length[forward_ply + 1]; next++) {
-        pv_table[forward_ply][next] = pv_table[forward_ply + 1][next];
-      }
-
-      // adjust the PV length table:
-      pv_length[forward_ply] = pv_length[forward_ply + 1];
     }
   }
 
   if (num_moves == 0) return is_check ? -INF + forward_ply : 0;
 
   // node fails low. store the value in the transposition table first, then exit:
-  best_move = pv_table[forward_ply][forward_ply];
   update_tt(depth, alpha, best_move, tt_flag);
   return alpha;
 }
@@ -461,7 +433,7 @@ int quiescence(int alpha, int beta, int forward_ply) {
   if (nodes_evaluated % 2048 == 0) communicate();
 
   // if we have to stop, stop the search:
-  if (stop_search) return 0;
+  if (stop_search) return evaluate();
 
   // avoid stack overflow:
   if (forward_ply >= MAX_SEARCH_PLY) return evaluate();
@@ -473,7 +445,7 @@ int quiescence(int alpha, int beta, int forward_ply) {
 
   // call negamax if we're in check, to make sure we don't get ourselves in a
   // mating net
-  if (b.is_check()) return negamax(0, alpha, beta, forward_ply + 1);
+  if (b.is_check()) return negamax(0, alpha, beta, forward_ply);
 
   // static evaluation:
   int eval = evaluate();
@@ -489,7 +461,7 @@ int quiescence(int alpha, int beta, int forward_ply) {
   // score the moves:
   int move_scores[MAX_POSITION_MOVES];
   for (int i = 0; i < num_moves; i++) {
-    move_scores[i] = score_move(moves[i]);
+    move_scores[i] = score_move(moves[i], forward_ply);
   }
 
   // recursively qsearch the horizon:
@@ -515,7 +487,7 @@ int quiescence(int alpha, int beta, int forward_ply) {
     b.undo_move();
 
     // if we have to stop, stop the search:
-    if (stop_search) return 0;
+    if (stop_search) return evaluate();
 
     // if we found a better move (PV node):
     if (score > alpha) {
