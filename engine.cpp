@@ -353,14 +353,8 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
     b.make_move(move);
 
     // reductions:
-    R = (i >= LMR_FULL_DEPTH_MOVES &&
-          depth >= LMR_REDUCTION_LIMIT &&
-          !is_check &&
-          MOVE_CAPTURED(move) == NONE &&
-          !MOVE_IS_PROMOTION(move)
-      ) ? 2 : 1;
-    // R = 1;
-    /* if (depth > 2 && non_pruned_moves > 1) {
+    R = 1;
+    if (depth > 2 && non_pruned_moves > 1) {
       if (!tactical) {
         if (!b.is_check() && non_pruned_moves > LMR_FULL_DEPTH_MOVES) R += 2;
         if (!pv) R++;
@@ -369,7 +363,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
       }
       else R -= pv ? 2 : 1;
       R = std::min(depth - 1, std::max(R, 1));
-    } */
+    }
 
     // PVS:
     if (pv && non_pruned_moves == 1) {
@@ -441,20 +435,12 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
 
 // quiescence(): the quiescence search algorithm
 int quiescence(int alpha, int beta, int forward_ply) {
-  // if this is a draw, return 0:
-  // NOTE: we don't yet count material draws
-  if (b.is_repetition() || b.fifty_move_counter >= 100) return 0;
-
   // every 2048 nodes, communicate with the GUI / check time:
   if (nodes_evaluated % 2048 == 0) communicate();
-
-  // if we have to stop, stop the search:
-  if (stop_search) return evaluate();
+  nodes_evaluated++;
 
   // avoid stack overflow:
   if (forward_ply >= MAX_SEARCH_PLY) return evaluate();
-
-  nodes_evaluated++;
 
   // update the UNSAFE bitboard, since it's not updating elsewhere for some reason:
   b.update_move_info_bitboards();
@@ -462,6 +448,10 @@ int quiescence(int alpha, int beta, int forward_ply) {
   // call negamax if we're in check, to make sure we don't get ourselves in a
   // mating net
   if (b.is_check()) return negamax(0, alpha, beta, forward_ply + 1);
+
+  // if this is a draw, return 0:
+  // NOTE: we don't yet count material draws
+  if (b.is_repetition() || b.fifty_move_counter >= 100) return 0;
 
   // static evaluation:
   int eval = evaluate();
@@ -503,7 +493,7 @@ int quiescence(int alpha, int beta, int forward_ply) {
     b.undo_move();
 
     // if we have to stop, stop the search:
-    if (stop_search) return eval;
+    if (stop_search) return 0;
 
     // if we found a better move (PV node):
     if (score > alpha) {
