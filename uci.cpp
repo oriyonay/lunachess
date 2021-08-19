@@ -47,10 +47,11 @@ void parse_position(char* command) {
   command += 9;
 
   // zero pv, killer move, and history tables as well as the static eval array:
-  memset(pv_table, 0, sizeof(int) * MAX_GAME_MOVES * MAX_GAME_MOVES);
-  memset(pv_length, 0, sizeof(int) * MAX_GAME_MOVES);
-  memset(killer_moves, 0, sizeof(int) * 2 * MAX_GAME_MOVES);
+  memset(pv_table, 0, sizeof(int) * MAX_SEARCH_PLY * MAX_SEARCH_PLY);
+  memset(pv_length, 0, sizeof(int) * MAX_SEARCH_PLY);
+  memset(killer_moves, 0, sizeof(int) * 2 * MAX_SEARCH_PLY);
   memset(history_moves, 0, sizeof(int) * 12 * 64);
+  memset(static_evals, 0, sizeof(int) * MAX_SEARCH_PLY);
 
   // handle 'position startpos':
   if (!strncmp(command, "startpos", 8)) {

@@ -1,5 +1,8 @@
 TODO / NOTES:
 - fix UNSAFE bitboard updating problem in negamax?
+- include promotions in SEE?
+- FIX SEE "BUGS"
+- change MOVE_IS_PROMOTION(move), ... to MOVE_TYPE(move) and enumerate PROMOTION_MOVE, ENPASSANT_MOVE, etc.
 - stacked rook bonus?
 - pawn shield vs piece shield?
 - material draws
@@ -9,10 +12,8 @@ TODO / NOTES:
 - move scoring:
   - score promotions?
   - extra score if check? (or maybe search already has that covered)
-- add 'go perft' functionality
 - add "board has non-pawn material" condition in null move pruning
 - experiment with tt structure to reduce size
-- clear the TT on UCI position command
 - should there be a TT update on null move cutoffs?
 - TT in qsearch?
 - history move heuristic: could take it or leave it

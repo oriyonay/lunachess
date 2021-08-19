@@ -164,7 +164,7 @@ void search(int depth) {
     follow_pv = true;
 
     // search the position at the given depth:
-    int score = negamax(cur_depth, alpha, beta, true);
+    int score = negamax(cur_depth, alpha, beta, 0);
 
     // if we have to stop, stop the search:
     if (stop_search) break;
@@ -173,8 +173,8 @@ void search(int depth) {
     printf("info score cp %d depth %d nodes %d time %d pv ",
       score, cur_depth, nodes_evaluated, get_time() - start_time
     );
-    for (int i = b.ply; i < pv_length[b.ply]; i++) {
-      print_move(pv_table[b.ply][i]);
+    for (int i = 0; i < pv_length[0]; i++) {
+      print_move(pv_table[0][i]);
       printf(" ");
     }
     printf("\n");
@@ -195,60 +195,56 @@ void search(int depth) {
     aspiration_delta += (aspiration_delta / 2);
 
     // now the principal variation is in pv_table[0][:pv_length[0]],
-    // and the best move is in pv_table[ply][0]
+    // and the best move is in pv_table[0][0]
   }
 
   // print the best move found:
   printf("bestmove ");
-  print_move(pv_table[b.ply][b.ply]);
+  print_move(pv_table[0][0]);
   printf("\n");
 }
 
 // negamax(): the main tree-search function
-int negamax(int depth, int alpha, int beta, bool cut) {
-  // every 2048 nodes, communicate with the GUI / check time:
-  if (nodes_evaluated % 2048 == 0) communicate();
-
-  // if we have to stop, stop the search:
-  if (stop_search) return 0;
-
-  // if this is a draw, return 0:
-  // NOTE: we don't yet count material draws
-  if (b.is_repetition() || b.fifty_move_counter >= 100) return 0;
-
-  // quick hack to determine whether this is a PV node:
-  bool pv = (beta - alpha) > 1;
-
+int negamax(int depth, int alpha, int beta, int forward_ply) {
   // update the UNSAFE bitboard, and a local is_check variable,
   // since it's not updating elsewhere for some reason:
   b.update_move_info_bitboards();
   bool is_check = b.is_check();
 
-  // increment node counter and initialize score variable
-  nodes_evaluated++;
-
-  // initialize PV length:
-  pv_length[b.ply] = b.ply;
-
-  // check extension:
-  if (is_check) depth = std::max(depth+1, 1);
-
   // base case:
-  if (depth <= 0 && !is_check) return quiescence(alpha, beta);
+  if (depth <= 0 && !is_check) return quiescence(alpha, beta, forward_ply);
 
-  // beta/reverse futility pruning:
-  int eval = evaluate();
-  if (!pv &&
-      !is_check &&
-      depth <= 4 &&
-      eval - (75 * depth) > beta
-  ) return eval;
+  // ensure non-negative depth:
+  depth = std::max(depth, 0);
 
-  // initialize the transposition table flag for this position, and look up the
-  // position in the TT:
+  // if this is a draw, return 0:
+  // NOTE: we don't yet count material draws
+  if (b.is_repetition() || b.fifty_move_counter >= 100) return 0;
+
+  // every 2048 nodes, communicate with the GUI / check time:
+  nodes_evaluated++;
+  if (nodes_evaluated % 2048 == 0) communicate();
+  if (stop_search) return evaluate();
+
+  // avoid stack overflow:
+  if (forward_ply >= MAX_SEARCH_PLY) return evaluate();
+
+  pv_length[forward_ply] = forward_ply;
+  bool pv = (beta - alpha) > 1;
+  bool root = (forward_ply == 0);
+  int score = -INF;
+  int best_score = -INF;
+  int best_move = NULL;
   char tt_flag = TT_ALPHA;
-  int score = probe_tt(depth, alpha, beta);
+
+  // look up the position in the TT:
+  score = probe_tt(depth, alpha, beta);
   if (b.ply > 0 && !pv && (score != TT_NO_MATCH)) return score;
+  score = -INF;
+
+  int eval = evaluate();
+  static_evals[forward_ply] = eval;
+  bool improving = (!is_check && forward_ply >= 2 && eval > static_evals[forward_ply-2]);
 
   // for null-move pruning, we need to figure out whether our side has any major pieces:
   U64 majors = (b.turn == WHITE) ?
@@ -267,40 +263,27 @@ int negamax(int depth, int alpha, int beta, bool cut) {
     b.make_nullmove();
 
     // search the position with a reduced depth:
-    int null_move_score = -negamax(depth - 4, -beta, -beta + 1, false);
+    int null_move_score = -negamax(depth - 4, -beta, -beta + 1, forward_ply + 1);
 
     // flip the turn again:
     b.undo_nullmove();
 
     // if we have to stop, stop the search:
-    if (stop_search) return 0;
+    if (stop_search) return evaluate();
 
     // fail-hard beta cutoff:
     if (null_move_score >= beta) return beta;
   }
 
-  // razoring:
-  /*if (!is_check &&
-      !pv &&
-      b.move_history[b.ply-1] != NULL &&
-      depth == 1 &&
-      eval - RAZOR_MARGIN[depth] >= beta
-   ) return quiescence(alpha, beta);*/
-
   // generate all possible moves from this position:
   int moves[MAX_POSITION_MOVES];
   int num_moves = b.get_moves(moves);
-
-  // if we can't make any moves, it's either checkmate or stalemate:
-  // (we add the ply to -INF score to help the engine detect the CLOSEST
-  // checkmate possible when it's defeating its opponent)
-  if (num_moves == 0) return is_check ? -INF + b.ply : 0;
 
   // if we're following the principal variation, enable PV scoring:
   if (follow_pv) {
     follow_pv = false;
     for (int i = 0; i < num_moves; i++) {
-      if (pv_table[0][b.ply] == moves[i]) {
+      if (pv_table[0][forward_ply] == moves[i]) {
         score_pv = true;
         follow_pv = true;
       }
@@ -316,50 +299,14 @@ int negamax(int depth, int alpha, int beta, bool cut) {
   // variables for move selection (selection sort, in main recursive loops):
   int move, move_index;
 
-  // multi-cut pruning:
-  /* if (cut) {
-    if (depth >= MULTICUT_R &&
-        !is_check &&
-        !pv &&
-        b.move_history[b.ply-1] != NULL
-    ) {
-      // number of cuts so far and number of moves to evaluate:
-      int c = 0;
-      int M = std::min(MULTICUT_M, num_moves);
-
-      // search the first M moves in hopes of finding enough cuts to terminate
-      // the search early:
-      for (int i = 0; i < M; i++) {
-        // selection sort to find the best move:
-        move_index = 0; // contains the index of the best move
-        for (int j = 0; j < num_moves; j++) {
-          if (move_scores[j] > move_scores[move_index]) {
-            move_index = j;
-          }
-        }
-
-        // once we find the move with the highest score, set its score to -1 so it
-        // can't be selected again (essentially marking it as 'seen')
-        move = moves[move_index];
-        move_scores[move_index] = -1;
-
-        b.make_move(move);
-        score = -negamax(depth - 1 - MULTICUT_R, -alpha - 1, -alpha, false);
-        b.undo_move();
-
-        if (score >= beta && ++c == MULTICUT_C) return beta;
-      }
-    }
-  }
-
-  // if we're here, then we have to re-score the moves we've tried in multi-cut:
-  for (int i = 0; i < num_moves; i++) {
-    if (move_scores[i] == -1) {
-      move_scores[i] = score_move(moves[i]);
-    }
-  } */
-
   // recursively find the best move from here:
+  int non_pruned_moves = 0;
+  bool tactical;
+  bool is_killer;
+  bool recapture;
+  int extension;
+  int new_depth;
+  int R;
   for (int i = 0; i < num_moves; i++) {
     // selection sort to find the best move:
     move_index = 0; // contains the index of the best move
@@ -374,12 +321,57 @@ int negamax(int depth, int alpha, int beta, bool cut) {
     move = moves[move_index];
     move_scores[move_index] = -1;
 
-    // make move & recursively call negamax helper function:
-    // we also implement the meat of PVS in this section:
+    // figure out some things about this move:
+    tactical = (MOVE_CAPTURED(move) != NONE) || (MOVE_IS_PROMOTION(move));
+    is_killer = (move == killer_moves[0][forward_ply]) ||
+                (move == killer_moves[1][forward_ply]);
+    recapture = (b.ply) &&
+                (MOVE_CAPTURED(b.move_history[b.ply-1]) != NONE) &&
+                (MOVE_CAPTURED(move) != NONE) &&
+                (MOVE_TO(b.move_history[b.ply-1]) == MOVE_TO(move));
+
+    // FUTURE: PRUNING GOES HERE
+
+    non_pruned_moves++;
+
+    // extensions:
+    extension = 0;
+    if (MOVE_IS_CASTLE(move) || (b.is_check() && depth < 8) || (pv && recapture))
+      if (!root) extension = 1;
+    new_depth = depth + extension;
+
     b.make_move(move);
+
+    // reductions:
+    R = 1;
+    if (depth > 2 && non_pruned_moves > 1) {
+      if (!tactical) {
+        if (!b.is_check()) R += 2;
+        if (!pv) R++;
+        if (!improving) R++;
+        if (is_killer) R -= 2;
+      }
+      else R -= pv ? 2 : 1;
+      R = std::min(depth - 1, std::max(R, 1));
+    }
+
+    // PVS:
+    if (pv && non_pruned_moves == 1) {
+      score = -negamax(depth - 1, -beta, -alpha, forward_ply + 1);
+    }
+    else {
+      score = -negamax(new_depth - R, -alpha - 1, -alpha, forward_ply + 1);
+      if (R != 1 && score > alpha) {
+        score = -negamax(new_depth - 1, -alpha - 1, -alpha, forward_ply + 1);
+      }
+      if ((score > alpha) && (score < beta)) {
+        score = -negamax(new_depth - 1, -beta, -alpha, forward_ply + 1);
+      }
+    }
+
     // search first node at full-depth:
-    if (i == 0) {
-      score = -negamax(depth - 1, -beta, -alpha, true);
+    /* if (i == 0) {
+      score = -negamax(depth - 1, -beta, -alpha, forward_ply + 1);
     }
     // we check for potential LMR in all other nodes:
     else {
@@ -390,7 +382,7 @@ int negamax(int depth, int alpha, int beta, bool cut) {
           MOVE_CAPTURED(move) == NONE &&
           !MOVE_IS_PROMOTION(move)
       ) {
-        score = -negamax(depth - 3, -alpha - 1, -alpha, true);
+        score = -negamax(depth - R, -alpha - 1, -alpha, forward_ply + 1);
       }
       // if we can't, we use this trick to make sure we enter PVS and perform
       // the full search if necessary:
@@ -400,12 +392,12 @@ int negamax(int depth, int alpha, int beta, bool cut) {
 
       // now we perform PVS:
       if (score > alpha) {
-        score = -negamax(depth - 1, -alpha - 1, -alpha, true);
+        score = -negamax(depth - 1, -alpha - 1, -alpha, forward_ply + 1);
         if ((score > alpha) && (score < beta)) {
-          score = -negamax(depth - 1, -beta, -alpha, true);
+          score = -negamax(depth - 1, -beta, -alpha, forward_ply + 1);
         }
       }
-    }
+    } */
     b.undo_move();
 
     // if we have to stop, stop the search:
@@ -439,26 +431,28 @@ int negamax(int depth, int alpha, int beta, bool cut) {
       alpha = score;
 
       // enter PV move into PV table:
-      pv_table[b.ply][b.ply] = move;
+      pv_table[forward_ply][forward_ply] = move;
 
       // copy move from deeper PV:
-      for (int next = b.ply + 1; next < pv_length[b.ply + 1]; next++) {
-        pv_table[b.ply][next] = pv_table[b.ply + 1][next];
+      for (int next = forward_ply + 1; next < pv_length[forward_ply + 1]; next++) {
+        pv_table[forward_ply][next] = pv_table[forward_ply + 1][next];
       }
 
       // adjust the PV length table:
-      pv_length[b.ply] = pv_length[b.ply + 1];
+      pv_length[forward_ply] = pv_length[forward_ply + 1];
     }
   }
 
+  if (num_moves == 0) return is_check ? -INF + forward_ply : 0;
+
   // node fails low. store the value in the transposition table first, then exit:
-  int best_move = pv_table[b.ply][b.ply];
+  best_move = pv_table[forward_ply][forward_ply];
   update_tt(depth, alpha, best_move, tt_flag);
   return alpha;
 }
 
 // quiescence(): the quiescence search algorithm
-int quiescence(int alpha, int beta) {
+int quiescence(int alpha, int beta, int forward_ply) {
   // if this is a draw, return 0:
   // NOTE: we don't yet count material draws
   if (b.is_repetition() || b.fifty_move_counter >= 100) return 0;
@@ -469,6 +463,9 @@ int quiescence(int alpha, int beta) {
   // if we have to stop, stop the search:
   if (stop_search) return 0;
 
+  // avoid stack overflow:
+  if (forward_ply >= MAX_SEARCH_PLY) return evaluate();
+
   nodes_evaluated++;
 
   // update the UNSAFE bitboard, since it's not updating elsewhere for some reason:
@@ -476,7 +473,7 @@ int quiescence(int alpha, int beta) {
 
   // call negamax if we're in check, to make sure we don't get ourselves in a
   // mating net
-  if (b.is_check()) return negamax(0, alpha, beta, false);
+  if (b.is_check()) return negamax(0, alpha, beta, forward_ply + 1);
 
   // static evaluation:
   int eval = evaluate();
@@ -512,14 +509,9 @@ int quiescence(int alpha, int beta) {
     move = moves[move_index];
     move_scores[move_index] = -1;
 
-    // delta pruning: could this move improve alpha, in the best case?
-    best_case = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)] +
-                (MOVE_IS_PROMOTION(move) ? 900 : 0);
-    if (eval + best_case + DELTA_VALUE < alpha) return alpha;
-
     // make move & recursively call qsearch:
     b.make_move(move);
-    int score = -quiescence(-beta, -alpha);
+    int score = -quiescence(-beta, -alpha, forward_ply + 1);
     b.undo_move();
 
     // if we have to stop, stop the search:

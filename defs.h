@@ -35,6 +35,7 @@ typedef uint64_t U64;
 #define SEMI_OPEN_FILE_BONUS 10
 
 #define INF 1000000
+#define MAX_SEARCH_PLY 64
 #define NO_SCORE 10000000 // too high to be reached, so it's safe to use this
 
 #define FEN_START "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"

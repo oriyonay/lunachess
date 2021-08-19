@@ -19,7 +19,7 @@ inline int evaluate();
 
 // the search algorithms for finding the best move:
 void search(int depth);
-int negamax(int depth, int alpha, int beta, bool cut);
-int quiescence(int alpha, int beta);
+int negamax(int depth, int alpha, int beta, int forward_ply);
+int quiescence(int alpha, int beta, int forward_ply);
 
 #endif

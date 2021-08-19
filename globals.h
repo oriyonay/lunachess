@@ -23,12 +23,14 @@ extern bool follow_pv;
 extern bool score_pv;
 
 // the principal variation table:
-extern int pv_length[MAX_GAME_MOVES];
-extern int pv_table[MAX_GAME_MOVES][MAX_GAME_MOVES];
+extern int pv_length[MAX_SEARCH_PLY];
+extern int pv_table[MAX_SEARCH_PLY][MAX_SEARCH_PLY];
 
 // to store killer moves and history moves:
-extern int killer_moves[2][MAX_GAME_MOVES]; // [move_id][ply]
+extern int killer_moves[2][MAX_SEARCH_PLY]; // [move_id][ply]
 extern int history_moves[12][64]; // [piece][square]
+
+extern int static_evals[MAX_SEARCH_PLY];
 
 /* ---------- TRANSPOSITION TABLE GLOBALS ---------- */
 
