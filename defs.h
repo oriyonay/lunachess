@@ -31,7 +31,7 @@ typedef uint64_t U64;
 #define MULTICUT_M 6 // number of first moves to consider
 #define MULTICUT_C 3 // number of cutoffs to cause a multi-cut prune
 #define MULTICUT_R 4 // depth for multi-cut
-#define NULL_MOVE_PRUNING_DEPTH 4
+#define NULL_MOVE_PRUNING_DEPTH 3
 #define SEMI_OPEN_FILE_BONUS 10
 
 #define INF 1000000

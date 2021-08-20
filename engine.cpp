@@ -111,7 +111,7 @@ inline int evaluate() {
     bonus -= (__builtin_popcountll(KNIGHT_MOVES[index] & ~b.B) - 4) * 4;
     POP_LSB(knights);
   }
-  U64 bishops = (b.bitboard[WB] | b.bitboard[WQ]) & not_pinned_white;
+  /* U64 bishops = (b.bitboard[WB] | b.bitboard[WQ]) & not_pinned_white;
   while (bishops) {
     index = LSB(bishops);
     bonus += (__builtin_popcountll(diag_moves_magic(index, b.OCCUPIED_SQUARES)) - 6) * 5;
@@ -122,7 +122,7 @@ inline int evaluate() {
     index = LSB(bishops);
     bonus -= (__builtin_popcountll(diag_moves_magic(index, b.OCCUPIED_SQUARES)) - 6) * 5;
     POP_LSB(bishops);
-  }
+  } */
 
   // king safety evaluation:
   bonus += __builtin_popcountll(KING_MOVES[LSB(b.bitboard[WK])] & b.bitboard[WP]) * KING_SHIELD_BONUS;
@@ -188,7 +188,7 @@ void search(int depth) {
 
     // if we still haven't looked 6 moves deep (not enough info to use windows), or
     // if we fell outside our aspiration window, reset to -INF and INF:
-    if (cur_depth < 6 || ((score <= alpha) || (score >= beta))) {
+    if (/* cur_depth < 6 || */ ((score <= alpha) || (score >= beta))) {
       alpha = -INF;
       beta = INF;
       continue;
@@ -199,7 +199,7 @@ void search(int depth) {
     beta = score + aspiration_delta;
 
     // gradually widen the search window in the future, if we failed high:
-    aspiration_delta += (aspiration_delta / 2);
+    // aspiration_delta += (aspiration_delta / 2);
 
     // now the principal variation is in pv_table[0][:pv_length[0]],
     // and the best move is in pv_table[0][0]
@@ -217,9 +217,12 @@ void search(int depth) {
 // negamax(): the main tree-search function
 int negamax(int depth, int alpha, int beta, int forward_ply) {
   // every 2048 nodes, communicate with the GUI / check time:
-  nodes_evaluated++;
   if (nodes_evaluated % 2048 == 0) communicate();
   if (stop_search) return 0;
+
+  // if this is a draw, return 0:
+  // NOTE: we don't yet count material draws
+  if (b.is_repetition() || b.fifty_move_counter >= 100) return 0;
 
   pv_length[forward_ply] = forward_ply;
   bool pv = (beta - alpha != 1);
@@ -239,9 +242,16 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
   b.update_move_info_bitboards();
   bool is_check = b.is_check();
 
-  // if this is a draw, return 0:
-  // NOTE: we don't yet count material draws
-  if (b.is_repetition() || b.fifty_move_counter >= 100) return 0;
+  // check extension:
+  if (is_check) depth = std::max(depth+1, 1);
+
+  // beta/reverse futility pruning:
+  int eval = evaluate();
+  if (!pv &&
+      !is_check &&
+      depth <= 4 &&
+      eval - (75 * depth) > beta
+    ) return eval;
 
   // base case:
   if (depth <= 0 && !is_check) return quiescence(alpha, beta, forward_ply);
@@ -249,10 +259,12 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
   // ensure non-negative depth:
   depth = std::max(depth, 0);
 
+  // increment node counter:
+  nodes_evaluated++;
+
   // avoid stack overflow:
   if (forward_ply >= MAX_SEARCH_PLY) return is_check ? 0 : evaluate();
 
-  int eval = evaluate();
   static_evals[forward_ply] = eval;
   bool improving = (!is_check && forward_ply >= 2 && eval > static_evals[forward_ply-2]);
 
@@ -285,6 +297,14 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
     if (null_move_score >= beta) return beta;
   }
 
+  // razoring:
+  /* if(!is_check &&
+     !pv &&
+     b.move_history[b.ply-1] != NULL &&
+     depth < 10 &&
+     eval - RAZOR_MARGIN[depth] >= beta
+   ) return beta; */
+
   // generate all possible moves from this position:
   int moves[MAX_POSITION_MOVES];
   int num_moves = b.get_moves(moves);
@@ -315,7 +335,6 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
   bool is_killer;
   bool recapture;
   int extension;
-  int new_depth;
   int R;
   for (int i = 0; i < num_moves; i++) {
     // selection sort to find the best move:
@@ -345,10 +364,11 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
     non_pruned_moves++;
 
     // extensions:
-    extension = 0;
+    // (potentially add extension for all tactical moves?)
+    /* extension = 0;
     if (MOVE_IS_CASTLE(move) || is_check || recapture)
       if (!root) extension = 1;
-    new_depth = depth + extension;
+    new_depth = depth + extension; */
 
     b.make_move(move);
 
@@ -356,7 +376,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
     R = 1;
     if (depth > 2 && non_pruned_moves > 1) {
       if (!tactical) {
-        if (!b.is_check() && non_pruned_moves > LMR_FULL_DEPTH_MOVES) R += 2;
+        if (!b.is_check() && non_pruned_moves >= LMR_FULL_DEPTH_MOVES) R += 2;
         if (!pv) R++;
         if (!improving) R++;
         if (is_killer) R -= 2;
@@ -365,21 +385,38 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
       R = std::min(depth - 1, std::max(R, 1));
     }
 
-    // PVS:
-    if (pv && non_pruned_moves == 1) {
+    if (non_pruned_moves == 1) {
       score = -negamax(depth - 1, -beta, -alpha, forward_ply + 1);
     }
     else {
-      score = -negamax(new_depth - R, -alpha - 1, -alpha, forward_ply + 1);
-      if (R != 1 && score > alpha) {
-        score = -negamax(new_depth - 1, -alpha - 1, -alpha, forward_ply + 1);
-      }
-      if ((score > alpha) && (score < beta)) {
-        score = -negamax(new_depth - 1, -beta, -alpha, forward_ply + 1);
+      if (R != 1) score = -negamax(depth - R, -alpha - 1, -alpha, forward_ply + 1);
+      else score = alpha + 1;
+
+      if (score > alpha) {
+        score = -negamax(depth - 1, -alpha - 1, -alpha, forward_ply + 1);
+        if ((score > alpha) && (score < beta)) {
+          score = -negamax(depth - 1, -beta, -alpha, forward_ply + 1);
+        }
       }
     }
 
+    // PVS:
+    /* if (non_pruned_moves == 1) {
+      score = -negamax(depth - 1, -beta, -alpha, forward_ply + 1);
+    }
+    else {
+      score = -negamax(depth - R, -alpha - 1, -alpha, forward_ply + 1);
+      if (R != 1 && score > alpha) {
+        score = -negamax(depth - 1, -alpha - 1, -alpha, forward_ply + 1);
+      }
+      if ((score > alpha) && (score < beta)) {
+        score = -negamax(depth - 1, -beta, -alpha, forward_ply + 1);
+      }
+    } */
+
     b.undo_move();
+
+    if (stop_search) return 0;
 
     if (score > best_score) {
       best_score = score;
@@ -491,6 +528,11 @@ int quiescence(int alpha, int beta, int forward_ply) {
     b.make_move(move);
     int score = -quiescence(-beta, -alpha, forward_ply + 1);
     b.undo_move();
+
+    // delta pruning: could this move improve alpha, in the best case?
+    /* best_case = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)] +
+                (MOVE_IS_PROMOTION(move) ? 900 : 0);
+    if (eval + best_case + DELTA_VALUE < alpha) return alpha; */
 
     // if we have to stop, stop the search:
     if (stop_search) return 0;
