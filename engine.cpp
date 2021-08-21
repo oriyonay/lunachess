@@ -155,7 +155,7 @@ void search(int depth) {
   // reset time control flag:
   stop_search = false;
 
-  // zero pv, killer move, and history tables as well as the static eval array:
+  // zero pv, killer move, history, and static eval tables:
   memset(pv_table, 0, sizeof(int) * MAX_SEARCH_PLY * MAX_SEARCH_PLY);
   memset(pv_length, 0, sizeof(int) * MAX_SEARCH_PLY);
   memset(killer_moves, 0, sizeof(int) * 2 * MAX_SEARCH_PLY);
@@ -247,11 +247,11 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
 
   // beta/reverse futility pruning:
   int eval = evaluate();
-  if (!pv &&
+  /* if (!pv &&
       !is_check &&
       depth <= 4 &&
       eval - (75 * depth) > beta
-    ) return eval;
+    ) return eval; */
 
   // base case:
   if (depth <= 0 && !is_check) return quiescence(alpha, beta, forward_ply);
@@ -385,23 +385,8 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
       R = std::min(depth - 1, std::max(R, 1));
     }
 
-    if (non_pruned_moves == 1) {
-      score = -negamax(depth - 1, -beta, -alpha, forward_ply + 1);
-    }
-    else {
-      if (R != 1) score = -negamax(depth - R, -alpha - 1, -alpha, forward_ply + 1);
-      else score = alpha + 1;
-
-      if (score > alpha) {
-        score = -negamax(depth - 1, -alpha - 1, -alpha, forward_ply + 1);
-        if ((score > alpha) && (score < beta)) {
-          score = -negamax(depth - 1, -beta, -alpha, forward_ply + 1);
-        }
-      }
-    }
-
     // PVS:
-    /* if (non_pruned_moves == 1) {
+    if (non_pruned_moves == 1) {
       score = -negamax(depth - 1, -beta, -alpha, forward_ply + 1);
     }
     else {
@@ -412,7 +397,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
       if ((score > alpha) && (score < beta)) {
         score = -negamax(depth - 1, -beta, -alpha, forward_ply + 1);
       }
-    } */
+    }
 
     b.undo_move();
 

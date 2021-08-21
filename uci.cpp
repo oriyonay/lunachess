@@ -93,7 +93,8 @@ void parse_position(char* command) {
 void parse_go(char* command) {
   // initialize variables:
   time_set = false;
-  moves_to_go = 30;
+  moves_to_go = -1;
+  moves_to_go_enabled = false;
   move_time = -1;
   time_limit = -1;
   time_increment = 0;
@@ -125,7 +126,10 @@ void parse_go(char* command) {
   if (arg && (b.turn == WHITE)) time_limit = atoi(arg + 6);
 
   arg = strstr(command, "movestogo");
-  if (arg) moves_to_go = atoi(arg + 10);
+  if (arg) {
+    moves_to_go_enabled = true;
+    moves_to_go = atoi(arg + 10);
+  }
 
   arg = strstr(command, "movetime");
   if (arg) move_time = atoi(arg + 9);
@@ -138,9 +142,19 @@ void parse_go(char* command) {
   if (time_limit != -1) {
     time_set = true;
 
-    // set up timing:
-    time_limit /= moves_to_go;
-    time_limit -= 75;
+    int k;
+    if (moves_to_go_enabled) {
+      k = moves_to_go;
+      time_limit = (time_limit / (k + 1)) + (time_increment / 2);
+    }
+    else {
+      int num_pieces = __builtin_popcountll(b.W | b.B);
+      k = 40 - (32 - num_pieces);
+      time_limit = (time_limit / k) + (time_increment / 2) - 100;
+    }
+
+    time_limit = std::max(time_limit, 5);
+
     stop_time = start_time + time_limit + time_increment;
   }
 

@@ -49,6 +49,7 @@ bool time_set;
 
 // UCI's movestogo holder:
 int moves_to_go;
+bool moves_to_go_enabled;
 
 // UCI's movetime counter:
 int move_time;

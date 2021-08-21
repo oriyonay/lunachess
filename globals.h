@@ -50,6 +50,7 @@ extern bool time_set;
 
 // UCI's movestogo holder:
 extern int moves_to_go;
+extern bool moves_to_go_enabled;
 
 // UCI's movetime counter:
 extern int move_time;
