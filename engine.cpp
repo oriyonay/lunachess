@@ -218,7 +218,7 @@ void search(int depth) {
 int negamax(int depth, int alpha, int beta, int forward_ply) {
   // every 2048 nodes, communicate with the GUI / check time:
   if (nodes_evaluated % 2048 == 0) communicate();
-  if (stop_search) return 0;
+  if (stop_search) return evaluate();
 
   // if this is a draw, return 0:
   // NOTE: we don't yet count material draws
@@ -291,7 +291,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
     b.undo_nullmove();
 
     // if we have to stop, stop the search:
-    if (stop_search) return 0;
+    if (stop_search) return eval;
 
     // fail-hard beta cutoff:
     if (null_move_score >= beta) return beta;
@@ -401,7 +401,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
 
     b.undo_move();
 
-    if (stop_search) return 0;
+    if (stop_search) return eval;
 
     if (score > best_score) {
       best_score = score;
@@ -520,7 +520,7 @@ int quiescence(int alpha, int beta, int forward_ply) {
     if (eval + best_case + DELTA_VALUE < alpha) return alpha; */
 
     // if we have to stop, stop the search:
-    if (stop_search) return 0;
+    if (stop_search) return eval;
 
     // if we found a better move (PV node):
     if (score > alpha) {

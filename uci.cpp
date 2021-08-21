@@ -150,7 +150,7 @@ void parse_go(char* command) {
     else {
       int num_pieces = __builtin_popcountll(b.W | b.B);
       k = 40 - (32 - num_pieces);
-      time_limit = (time_limit / k) + (time_increment / 2) - 100;
+      time_limit = (time_limit / k) + (time_increment / 2) - 50;
     }
 
     time_limit = std::max(time_limit, 5);
