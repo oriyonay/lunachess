@@ -67,7 +67,7 @@ board::board(char* FEN) : base_score_opening(0), base_score_endgame(0), game_pha
   if (*FEN == '-') FEN += 2;
   else FEN += 3;
 
-  // 
+  //
 
   // hash in castling rights:
   hash ^= ZOBRIST_CASTLE_RIGHTS_KEYS[castle_rights];
@@ -1483,6 +1483,21 @@ void board::add_nonquiet_king_moves(int* move_list, int& num_moves) {
     possible &= ~j;
     j = ISOLATE_LSB(possible);
   }
+}
+
+// utility function for SEE:
+U64 board::get_attackers(U64 occupied, int sq) {
+  return (((bitboard[WP] >> 7) & ~FILES[A] & (1L << sq)) << 7) |
+         (((bitboard[WP] >> 9) & ~FILES[H] & (1L << sq)) << 9) |
+
+         (((bitboard[BP] << 7) & ~FILES[H] & (1L << sq)) >> 7) |
+         (((bitboard[BP] << 9) & ~FILES[A] & (1L << sq)) >> 9) |
+
+         (KNIGHT_MOVES[sq] & (bitboard[WN] | bitboard[BN])) |
+         (KING_MOVES[sq] & (bitboard[WK] | bitboard[BK])) |
+
+         diag_moves_magic(sq, occupied) & (bitboard[WB] | bitboard[WQ] | bitboard[BB] | bitboard[BQ]) |
+         line_moves_magic(sq, occupied) & (bitboard[WR] | bitboard[WQ] | bitboard[BR] | bitboard[BQ]);
 }
 
 // update_move_info_bitboards(): updates the move info bitboards (which pieces can

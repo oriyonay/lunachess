@@ -636,6 +636,9 @@ const int PASSED_PAWN_BONUS[9] = {0, 0, 2, 5, 10, 17, 30, 45, 70};
 
 const int RAZOR_MARGIN[10] = {0, 10, 50, 200, 500, 750, 1000, 1500, 2000, 2500};
 
+const int SEE_PIECE_VALUES[13] = {100, 300, 300, 500, 900, 0,
+                                  100, 300, 300, 500, 900, 0, 0};
+
 // miscellaneous pre-calculated constants:
 U64 SQUARE_FILES[64];
 // U64 SQUARE_RANKS[64];

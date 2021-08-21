@@ -14,13 +14,17 @@ inline int score_move(int move, int forward_ply) {
   if (move == (&TT.TT[b.hash % NUM_TT_ENTRIES])->best_move) return 9000;
 
   // MVV/LVA scoring
-  int score = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)] +
+  /* int score = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)] +
               (MOVE_IS_PROMOTION(move) ? 900 : 0);
-  if (score) return score;
+  if (score) return score; */
+  if (MOVE_CAPTURED(move) != NONE) {
+    // make sure to return a positive value:
+    return see(move) + 1000;
+  }
 
   // killer move heuristic for quiet moves:
-  if (move == killer_moves[0][forward_ply]) return 50;
-  if (move == killer_moves[1][forward_ply]) return 40;
+  if (move == killer_moves[0][forward_ply]) return 2000;
+  if (move == killer_moves[1][forward_ply]) return 1000;
 
   return history_moves[MOVE_PIECEMOVED(move)][MOVE_TO(move)];
 }
@@ -533,4 +537,102 @@ int quiescence(int alpha, int beta, int forward_ply) {
 
   // node fails low:
   return alpha;
+}
+
+// see(): static exchange evaluation - is this static exchange going to be good for us?
+int see(int move) {
+  // unpack move info:
+  int to = MOVE_TO(move);
+  int from = MOVE_FROM(move);
+  int next_victim = (MOVE_IS_PROMOTION(move)) ?
+      MOVE_PROMOTION_PIECE(move) :
+      b.piece_board[from];
+
+  // declare the move balance score:
+  int balance = estimated_move_value(move);
+
+  // if the balance is losing as-is, we terminate early:
+  if (balance < 0) return balance;
+
+  // worst case is losing the capturing piece.
+  // if the balance is positive then we can stop the exchange here and be up material
+  // from the exchange, so we can stop early as well:
+  if (balance - SEE_PIECE_VALUES[next_victim] > 0) return balance;
+
+  // get sliders to help update hidden attackers:
+  U64 bishops = b.bitboard[WB] | b.bitboard[BB] | b.bitboard[WQ] | b.bitboard[BQ];
+  U64 rooks   = b.bitboard[WR] | b.bitboard[BR] | b.bitboard[WQ] | b.bitboard[BQ];
+
+  // get OCCUPIED board and make the move on it:
+  U64 occupied = (b.OCCUPIED_SQUARES ^ (1L << from)) | (1L << to);
+  if (MOVE_IS_EP(move)) {
+    char ep_square = (b.turn == WHITE) ? to + 8 : to - 8;
+    occupied ^= (1L << ep_square);
+  }
+
+  // get all attackers for this square:
+  U64 attackers = b.get_attackers(occupied, to) & occupied;
+
+  char turn = (b.turn == WHITE) ? BLACK : WHITE;
+
+  // now we do SEE:
+  U64 my_attackers;
+  int previous_attacker = b.piece_board[from];
+  do {
+    // if we don't have any more attackers, we lose:
+    my_attackers = attackers & (turn == WHITE ? b.W : b.B);
+    if (!my_attackers) break;
+
+    // find weakest piece to attack with:
+    for (next_victim = PAWN; next_victim <= QUEEN; next_victim++) {
+      if (my_attackers & b.bitboard[turn + next_victim]) break;
+    }
+
+    // remove this attacker from occupied:
+    occupied ^= (my_attackers & b.bitboard[turn + next_victim]);
+
+    if (next_victim == PAWN || next_victim == BISHOP || next_victim == QUEEN) {
+      attackers |= diag_moves_magic(to, occupied) & bishops;
+    }
+
+    if (next_victim == ROOK || next_victim == QUEEN) {
+      attackers |= line_moves_magic(to, occupied) & rooks;
+    }
+
+    attackers &= occupied;
+    turn = (turn == WHITE) ? BLACK : WHITE;
+
+    // negamax the balance score and add the score of the next victim:
+    balance = -balance + SEE_PIECE_VALUES[previous_attacker];
+    previous_attacker = next_victim;
+
+    // if we're doing better than our opponent, we can break as well:
+    if (balance >= 0) break;
+  } while (true);
+
+  // there might be one last capture available:
+  my_attackers = attackers & (turn == WHITE ? b.W : b.B);
+  if (my_attackers) {
+    balance = -balance + SEE_PIECE_VALUES[previous_attacker];
+    turn = (turn == WHITE) ? BLACK : WHITE;
+  }
+
+  // return the balance with respect to the player whose turn it is:
+  return (b.turn == turn) ? -balance : balance;
+}
+
+// estimated_move_value(): roughly estimate the move's value.
+// code is straight from andrew grant's ethereal engine
+int estimated_move_value(int move) {
+  int value = SEE_PIECE_VALUES[b.piece_board[MOVE_TO(move)]];
+
+  if (MOVE_IS_PROMOTION(move)) {
+    value += SEE_PIECE_VALUES[MOVE_PROMOTION_PIECE(move)] - SEE_PIECE_VALUES[PAWN];
+  }
+
+  else if (MOVE_IS_EP(move)) value = SEE_PIECE_VALUES[PAWN];
+
+  else if (MOVE_IS_CASTLE(move)) value = 0;
+
+  return value;
 }

@@ -22,4 +22,8 @@ void search(int depth);
 int negamax(int depth, int alpha, int beta, int forward_ply);
 int quiescence(int alpha, int beta, int forward_ply);
 
+// SEE and helper functions:
+int see(int move);
+int estimated_move_value(int move);
+
 #endif

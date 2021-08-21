@@ -58,6 +58,9 @@ struct board {
   void add_nonquiet_knight_moves(int* move_list, int& num_moves);
   void add_nonquiet_king_moves(int* move_list, int& num_moves);
 
+  // utility function for SEE:
+  U64 get_attackers(U64 occupied, int sq);
+
   void update_move_info_bitboards();
   void update_unsafe();
   U64 pinned_pieces();
