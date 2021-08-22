@@ -14,17 +14,13 @@ inline int score_move(int move, int forward_ply) {
   if (move == (&TT.TT[b.hash % NUM_TT_ENTRIES])->best_move) return 9000;
 
   // MVV/LVA scoring
-  /* int score = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)] +
+  int score = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)] +
               (MOVE_IS_PROMOTION(move) ? 900 : 0);
-  if (score) return score; */
-  if (MOVE_CAPTURED(move) != NONE) {
-    // make sure to return a positive value:
-    return see(move) + 1000;
-  }
+  if (score) return score;
 
   // killer move heuristic for quiet moves:
-  if (move == killer_moves[0][forward_ply]) return 2000;
-  if (move == killer_moves[1][forward_ply]) return 1000;
+  if (move == killer_moves[0][forward_ply]) return 50;
+  if (move == killer_moves[1][forward_ply]) return 40;
 
   return history_moves[MOVE_PIECEMOVED(move)][MOVE_TO(move)];
 }
@@ -269,6 +265,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
   // avoid stack overflow:
   if (forward_ply >= MAX_SEARCH_PLY) return is_check ? 0 : evaluate();
 
+  // store static eval in static eval table:
   static_evals[forward_ply] = eval;
   bool improving = (!is_check && forward_ply >= 2 && eval > static_evals[forward_ply-2]);
 
@@ -302,12 +299,12 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
   }
 
   // razoring:
-  /* if(!is_check &&
-     !pv &&
-     b.move_history[b.ply-1] != NULL &&
-     depth < 10 &&
-     eval - RAZOR_MARGIN[depth] >= beta
-   ) return beta; */
+  /* if (!is_check &&
+      !pv &&
+      b.move_history[b.ply-1] != NULL &&
+      depth == 1 &&
+      eval - 200 >= beta
+   )  return quiescence(alpha, beta, forward_ply); */
 
   // generate all possible moves from this position:
   int moves[MAX_POSITION_MOVES];
@@ -338,6 +335,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
   bool tactical;
   bool is_killer;
   bool recapture;
+  // bool skip_quiets = false;
   int extension;
   int R;
   for (int i = 0; i < num_moves; i++) {
@@ -363,7 +361,17 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
                 (MOVE_CAPTURED(move) != NONE) &&
                 (MOVE_TO(b.move_history[b.ply-1]) == MOVE_TO(move));
 
-    // FUTURE: PRUNING GOES HERE
+    // ----- move skipping: ----- //
+    // late-move pruning:
+    /* if (best_score > -INF &&
+        depth <= LMP_DEPTH &&
+        i >= 10
+      ) skip_quiets = true; */
+
+    // ----- end of move skipping ----- //
+
+    // skip quiet moves if this move is quiet and skip_quiets flag is on:
+    // if (skip_quiets && !tactical && (non_pruned_moves > 1)) continue;
 
     non_pruned_moves++;
 

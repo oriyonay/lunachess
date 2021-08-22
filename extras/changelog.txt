@@ -11,3 +11,5 @@
    working on better mate detection
 10) finally fixed timeout bug by implementing new time management scheme! HUGE difference in performance
    (9.5 / 10 vs old version!!)
+11) implemented SEE and currently using that instead of MVV/LVA for move ordering.
+    also using late-move pruning. search speed seems to have significantly improved.
