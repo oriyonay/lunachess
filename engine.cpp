@@ -249,7 +249,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
   int eval = evaluate();
   /* if (!pv &&
       !is_check &&
-      depth <= 4 &&
+      depth < 3 &&
       eval - (75 * depth) > beta
     ) return eval; */
 
@@ -347,10 +347,10 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
       }
     }
 
-    // once we find the move with the highest score, set its score to -1 so it
+    // once we find the move with the highest score, set its score to -INF so it
     // can't be selected again (essentially marking it as 'seen')
     move = moves[move_index];
-    move_scores[move_index] = -1;
+    move_scores[move_index] = -INF;
 
     // figure out some things about this move:
     tactical = (MOVE_CAPTURED(move) != NONE) || (MOVE_IS_PROMOTION(move));
@@ -516,20 +516,22 @@ int quiescence(int alpha, int beta, int forward_ply) {
       }
     }
 
-    // once we find the move with the highest score, set its score to -1 so it
+    // once we find the move with the highest score, set its score to -INF so it
     // can't be selected again (essentially marking it as 'seen')
     move = moves[move_index];
-    move_scores[move_index] = -1;
+    move_scores[move_index] = -INF;
+
+    // skip moves with negative SEE:
+    // if (MOVE_CAPTURED(move) != NONE && see(move) < 0) continue;
+
+    // delta pruning: could this move improve alpha, in the best case?
+    best_case = see(move) + (MOVE_IS_PROMOTION(move) ? 900 : 0);
+    if (eval + best_case < alpha) return alpha;
 
     // make move & recursively call qsearch:
     b.make_move(move);
     int score = -quiescence(-beta, -alpha, forward_ply + 1);
     b.undo_move();
-
-    // delta pruning: could this move improve alpha, in the best case?
-    /* best_case = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)] +
-                (MOVE_IS_PROMOTION(move) ? 900 : 0);
-    if (eval + best_case + DELTA_VALUE < alpha) return alpha; */
 
     // if we have to stop, stop the search:
     if (stop_search) return eval;
