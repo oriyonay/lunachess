@@ -13,6 +13,13 @@ inline int score_move(int move, int forward_ply) {
   // is this move the best move for this position, as stored in our TT?
   if (move == (&TT.TT[b.hash % NUM_TT_ENTRIES])->best_move) return 9000;
 
+  // is this a recapture?
+  if ((b.ply) &&
+      (MOVE_CAPTURED(b.move_history[b.ply-1]) != NONE) &&
+      (MOVE_CAPTURED(move) != NONE) &&
+      (MOVE_TO(b.move_history[b.ply-1]) == MOVE_TO(move))
+  ) return 8000;
+
   // MVV/LVA scoring
   int score = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)] +
               (MOVE_IS_PROMOTION(move) ? 900 : 0);
@@ -188,7 +195,7 @@ void search(int depth) {
 
     // if we still haven't looked 6 moves deep (not enough info to use windows), or
     // if we fell outside our aspiration window, reset to -INF and INF:
-    if (/* cur_depth < 6 || */ ((score <= alpha) || (score >= beta))) {
+    if (cur_depth < 6 || ((score <= alpha) || (score >= beta))) {
       alpha = -INF;
       beta = INF;
       continue;
@@ -199,7 +206,7 @@ void search(int depth) {
     beta = score + aspiration_delta;
 
     // gradually widen the search window in the future, if we failed high:
-    // aspiration_delta += (aspiration_delta / 2);
+    aspiration_delta += (aspiration_delta / 2);
 
     // now the principal variation is in pv_table[0][:pv_length[0]],
     // and the best move is in pv_table[0][0]
@@ -292,7 +299,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
     b.undo_nullmove();
 
     // if we have to stop, stop the search:
-    if (stop_search) return eval;
+    if (stop_search) return 0;
 
     // fail-hard beta cutoff:
     if (null_move_score >= beta) return beta;
@@ -389,11 +396,14 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
     if (depth > 2 && non_pruned_moves > 1) {
       if (!tactical) {
         if (!b.is_check() && non_pruned_moves >= LMR_FULL_DEPTH_MOVES) R += 2;
-        if (!pv) R++;
+        // if (!pv) R++;
         if (!improving) R++;
-        if (is_killer) R -= 2;
+        // if (is_killer) R -= 2;
       }
-      else R -= pv ? 2 : 1;
+      else {
+        // R -= pv ? 2 : 1;
+        if (see(move) < 0) R += 1;
+      }
       R = std::min(depth - 1, std::max(R, 1));
     }
 
@@ -501,12 +511,15 @@ int quiescence(int alpha, int beta, int forward_ply) {
   // score the moves:
   int move_scores[MAX_POSITION_MOVES];
   for (int i = 0; i < num_moves; i++) {
-    move_scores[i] = score_move(moves[i], forward_ply);
+    move_scores[i] = MVV_LVA_SCORE[MOVE_PIECEMOVED(moves[i])][MOVE_CAPTURED(moves[i])] +
+                     (MOVE_IS_PROMOTION(moves[i]) ? 900 : 0);
+    // move_scores[i] = score_move(moves[i], forward_ply);
   }
 
   // recursively qsearch the horizon:
   int move, move_index;
   int best_case;
+  int score;
   for (int i = 0; i < num_moves; i++) {
     // selection sort to find the best move:
     move_index = 0; // contains the index of the best move
@@ -521,16 +534,28 @@ int quiescence(int alpha, int beta, int forward_ply) {
     move = moves[move_index];
     move_scores[move_index] = -INF;
 
-    // skip moves with negative SEE:
-    // if (MOVE_CAPTURED(move) != NONE && see(move) < 0) continue;
-
     // delta pruning: could this move improve alpha, in the best case?
-    best_case = see(move) + (MOVE_IS_PROMOTION(move) ? 900 : 0);
-    if (eval + best_case < alpha) return alpha;
+    /* best_case = see(move);
+    if (eval + best_case <= alpha) continue; */
 
     // make move & recursively call qsearch:
     b.make_move(move);
-    int score = -quiescence(-beta, -alpha, forward_ply + 1);
+
+    // skip non-checking moves with negative SEE:
+    /* b.update_move_info_bitboards();
+    if (!b.is_check()) {
+      if (best_case < 0) {
+        b.undo_move();
+        return eval;
+      }
+    }
+    else {
+      score = negamax(0, alpha, beta, forward_ply + 1);
+      b.undo_move();
+      return score;
+    } */
+
+    score = -quiescence(-beta, -alpha, forward_ply + 1);
     b.undo_move();
 
     // if we have to stop, stop the search:
