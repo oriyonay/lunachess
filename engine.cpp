@@ -14,16 +14,18 @@ inline int score_move(int move, int forward_ply) {
   if (move == (&TT.TT[b.hash % NUM_TT_ENTRIES])->best_move) return 9000;
 
   // is this a recapture?
-  if ((b.ply) &&
+  /* if ((b.ply) &&
       (MOVE_CAPTURED(b.move_history[b.ply-1]) != NONE) &&
       (MOVE_CAPTURED(move) != NONE) &&
       (MOVE_TO(b.move_history[b.ply-1]) == MOVE_TO(move))
-  ) return 8000;
+  ) return 8000; */
 
   // MVV/LVA scoring
   int score = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)] +
               (MOVE_IS_PROMOTION(move) ? 900 : 0);
   if (score) return score;
+  /* if (MOVE_CAPTURED(move) != NONE) return see(move);
+  if (MOVE_IS_PROMOTION(move)) return 1000; */
 
   // killer move heuristic for quiet moves:
   if (move == killer_moves[0][forward_ply]) return 50;
@@ -42,7 +44,7 @@ inline int evaluate() {
   if (b.bitboard[BB] & (b.bitboard[BB] - 1)) bonus -= BISHOP_PAIR_BONUS;
 
   // doubled pawn penalty:
-  U64 white_pawn_file;
+  /* U64 white_pawn_file;
   U64 black_pawn_file;
   for (int file = 0; file < 8; file++) {
     white_pawn_file = (WP & FILES[file]);
@@ -117,7 +119,7 @@ inline int evaluate() {
     index = LSB(knights);
     bonus -= (__builtin_popcountll(KNIGHT_MOVES[index] & ~b.B) - 4) * 4;
     POP_LSB(knights);
-  }
+  } */
   /* U64 bishops = (b.bitboard[WB] | b.bitboard[WQ]) & not_pinned_white;
   while (bishops) {
     index = LSB(bishops);
@@ -132,8 +134,8 @@ inline int evaluate() {
   } */
 
   // king safety evaluation:
-  bonus += __builtin_popcountll(KING_MOVES[LSB(b.bitboard[WK])] & b.bitboard[WP]) * KING_SHIELD_BONUS;
-  bonus -= __builtin_popcountll(KING_MOVES[LSB(b.bitboard[BK])] & b.bitboard[BP]) * KING_SHIELD_BONUS;
+  // bonus += __builtin_popcountll(KING_MOVES[LSB(b.bitboard[WK])] & b.bitboard[WP]) * KING_SHIELD_BONUS;
+  // bonus -= __builtin_popcountll(KING_MOVES[LSB(b.bitboard[BK])] & b.bitboard[BP]) * KING_SHIELD_BONUS;
 
   // calculate base score based on game phase (tapered evaluation):
   int base_score;
@@ -195,7 +197,7 @@ void search(int depth) {
 
     // if we still haven't looked 6 moves deep (not enough info to use windows), or
     // if we fell outside our aspiration window, reset to -INF and INF:
-    if (cur_depth < 6 || ((score <= alpha) || (score >= beta))) {
+    if (/* cur_depth < 6 || */ ((score <= alpha) || (score >= beta))) {
       alpha = -INF;
       beta = INF;
       continue;
@@ -206,7 +208,7 @@ void search(int depth) {
     beta = score + aspiration_delta;
 
     // gradually widen the search window in the future, if we failed high:
-    aspiration_delta += (aspiration_delta / 2);
+    // aspiration_delta += (aspiration_delta / 2);
 
     // now the principal variation is in pv_table[0][:pv_length[0]],
     // and the best move is in pv_table[0][0]
@@ -226,6 +228,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
   // every 2048 nodes, communicate with the GUI / check time:
   if (nodes_evaluated % 2048 == 0) communicate();
   if (stop_search) return evaluate();
+  nodes_evaluated++;
 
   // if this is a draw, return 0:
   // NOTE: we don't yet count material draws
@@ -244,8 +247,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
   if (b.ply > 0 && !pv && (score != TT_NO_MATCH)) return score;
   score = -INF;
 
-  // update the UNSAFE bitboard, and a local is_check variable,
-  // since it's not updating elsewhere for some reason:
+  // update the UNSAFE bitboard and make a local is_check variable:
   b.update_move_info_bitboards();
   bool is_check = b.is_check();
 
@@ -265,9 +267,6 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
 
   // ensure non-negative depth:
   depth = std::max(depth, 0);
-
-  // increment node counter:
-  nodes_evaluated++;
 
   // avoid stack overflow:
   if (forward_ply >= MAX_SEARCH_PLY) return is_check ? 0 : evaluate();
@@ -299,7 +298,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
     b.undo_nullmove();
 
     // if we have to stop, stop the search:
-    if (stop_search) return 0;
+    if (stop_search) return evaluate();
 
     // fail-hard beta cutoff:
     if (null_move_score >= beta) return beta;
@@ -486,7 +485,7 @@ int quiescence(int alpha, int beta, int forward_ply) {
   // avoid stack overflow:
   if (forward_ply >= MAX_SEARCH_PLY) return evaluate();
 
-  // update the UNSAFE bitboard, since it's not updating elsewhere for some reason:
+  // update the UNSAFE bitboard:
   b.update_move_info_bitboards();
 
   // call negamax if we're in check, to make sure we don't get ourselves in a
@@ -535,8 +534,8 @@ int quiescence(int alpha, int beta, int forward_ply) {
     move_scores[move_index] = -INF;
 
     // delta pruning: could this move improve alpha, in the best case?
-    /* best_case = see(move);
-    if (eval + best_case <= alpha) continue; */
+    best_case = see(move);
+    if (eval + best_case <= alpha) continue;
 
     // make move & recursively call qsearch:
     b.make_move(move);
