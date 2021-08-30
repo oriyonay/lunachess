@@ -107,6 +107,9 @@ enum {INIT_WK = 0x1000000000000000L, INIT_BK = 0x10L};
 #define FILE_NO(idx) (idx % 8)
 #define RANK_NO(idx) ((idx / 8) + 1) // +1 for human indexing
 
+// which piece is it? (ex. PIECE_TYPE(WQ) = QUEEN)
+#define PIECE_TYPE(piece) (piece % 6)
+
 // defines for making castling code more readable:
 #define CWK_ROOK_MASK 0xA000000000000000L
 #define CWQ_ROOK_MASK 0x900000000000000L

@@ -20,6 +20,9 @@ inline int score_move(int move, int forward_ply) {
       (MOVE_TO(b.move_history[b.ply-1]) == MOVE_TO(move))
   ) return 8000; */
 
+  // in the endgame, is this a pawn push?
+  // TODO
+
   // MVV/LVA scoring
   int score = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)] +
               (MOVE_IS_PROMOTION(move) ? 900 : 0);
@@ -190,7 +193,7 @@ void search(int depth) {
     printf("\n");
 
     // if searching up to this ply took > 1/2 of our allocated time, terminate prematurely:
-    // if ((get_time() - start_time) > (time_limit / 2)) break;
+    if ((time_limit != -1) && ((get_time() - start_time) > (time_limit / 2))) break;
 
     // if we still haven't looked 6 moves deep (not enough info to use windows), or
     // if we fell outside our aspiration window, reset to -INF and INF:
@@ -268,7 +271,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
   /* ---------- PRE-MOVE PRUNING ---------- */
 
   // beta/reverse futility pruning:
-  /* int estimated_eval = eval - (75 * depth) + (100 * improving);
+  /* int estimated_eval = eval + (75 * depth) - (100 * improving);
   if (!pv &&
       !is_check &&
       depth < 3 &&
@@ -438,8 +441,8 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
         if (!pv) R++;
         if (num_quiets > 3 && failed_null) R++;
         if (!improving) R++;
-        // if (MOVE_IS_PROMOTION(move)) R--; // potentially reduce only for queen promotions?
-        // if (is_killer) R--;
+        if (MOVE_IS_PROMOTION(move) && PIECE_TYPE(MOVE_PROMOTION_PIECE(move)) == QUEEN) R--;
+        if (is_killer) R--;
       }
       else {
         // R -= pv ? 2 : 1;
