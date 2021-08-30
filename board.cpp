@@ -215,7 +215,7 @@ bool board::make_move(char* move) {
 
   // if this is a promotion, to what piece?
   int promotion_piece = NONE;
-  switch (*move) {
+  switch (tolower(*move)) {
     case '\0': break; // default - no promotion
     case 'q':
       promotion_piece = turn + QUEEN;
@@ -256,6 +256,7 @@ bool board::make_move(char* move) {
 bool board::make_move(int move) {
   // first of all, let's push the move to our move_history stack:
   repetition_history[ply] = hash;
+  fifty_move_history[ply] = fifty_move_counter;
   move_history[ply++] = move;
 
   // get move info:
@@ -494,6 +495,9 @@ bool board::make_move(int move) {
 void board::undo_move() {
   // first of all, let's pop the move off our move_history stack:
   ply--;
+
+  // update fifty_move_counter:
+  fifty_move_counter = fifty_move_history[ply];
 
   int move = move_history[ply];
 

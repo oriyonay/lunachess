@@ -632,9 +632,7 @@ U64 ISOLATED_MASKS[64];
 U64 WHITE_PASSED_PAWN_MASKS[64];
 U64 BLACK_PASSED_PAWN_MASKS[64];
 
-const int PASSED_PAWN_BONUS[9] = {0, 0, 2, 5, 10, 17, 30, 45, 70};
-
-const int RAZOR_MARGIN[10] = {0, 10, 50, 200, 500, 750, 1000, 1500, 2000, 2500};
+const int PASSED_PAWN_BONUS[9] = {0, 10, 30, 50, 75, 100, 150, 200};
 
 const int SEE_PIECE_VALUES[13] = {100, 300, 300, 500, 900, 0,
                                   100, 300, 300, 500, 900, 0, 0};

@@ -14,6 +14,7 @@ struct board {
   char piece_board[64];
   int move_history[MAX_GAME_MOVES];
   U64 repetition_history[MAX_GAME_MOVES];
+  int fifty_move_history[MAX_GAME_MOVES];
   int fifty_move_counter;
   int ply;
   int base_score_opening; // material + PST score for opening phase

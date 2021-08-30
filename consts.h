@@ -9,8 +9,6 @@
 #include "board.h"
 #include "defs.h"
 
-#define BISHOP_PAIR_BONUS 20
-
 // initializes all uninitialized constants (bitmasks, etc.)
 extern void init_consts();
 

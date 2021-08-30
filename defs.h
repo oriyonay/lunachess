@@ -17,21 +17,23 @@ typedef uint64_t U64;
 #define ALPHA_PRUNING_DEPTH 5
 #define ALPHA_PRUNING_MARGIN 2000
 #define ASPIRATION_WINDOW_VALUE 75
+#define BISHOP_PAIR_BONUS 30
 #define DEFAULT_UCI_INPUT_BUFFER_SIZE 2048
 #define DEFAULT_TT_SIZE (1 << 24)
-#define DOUBLED_PAWN_PENALTY 35
-#define FULLY_OPEN_FILE_BONUS 20
-#define ISOLATED_PAWN_PENALTY 30
+#define DELTA_VALUE 200
+#define DOUBLED_PAWN_PENALTY 15
+#define FULLY_OPEN_FILE_BONUS 15
+#define ISOLATED_PAWN_PENALTY 5
 #define KING_SHIELD_BONUS 7
 #define LMP_DEPTH 7
-#define LMR_FULL_DEPTH_MOVES 4
+#define LMR_FULL_DEPTH_MOVES 5
 #define LMR_REDUCTION_LIMIT 3
-#define MATE_IN_MAX -999970 // -INF + 30
+#define MATE_IN_MAX 999970 // INF - 30
 #define MULTICUT_M 6 // number of first moves to consider
 #define MULTICUT_C 3 // number of cutoffs to cause a multi-cut prune
 #define MULTICUT_R 4 // depth for multi-cut
 #define NULL_MOVE_PRUNING_DEPTH 3
-#define SEMI_OPEN_FILE_BONUS 10
+#define SEMI_OPEN_FILE_BONUS 7
 
 #define INF 1000000
 #define MAX_SEARCH_PLY 64

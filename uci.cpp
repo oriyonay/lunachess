@@ -139,23 +139,23 @@ void parse_go(char* command) {
     moves_to_go = 1;
   }
 
-  if (time_limit != -1) {
+  else if (time_limit != -1) {
     time_set = true;
 
     int k;
     if (moves_to_go_enabled) {
       k = moves_to_go;
-      time_limit = (time_limit / (k + 1)) + (time_increment / 2) - 20;
+      time_limit = (time_limit / moves_to_go) + (time_increment / 2);
     }
     else {
       int num_pieces = __builtin_popcountll(b.W | b.B);
       k = 40 - (32 - num_pieces);
-      time_limit = (time_limit / k) + (time_increment / 2) - 20;
+      time_limit = (time_limit / k) + (time_increment / 2);
     }
 
-    time_limit = std::max(time_limit, 5);
+    time_limit = std::max(time_limit, 50);
 
-    stop_time = start_time + time_limit + time_increment;
+    stop_time = start_time + time_limit - 30;
   }
 
   // if depth is not set, search 'infinitely':

@@ -44,15 +44,13 @@ inline int evaluate() {
   if (b.bitboard[BB] & (b.bitboard[BB] - 1)) bonus -= BISHOP_PAIR_BONUS;
 
   // doubled pawn penalty:
-  /* U64 white_pawn_file;
-  U64 black_pawn_file;
+  int white_pawns_on_file;
+  int black_pawns_on_file;
   for (int file = 0; file < 8; file++) {
-    white_pawn_file = (WP & FILES[file]);
-    black_pawn_file = (BP & FILES[file]);
-    if (white_pawn_file &&
-       (white_pawn_file & (white_pawn_file - 1))) bonus -= DOUBLED_PAWN_PENALTY;
-    if (black_pawn_file &&
-       (black_pawn_file & (black_pawn_file - 1))) bonus += DOUBLED_PAWN_PENALTY;
+    white_pawns_on_file = __builtin_popcountll(b.bitboard[WP] & FILES[file]);
+    black_pawns_on_file = __builtin_popcountll(b.bitboard[BP] & FILES[file]);
+    if (white_pawns_on_file > 1) bonus -= DOUBLED_PAWN_PENALTY * (white_pawns_on_file - 1);
+    if (black_pawns_on_file > 1) bonus += DOUBLED_PAWN_PENALTY * (black_pawns_on_file - 1);
   }
 
   // isolated and passed pawn penalty/bonus:
@@ -61,13 +59,13 @@ inline int evaluate() {
   int index;
   while (wp) {
     index = LSB(wp);
-    if (!(b.bitboard[WP] & ISOLATED_MASKS[index])) bonus -= ISOLATED_PAWN_PENALTY;
+    // if (!(b.bitboard[WP] & ISOLATED_MASKS[index])) bonus -= ISOLATED_PAWN_PENALTY;
     if (!(b.bitboard[BP] & WHITE_PASSED_PAWN_MASKS[index])) bonus += PASSED_PAWN_BONUS[RANK_NO(index)];
     POP_LSB(wp);
   }
   while (bp) {
     index = LSB(bp);
-    if (!(b.bitboard[BP] & ISOLATED_MASKS[index])) bonus += ISOLATED_PAWN_PENALTY;
+    // if (!(b.bitboard[BP] & ISOLATED_MASKS[index])) bonus += ISOLATED_PAWN_PENALTY;
     if (!(b.bitboard[WP] & BLACK_PASSED_PAWN_MASKS[index])) bonus -= PASSED_PAWN_BONUS[9 - RANK_NO(index)];
     POP_LSB(bp);
   }
@@ -89,7 +87,7 @@ inline int evaluate() {
   }
 
   // piece mobility evaluation:
-  U64 not_pinned_white;
+  /* U64 not_pinned_white;
   U64 not_pinned_black;
   if (b.turn == WHITE) {
     not_pinned_white = ~(b.pinned_pieces());
@@ -111,31 +109,31 @@ inline int evaluate() {
   U64 knights = b.bitboard[WN] & not_pinned_white;
   while (knights) {
     index = LSB(knights);
-    bonus += (__builtin_popcountll(KNIGHT_MOVES[index] & ~b.W) - 4) * 4;
+    bonus += (__builtin_popcountll(KNIGHT_MOVES[index] & ~b.W) - 4) * 6;
     POP_LSB(knights);
   }
   knights = b.bitboard[BN] & not_pinned_black;
   while (knights) {
     index = LSB(knights);
-    bonus -= (__builtin_popcountll(KNIGHT_MOVES[index] & ~b.B) - 4) * 4;
+    bonus -= (__builtin_popcountll(KNIGHT_MOVES[index] & ~b.B) - 4) * 6;
     POP_LSB(knights);
   } */
   /* U64 bishops = (b.bitboard[WB] | b.bitboard[WQ]) & not_pinned_white;
   while (bishops) {
     index = LSB(bishops);
-    bonus += (__builtin_popcountll(diag_moves_magic(index, b.OCCUPIED_SQUARES)) - 6) * 5;
+    bonus += (__builtin_popcountll(diag_moves_magic(index, b.OCCUPIED_SQUARES)) - 6) * 8;
     POP_LSB(bishops);
   }
   bishops = (b.bitboard[BB] | b.bitboard[BQ]) & not_pinned_black;
   while (bishops) {
     index = LSB(bishops);
-    bonus -= (__builtin_popcountll(diag_moves_magic(index, b.OCCUPIED_SQUARES)) - 6) * 5;
+    bonus -= (__builtin_popcountll(diag_moves_magic(index, b.OCCUPIED_SQUARES)) - 6) * 8;
     POP_LSB(bishops);
   } */
 
   // king safety evaluation:
-  // bonus += __builtin_popcountll(KING_MOVES[LSB(b.bitboard[WK])] & b.bitboard[WP]) * KING_SHIELD_BONUS;
-  // bonus -= __builtin_popcountll(KING_MOVES[LSB(b.bitboard[BK])] & b.bitboard[BP]) * KING_SHIELD_BONUS;
+  bonus += __builtin_popcountll(KING_MOVES[LSB(b.bitboard[WK])] & b.bitboard[WP]) * KING_SHIELD_BONUS;
+  bonus -= __builtin_popcountll(KING_MOVES[LSB(b.bitboard[BK])] & b.bitboard[BP]) * KING_SHIELD_BONUS;
 
   // calculate base score based on game phase (tapered evaluation):
   int base_score;
@@ -155,13 +153,9 @@ inline int evaluate() {
 
 // search(): the main search algorithm (with iterative deepening)
 void search(int depth) {
-  // zero counter of nodes searched:
+  // zero counter of nodes searched, score-PV flag, and time control flag:
   nodes_evaluated = 0;
-
-  // reset score PV flag:
   score_pv = false;
-
-  // reset time control flag:
   stop_search = false;
 
   // zero pv, killer move, history, and static eval tables:
@@ -169,7 +163,7 @@ void search(int depth) {
   memset(pv_length, 0, sizeof(int) * MAX_SEARCH_PLY);
   memset(killer_moves, 0, sizeof(int) * 2 * MAX_SEARCH_PLY);
   memset(history_moves, 0, sizeof(int) * 12 * 64);
-  memset(static_evals, 0, sizeof(int) * MAX_SEARCH_PLY); // is this necessary?
+  memset(static_evals, 0, sizeof(int) * MAX_SEARCH_PLY);
 
   // find best move within a given position
   int alpha = -INF;
@@ -194,6 +188,9 @@ void search(int depth) {
       printf(" ");
     }
     printf("\n");
+
+    // if searching up to this ply took > 1/2 of our allocated time, terminate prematurely:
+    // if ((get_time() - start_time) > (time_limit / 2)) break;
 
     // if we still haven't looked 6 moves deep (not enough info to use windows), or
     // if we fell outside our aspiration window, reset to -INF and INF:
@@ -251,29 +248,32 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
   b.update_move_info_bitboards();
   bool is_check = b.is_check();
 
-  // check extension:
-  if (is_check) depth = std::max(depth+1, 1);
-
-  // beta/reverse futility pruning:
-  int eval = evaluate();
-  /* if (!pv &&
-      !is_check &&
-      depth < 3 &&
-      eval - (75 * depth) > beta
-    ) return eval; */
-
   // base case:
   if (depth <= 0 && !is_check) return quiescence(alpha, beta, forward_ply);
+
+  // store static eval in static eval table:
+  int eval = evaluate();
+  static_evals[forward_ply] = eval;
+  bool improving = (!is_check && forward_ply >= 2 && eval > static_evals[forward_ply-2]);
+
+  // check extension:
+  if (is_check) depth = std::max(depth+1, 1);
 
   // ensure non-negative depth:
   depth = std::max(depth, 0);
 
   // avoid stack overflow:
-  if (forward_ply >= MAX_SEARCH_PLY) return is_check ? 0 : evaluate();
+  if (forward_ply >= MAX_SEARCH_PLY) return is_check ? 0 : eval;
 
-  // store static eval in static eval table:
-  static_evals[forward_ply] = eval;
-  bool improving = (!is_check && forward_ply >= 2 && eval > static_evals[forward_ply-2]);
+  /* ---------- PRE-MOVE PRUNING ---------- */
+
+  // beta/reverse futility pruning:
+  /* int estimated_eval = eval - (75 * depth) + (100 * improving);
+  if (!pv &&
+      !is_check &&
+      depth < 3 &&
+      estimated_eval >= beta
+  ) return estimated_eval; */
 
   // for null-move pruning, we need to figure out whether our side has any major pieces:
   U64 majors = (b.turn == WHITE) ?
@@ -281,6 +281,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
                   b.bitboard[BN] | b.bitboard[BB] | b.bitboard[BR] | b.bitboard[BQ];
 
   // null-move pruning:
+  bool failed_null = false;
   if (!pv &&
       !is_check &&
       depth >= NULL_MOVE_PRUNING_DEPTH &&
@@ -297,24 +298,33 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
     // flip the turn again:
     b.undo_nullmove();
 
-    // if we have to stop, stop the search:
-    if (stop_search) return evaluate();
-
     // fail-hard beta cutoff:
     if (null_move_score >= beta) return beta;
+
+    // if we have to stop, stop the search:
+    if (stop_search) return eval;
+
+    // otherwise, we failed null-move pruning:
+    failed_null = true;
   }
 
   // razoring:
-  /* if (!is_check &&
+  if (!is_check &&
       !pv &&
       b.move_history[b.ply-1] != NULL &&
       depth == 1 &&
-      eval - 200 >= beta
-   )  return quiescence(alpha, beta, forward_ply); */
+      eval + 200 < beta
+   )  return quiescence(alpha, beta, forward_ply);
+
+  /* ---------- END OF PRE-MOVE PRUNING ---------- */
 
   // generate all possible moves from this position:
   int moves[MAX_POSITION_MOVES];
   int num_moves = b.get_moves(moves);
+
+  // set the best move to be the first move on the list, just so we don't return a NULL-move
+  // in case no move raises alpha:
+  if (num_moves) best_move = moves[0];
 
   // if we're following the principal variation, enable PV scoring:
   if (follow_pv) {
@@ -338,6 +348,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
 
   // recursively find the best move from here:
   int non_pruned_moves = 0;
+  int num_quiets = 0;
   bool tactical;
   bool is_killer;
   bool recapture;
@@ -364,44 +375,75 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
                 (move == killer_moves[1][forward_ply]);
     recapture = (b.ply) &&
                 (MOVE_CAPTURED(b.move_history[b.ply-1]) != NONE) &&
-                (MOVE_CAPTURED(move) != NONE) &&
-                (MOVE_TO(b.move_history[b.ply-1]) == MOVE_TO(move));
+                (MOVE_CAPTURED(move) != NONE);
+    if (!tactical) num_quiets++;
 
     // ----- move skipping: ----- //
     // late-move pruning:
-    /* if (best_score > -INF &&
-        depth <= LMP_DEPTH &&
-        i >= 10
+    /* if (!pv &&
+        !is_check &&
+        best_score > -MATE_IN_MAX &&
+        non_pruned_moves > 1 &&
+        num_quiets > LMP_ARRAY[depth][improving]
       ) skip_quiets = true; */
 
-    // ----- end of move skipping ----- //
+    // extended futility pruning:
+    /* if (depth < 3 &&
+        !MOVE_IS_PROMOTION(move) &&
+        eval + estimated_move_value(move) + (75 * depth) - (100 * improving) <= alpha
+    ) continue; */
+
+    // SEE pruning for quiet moves:
+    /* if (!tactical &&
+        depth <= 4 &&
+        non_pruned_moves > 1 &&
+        see(move) < (-51 * depth)
+    ) continue; */
 
     // skip quiet moves if this move is quiet and skip_quiets flag is on:
     // if (skip_quiets && !tactical && (non_pruned_moves > 1)) continue;
 
+    // ----- end of move skipping ----- //
+
     non_pruned_moves++;
+    b.make_move(move);
 
     // extensions:
     // (potentially add extension for all tactical moves?)
     /* extension = 0;
-    if (MOVE_IS_CASTLE(move) || is_check || recapture)
-      if (!root) extension = 1;
-    new_depth = depth + extension; */
 
-    b.make_move(move);
+    // general extensions:
+    if (MOVE_IS_CASTLE(move) || is_check || recapture)
+      if (!root) extension++;
+
+    // last capture extension: extend any non-pawn capture in the endgame:
+    if (tactical &&
+        b.game_phase_score < ENDGAME_PHASE_SCORE &&
+        MOVE_CAPTURED(move) - b.turn != PAWN
+    ) extension++;
+
+    // passed pawn push extension:
+    if (depth < 5 &&
+        b.game_phase_score < ENDGAME_PHASE_SCORE &&
+        MOVE_PIECEMOVED(move) == (PAWN + b.turn)
+    ) extension++;
+
+    new_depth = depth + extension; */
 
     // reductions:
     R = 1;
-    if (depth > 2 && non_pruned_moves > 1) {
+    if (depth > 2 && non_pruned_moves > 2) {
       if (!tactical) {
         if (!b.is_check() && non_pruned_moves >= LMR_FULL_DEPTH_MOVES) R += 2;
-        // if (!pv) R++;
+        if (!pv) R++;
+        if (num_quiets > 3 && failed_null) R++;
         if (!improving) R++;
-        // if (is_killer) R -= 2;
+        // if (MOVE_IS_PROMOTION(move)) R--; // potentially reduce only for queen promotions?
+        // if (is_killer) R--;
       }
       else {
         // R -= pv ? 2 : 1;
-        if (see(move) < 0) R += 1;
+        // if (see(move) < 0) R += 1; // NOTE: WE NEED TO PRECALCULATE SEE BEFORE MAKING THE MOVE!!
       }
       R = std::min(depth - 1, std::max(R, 1));
     }
@@ -412,7 +454,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
     }
     else {
       score = -negamax(depth - R, -alpha - 1, -alpha, forward_ply + 1);
-      if (R != 1 && score > alpha) {
+      if ((R != 1) && (score > alpha)) {
         score = -negamax(depth - 1, -alpha - 1, -alpha, forward_ply + 1);
       }
       if ((score > alpha) && (score < beta)) {
@@ -435,7 +477,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
           TT.put(depth, beta, move, TT_BETA, true);
 
           // add this move to the killer move list, only if it's a quiet move
-          if (!tactical && (move != killer_moves[0][forward_ply])) {
+          if (move != NULL && !tactical && (move != killer_moves[0][forward_ply])) {
             killer_moves[1][forward_ply] = killer_moves[0][forward_ply];
             killer_moves[0][forward_ply] = move;
           }
@@ -448,7 +490,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
         tt_flag = TT_EXACT;
 
         // add this move to the history move list, only if it's a quiet move:
-        if (MOVE_CAPTURED(move) == NONE) {
+        if (MOVE_CAPTURED(move) == NONE && (move != NULL)) {
           history_moves[MOVE_PIECEMOVED(move)][MOVE_TO(move)] += depth;
         }
 
@@ -485,12 +527,10 @@ int quiescence(int alpha, int beta, int forward_ply) {
   // avoid stack overflow:
   if (forward_ply >= MAX_SEARCH_PLY) return evaluate();
 
-  // update the UNSAFE bitboard:
-  b.update_move_info_bitboards();
-
   // call negamax if we're in check, to make sure we don't get ourselves in a
   // mating net
-  if (b.is_check()) return negamax(0, alpha, beta, forward_ply + 1);
+  b.update_move_info_bitboards();
+  if (b.is_check()) return negamax(0, alpha, beta, forward_ply);
 
   // if this is a draw, return 0:
   // NOTE: we don't yet count material draws
@@ -510,9 +550,7 @@ int quiescence(int alpha, int beta, int forward_ply) {
   // score the moves:
   int move_scores[MAX_POSITION_MOVES];
   for (int i = 0; i < num_moves; i++) {
-    move_scores[i] = MVV_LVA_SCORE[MOVE_PIECEMOVED(moves[i])][MOVE_CAPTURED(moves[i])] +
-                     (MOVE_IS_PROMOTION(moves[i]) ? 900 : 0);
-    // move_scores[i] = score_move(moves[i], forward_ply);
+    move_scores[i] = score_move(moves[i], forward_ply);
   }
 
   // recursively qsearch the horizon:
@@ -534,8 +572,8 @@ int quiescence(int alpha, int beta, int forward_ply) {
     move_scores[move_index] = -INF;
 
     // delta pruning: could this move improve alpha, in the best case?
-    best_case = see(move);
-    if (eval + best_case <= alpha) continue;
+    // best_case = std::max(see(move), DELTA_VALUE);
+    // if (eval + best_case <= alpha) continue;
 
     // make move & recursively call qsearch:
     b.make_move(move);

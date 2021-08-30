@@ -1,6 +1,5 @@
 TODO / NOTES:
-- fix UNSAFE bitboard updating problem in negamax?
-- include promotions in SEE?
+- king on open file penalty?
 - FIX SEE "BUGS"
 - change MOVE_IS_PROMOTION(move), ... to MOVE_TYPE(move) and enumerate PROMOTION_MOVE, ENPASSANT_MOVE, etc.
 - stacked rook bonus?
