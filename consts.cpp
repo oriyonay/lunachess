@@ -165,7 +165,14 @@ extern void init_consts() {
 
     WHITE_PASSED_PAWN_MASKS[sq] = white_mask;
     BLACK_PASSED_PAWN_MASKS[sq] = black_mask;
-    }
+  }
+
+  // initialize LMP array:
+  // (formulas are simplified from weiss engine)
+  for (int depth = 0; depth < 64; depth++) {
+    LMP_ARRAY[depth][0] = (depth * depth) + 1;
+    LMP_ARRAY[depth][1] = (2 * depth * depth) + 3;
+  }
 
   /* ---------- initialize magic bitboard-related tables: ---------- */
   // initialize ROOK_MASKS and BISHOP_MASKS:
@@ -636,6 +643,8 @@ const int PASSED_PAWN_BONUS[9] = {0, 10, 30, 50, 75, 100, 150, 200};
 
 const int SEE_PIECE_VALUES[13] = {100, 300, 300, 500, 900, 0,
                                   100, 300, 300, 500, 900, 0, 0};
+
+int LMP_ARRAY[MAX_SEARCH_PLY][2];
 
 // miscellaneous pre-calculated constants:
 U64 SQUARE_FILES[64];

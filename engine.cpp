@@ -193,7 +193,7 @@ void search(int depth) {
     printf("\n");
 
     // if searching up to this ply took > 1/2 of our allocated time, terminate prematurely:
-    if ((time_limit != -1) && ((get_time() - start_time) > (time_limit / 2))) break;
+    // if ((time_limit != -1) && ((get_time() - start_time) > (time_limit / 2))) break;
 
     // if we still haven't looked 6 moves deep (not enough info to use windows), or
     // if we fell outside our aspiration window, reset to -INF and INF:
@@ -355,7 +355,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
   bool tactical;
   bool is_killer;
   bool recapture;
-  // bool skip_quiets = false;
+  bool skip_quiets = false;
   int extension;
   int R;
   for (int i = 0; i < num_moves; i++) {
@@ -379,40 +379,35 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
     recapture = (b.ply) &&
                 (MOVE_CAPTURED(b.move_history[b.ply-1]) != NONE) &&
                 (MOVE_CAPTURED(move) != NONE);
-    if (!tactical) num_quiets++;
 
     // ----- move skipping: ----- //
-    // late-move pruning:
-    /* if (!pv &&
+
+    if (!pv &&
         !is_check &&
         best_score > -MATE_IN_MAX &&
-        non_pruned_moves > 1 &&
-        num_quiets > LMP_ARRAY[depth][improving]
-      ) skip_quiets = true; */
+        non_pruned_moves > 1
+    ) {
 
-    // extended futility pruning:
-    /* if (depth < 3 &&
-        !MOVE_IS_PROMOTION(move) &&
-        eval + estimated_move_value(move) + (75 * depth) - (100 * improving) <= alpha
-    ) continue; */
+      // late move pruning:
+      if (num_quiets > LMP_ARRAY[depth][improving]) skip_quiets = true;
 
-    // SEE pruning for quiet moves:
-    /* if (!tactical &&
-        depth <= 4 &&
-        non_pruned_moves > 1 &&
-        see(move) < (-51 * depth)
-    ) continue; */
+      // extended futility pruning:
+      /* if (depth < 3 &&
+          !tactical &&
+          eval + estimated_move_value(move) + (75 * depth) - (100 * improving) <= alpha
+      ) continue; */
+    }
 
     // skip quiet moves if this move is quiet and skip_quiets flag is on:
-    // if (skip_quiets && !tactical && (non_pruned_moves > 1)) continue;
+    if (skip_quiets && !tactical && (non_pruned_moves > 1)) continue;
 
     // ----- end of move skipping ----- //
 
     non_pruned_moves++;
+    if (!tactical) num_quiets++;
     b.make_move(move);
 
     // extensions:
-    // (potentially add extension for all tactical moves?)
     /* extension = 0;
 
     // general extensions:
@@ -428,7 +423,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
     // passed pawn push extension:
     if (depth < 5 &&
         b.game_phase_score < ENDGAME_PHASE_SCORE &&
-        MOVE_PIECEMOVED(move) == (PAWN + b.turn)
+        PIECE_TYPE(MOVE_PIECEMOVED(move)) == PAWN
     ) extension++;
 
     new_depth = depth + extension; */
@@ -441,12 +436,12 @@ int negamax(int depth, int alpha, int beta, int forward_ply) {
         if (!pv) R++;
         if (num_quiets > 3 && failed_null) R++;
         if (!improving) R++;
-        if (MOVE_IS_PROMOTION(move) && PIECE_TYPE(MOVE_PROMOTION_PIECE(move)) == QUEEN) R--;
+        // if (MOVE_IS_PROMOTION(move) && PIECE_TYPE(MOVE_PROMOTION_PIECE(move)) == QUEEN) R--;
         if (is_killer) R--;
       }
       else {
         // R -= pv ? 2 : 1;
-        // if (see(move) < 0) R += 1; // NOTE: WE NEED TO PRECALCULATE SEE BEFORE MAKING THE MOVE!!
+        // if (see(move) < 0) R++; // NOTE: WE NEED TO PRECALCULATE SEE BEFORE MAKING THE MOVE!!
       }
       R = std::min(depth - 1, std::max(R, 1));
     }
@@ -539,6 +534,10 @@ int quiescence(int alpha, int beta, int forward_ply) {
   // NOTE: we don't yet count material draws
   if (b.is_repetition() || b.fifty_move_counter >= 100) return 0;
 
+  // do we have this position stored in the TT? if so, use it:
+  // int tt_score = TT.probe(0, alpha, beta);
+  // if (b.ply > 0 && (tt_score != TT_NO_MATCH)) return tt_score;
+
   // static evaluation:
   int eval = evaluate();
 
@@ -580,21 +579,6 @@ int quiescence(int alpha, int beta, int forward_ply) {
 
     // make move & recursively call qsearch:
     b.make_move(move);
-
-    // skip non-checking moves with negative SEE:
-    /* b.update_move_info_bitboards();
-    if (!b.is_check()) {
-      if (best_case < 0) {
-        b.undo_move();
-        return eval;
-      }
-    }
-    else {
-      score = negamax(0, alpha, beta, forward_ply + 1);
-      b.undo_move();
-      return score;
-    } */
-
     score = -quiescence(-beta, -alpha, forward_ply + 1);
     b.undo_move();
 
@@ -664,7 +648,7 @@ int see(int move) {
     }
 
     // remove this attacker from occupied:
-    occupied ^= (my_attackers & b.bitboard[turn + next_victim]);
+    occupied ^= (1L << LSB(my_attackers & b.bitboard[turn + next_victim]));
 
     if (next_victim == PAWN || next_victim == BISHOP || next_victim == QUEEN) {
       attackers |= diag_moves_magic(to, occupied) & bishops;

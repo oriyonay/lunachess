@@ -150,6 +150,8 @@ extern const int RAZOR_MARGIN[10];
 
 extern const int SEE_PIECE_VALUES[13];
 
+extern int LMP_ARRAY[MAX_SEARCH_PLY][2]; // indexed [search depth][improving]
+
 /* -------------------- MISCELLANEOUS CONSTANTS -------------------- */
 // miscellaneous pre-calculated constants:
 extern U64 SQUARE_FILES[64];
