@@ -13,3 +13,14 @@
    (9.5 / 10 vs old version!!)
 11) implemented SEE and currently using that instead of MVV/LVA for move ordering.
     also using late-move pruning. search speed seems to have significantly improved.
+12) started thorough testing of existing features to catch as many bugs as possible:
+  a) bishop pair bonus: ACCEPT
+  b) doubled pawn penalty: ACCEPT
+  c) isolated pawn penalty: REJECT (try later)
+  d) passed pawn bonus: REJECT (try later)
+  e) null-move pruning: ACCEPT
+  f) reverse futility pruning: ACCEPT (big improvement! .621)
+  g) razoring: ACCEPT (.544)
+  h) late move pruning: REJECT (try later)
+  i) 3rd late-move reduction condition: ACCEPT (.531)
+  j) 2nd late-move reduction condition: 
