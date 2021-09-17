@@ -21,6 +21,7 @@
   e) null-move pruning: ACCEPT
   f) reverse futility pruning: ACCEPT (big improvement! .621)
   g) razoring: ACCEPT (.544)
-  h) late move pruning: REJECT (try later)
-  i) 3rd late-move reduction condition: ACCEPT (.531)
-  j) 2nd late-move reduction condition: 
+  h) late move pruning: ACCEPT (.540)
+  i) 3rd late-move reduction condition: REJECT (.498)
+  j) king safety: REJECT (0.400)
+  h) aspiration windows: REJECT (0.460)

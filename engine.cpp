@@ -227,7 +227,7 @@ void search(int depth) {
 int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune) {
   // every 2048 nodes, communicate with the GUI / check time:
   if (nodes_evaluated % 2048 == 0) communicate();
-  if (stop_search) return evaluate();
+  if (stop_search) return 0;
   nodes_evaluated++;
 
   // if this is a draw, return 0:
@@ -306,7 +306,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
       b.undo_nullmove();
 
       // if we have to stop, stop the search:
-      if (stop_search) return eval;
+      if (stop_search) return 0;
 
       // fail-hard beta cutoff:
       if (null_move_score >= beta) return beta;
@@ -433,12 +433,12 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
 
     // late-move reductions:
     R = 1;
-    if (depth > 2 && non_pruned_moves > 2) {
+    /* if (depth > 2 && non_pruned_moves > 2) {
       if (!tactical) {
         // if (!b.is_check() && non_pruned_moves >= LMR_FULL_DEPTH_MOVES) R += 2;
-        if (!pv) R++;
-        if (num_quiets > 3 && failed_null) R++;
-        if (!improving) R++;
+        // if (!pv) R++;
+        // if (num_quiets > 3 && failed_null) R++;
+        // if (!improving) R++;
         // if (MOVE_IS_PROMOTION(move) && PIECE_TYPE(MOVE_PROMOTION_PIECE(move)) == QUEEN) R--;
         // if (is_killer) R--;
       }
@@ -447,7 +447,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
         // if (see(move) < 0) R++; // NOTE: WE NEED TO PRECALCULATE SEE BEFORE MAKING THE MOVE!!
       }
       R = std::min(depth - 1, std::max(R, 1));
-    }
+    } */
 
     // PVS:
     if (non_pruned_moves == 1) {
@@ -465,7 +465,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
 
     b.undo_move();
 
-    if (stop_search) return eval;
+    if (stop_search) return 0;
 
     if (score > best_score) {
       best_score = score;
