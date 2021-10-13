@@ -23,8 +23,6 @@ extern U64 bmask(int sq);
 extern U64 get_blockers_from_index(int index, U64 mask);
 
 // ENGINE SETTINGS
-extern unsigned int TT_SIZE; // size of transposition table (in entries)
-extern unsigned int NUM_TT_ENTRIES; // number of transposition table entries
 // extern unsigned int TT_INDEX_MASK; // mask used on hash to get table index
 
 // a 64-bit pseudo-random number generator (for hashing):

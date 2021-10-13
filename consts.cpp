@@ -52,10 +52,6 @@ extern void init_consts() {
   CBK_ROOK_ZOBRIST = ZOBRIST_SQUARE_KEYS[BR][F8] ^ ZOBRIST_SQUARE_KEYS[BR][H8];
   CBQ_ROOK_ZOBRIST = ZOBRIST_SQUARE_KEYS[BR][D8] ^ ZOBRIST_SQUARE_KEYS[BR][A8];
 
-  // set up transposition table size and calculate number of entries:
-  // (16 = sizeof(tt_entry))
-  NUM_TT_ENTRIES = DEFAULT_TT_SIZE / 16;
-
   // ----- initialize file bitmasks: -----
   FILES[0] = 0L;
   for (int i = 0; i < 8; i++) {
@@ -269,10 +265,6 @@ std::random_device rd;
 std::mt19937_64 generator(rd());
 
 /* ---------- end of functions for calculating constants ---------- */
-
-unsigned int TT_SIZE = DEFAULT_TT_SIZE;
-unsigned int NUM_TT_ENTRIES;
-unsigned int TT_INDEX_MASK;
 
 std::unordered_map<char, int> PIECE_INDICES = {
   {'P', 0}, {'N', 1}, {'B', 2}, {'R', 3}, {'Q', 4}, {'K', 5},

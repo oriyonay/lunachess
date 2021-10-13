@@ -35,8 +35,15 @@ struct transposition_table {
   // the age of the transposition table:
   char age;
 
+  // number of entries & size in bytes:
+  U64 num_entries;
+  U64 size;
+
+  // the mask we use for TT indexing:
+  U64 mask;
+
   // the constructor:
-  transposition_table(int num_entries);
+  transposition_table(U64 MB);
 
   // probe(): probe the transposition table for the given position:
   int probe(int depth, int alpha, int beta);

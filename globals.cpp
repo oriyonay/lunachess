@@ -3,7 +3,7 @@
 // init_globals(): initialize global variables:
 void init_globals() {
   b = board(FEN_START);
-  TT = transposition_table(NUM_TT_ENTRIES);
+  TT = transposition_table(DEFAULT_TT_SIZE);
   TT.clear();
 
   stop_search = false;

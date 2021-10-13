@@ -11,7 +11,7 @@ inline int score_move(int move, int forward_ply) {
   }
 
   // is this move the best move for this position, as stored in our TT?
-  if (move == (&TT.TT[b.hash % NUM_TT_ENTRIES])->best_move) return 9000;
+  if (move == (&TT.TT[b.hash & TT.mask])->best_move) return 9000;
 
   // is this a recapture?
   /* if ((b.ply) &&

@@ -1,14 +1,28 @@
 #include "tt.h"
 
 // the transposition table constructor:
-transposition_table::transposition_table(int num_entries) {
+transposition_table::transposition_table(U64 MB) {
+  // make sure num_entries is a power of 2:
+  U64 bytes = MB << 20;
+  U64 max_entries = bytes / sizeof(tt_entry);
+
+  // make sure max_entries is a power of 2:
+  U64 num_entries = max_entries;
+  while (num_entries & (num_entries - 1)) {
+    POP_LSB(num_entries);
+  }
+
+  this->num_entries = num_entries;
+  this->size = num_entries * sizeof(tt_entry);
+  this->mask = num_entries - 1;
+  this->age = 0;
+
   TT = new tt_entry[num_entries];
-  age = 0;
 }
 
 // probe(): probe the transposition table for the given position:
 int transposition_table::probe(int depth, int alpha, int beta) {
-  tt_entry* entry = &TT[b.hash % NUM_TT_ENTRIES];
+  tt_entry* entry = &TT[b.hash & mask];
 
   // verify that the entry is not a collision:
   if (entry->hash != b.hash) return TT_NO_MATCH;
@@ -26,7 +40,7 @@ int transposition_table::probe(int depth, int alpha, int beta) {
 
 // put(): write a new entry to the transposition table:
 void transposition_table::put(int depth, int value, int best_move, char flag, bool is_pv) {
-  tt_entry* entry = &TT[b.hash % NUM_TT_ENTRIES];
+  tt_entry* entry = &TT[b.hash & mask];
 
   // write the data:
   if (entry->hash == 0L ||
@@ -47,5 +61,5 @@ void transposition_table::put(int depth, int value, int best_move, char flag, bo
 
 // clear(): clears the table:
 void transposition_table::clear() {
-  memset(TT, 0, TT_SIZE);
+  memset(TT, 0, size);
 }
