@@ -13,13 +13,12 @@ typedef uint64_t U64;
 #define MAX_GAME_MOVES 512
 
 // tuneable engine settings:
-// (note: TT size is in bytes)
 #define ALPHA_PRUNING_DEPTH 5
 #define ALPHA_PRUNING_MARGIN 2000
 #define ASPIRATION_WINDOW_VALUE 75
 #define BISHOP_PAIR_BONUS 30
 #define DEFAULT_UCI_INPUT_BUFFER_SIZE 2048
-#define DEFAULT_TT_SIZE 32
+#define DEFAULT_TT_SIZE 32 // in MB
 #define DELTA_VALUE 200
 #define DOUBLED_PAWN_PENALTY 15
 #define FULLY_OPEN_FILE_BONUS 15
@@ -77,6 +76,7 @@ enum {INIT_WK = 0x1000000000000000L, INIT_BK = 0x10L};
 
 // utility macro for computing index of least significant bit:
 #define LSB(x) (DEBRUIJN_INDEX[((x ^ (x-1)) * DEBRUIJN) >> 58])
+// #define LSB(x) __builtin_ctzll(x) // <-- no noticeable performance difference
 
 // utility macro for popping the least significant bit:
 #define POP_LSB(x) (x &= x - 1)

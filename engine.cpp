@@ -168,10 +168,10 @@ void search(int depth) {
   memset(history_moves, 0, sizeof(int) * 12 * 64);
   memset(static_evals, 0, sizeof(int) * MAX_SEARCH_PLY);
 
-  // find best move within a given position
+  // find best move in this position
   int alpha = -INF;
   int beta = INF;
-  int aspiration_delta = ASPIRATION_WINDOW_VALUE;
+  // int aspiration_delta = ASPIRATION_WINDOW_VALUE;
   for (int cur_depth = 1; cur_depth <= depth; cur_depth++) {
     // enable the follow_pv flag:
     follow_pv = true;
@@ -197,11 +197,11 @@ void search(int depth) {
 
     // if we still haven't looked 6 moves deep (not enough info to use windows), or
     // if we fell outside our aspiration window, reset to -INF and INF:
-    if (/* cur_depth < 6 || */ ((score <= alpha) || (score >= beta))) {
+    /* if (cur_depth < 6 || ((score <= alpha) || (score >= beta))) {
       alpha = -INF;
       beta = INF;
       continue;
-    }
+    } */
 
     // otherwise, set alpha & beta using aspiration window value:
     // alpha = score - aspiration_delta;
@@ -226,7 +226,7 @@ void search(int depth) {
 // negamax(): the main tree-search function
 int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune) {
   // every 2048 nodes, communicate with the GUI / check time:
-  if (nodes_evaluated % 2048 == 0) communicate();
+  if (nodes_evaluated & 2047 == 0) communicate();
   if (stop_search) return 0;
   nodes_evaluated++;
 
@@ -522,7 +522,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
 // quiescence(): the quiescence search algorithm
 int quiescence(int alpha, int beta, int forward_ply) {
   // every 2048 nodes, communicate with the GUI / check time:
-  if (nodes_evaluated % 2048 == 0) communicate();
+  if (nodes_evaluated & 2047 == 0) communicate();
   nodes_evaluated++;
 
   // avoid stack overflow:

@@ -20,6 +20,11 @@ transposition_table::transposition_table(U64 MB) {
   TT = new tt_entry[num_entries];
 }
 
+// the destructor:
+transposition_table::~transposition_table() {
+  delete TT;
+}
+
 // probe(): probe the transposition table for the given position:
 int transposition_table::probe(int depth, int alpha, int beta) {
   tt_entry* entry = &TT[b.hash & mask];
