@@ -31,8 +31,8 @@ inline int score_move(int move, int forward_ply) {
   if (MOVE_IS_PROMOTION(move)) return 1000; */
 
   // killer move heuristic for quiet moves:
-  if (move == killer_moves[0][forward_ply]) return 50;
-  if (move == killer_moves[1][forward_ply]) return 40;
+  // if (move == killer_moves[0][forward_ply]) return 50;
+  // if (move == killer_moves[1][forward_ply]) return 40;
 
   return history_moves[MOVE_PIECEMOVED(move)][MOVE_TO(move)];
 }
@@ -43,18 +43,18 @@ inline int evaluate() {
   int bonus = 0;
 
   // add bishop pair bonus:
-  if (b.bitboard[WB] & (b.bitboard[WB] - 1)) bonus += BISHOP_PAIR_BONUS;
-  if (b.bitboard[BB] & (b.bitboard[BB] - 1)) bonus -= BISHOP_PAIR_BONUS;
+  // if (b.bitboard[WB] & (b.bitboard[WB] - 1)) bonus += BISHOP_PAIR_BONUS;
+  // if (b.bitboard[BB] & (b.bitboard[BB] - 1)) bonus -= BISHOP_PAIR_BONUS;
 
   // doubled pawn penalty:
-  int white_pawns_on_file;
+  /* int white_pawns_on_file;
   int black_pawns_on_file;
   for (int file = 0; file < 8; file++) {
     white_pawns_on_file = __builtin_popcountll(b.bitboard[WP] & FILES[file]);
     black_pawns_on_file = __builtin_popcountll(b.bitboard[BP] & FILES[file]);
     if (white_pawns_on_file > 1) bonus -= DOUBLED_PAWN_PENALTY * (white_pawns_on_file - 1);
     if (black_pawns_on_file > 1) bonus += DOUBLED_PAWN_PENALTY * (black_pawns_on_file - 1);
-  }
+  } */
 
   // isolated and passed pawn penalty/bonus:
   /* U64 wp = b.bitboard[WP];
@@ -150,12 +150,14 @@ inline int evaluate() {
   }
 
   // return the evaluation relative to the side whose turn it is:
-  if (b.turn == WHITE) return base_score + bonus;
-  else return -base_score - bonus;
+  return (base_score + bonus) * (b.turn == WHITE ? 1 : -1);
 }
 
 // search(): the main search algorithm (with iterative deepening)
 void search(int depth) {
+  // after this search, increment the transposition table's age:
+  TT.age++;
+
   // zero counter of nodes searched, score-PV flag, and time control flag:
   nodes_evaluated = 0;
   score_pv = false;
@@ -218,15 +220,12 @@ void search(int depth) {
   printf("bestmove ");
   print_move(pv_table[0][0]);
   printf("\n");
-
-  // after this search, increment the transposition table's age:
-  TT.age++;
 }
 
 // negamax(): the main tree-search function
 int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune) {
   // every 2048 nodes, communicate with the GUI / check time:
-  if (nodes_evaluated & 2047 == 0) communicate();
+  if ((nodes_evaluated & 2047) == 0) communicate();
   if (stop_search) return 0;
   nodes_evaluated++;
 
@@ -522,7 +521,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
 // quiescence(): the quiescence search algorithm
 int quiescence(int alpha, int beta, int forward_ply) {
   // every 2048 nodes, communicate with the GUI / check time:
-  if (nodes_evaluated & 2047 == 0) communicate();
+  if ((nodes_evaluated & 2047) == 0) communicate();
   nodes_evaluated++;
 
   // avoid stack overflow:
