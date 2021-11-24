@@ -246,7 +246,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
   if (b.ply > 0 && !pv && (score != TT_NO_MATCH)) return score;
   score = -INF;
 
-  // EGTB lookup goes here
+  // TODO: EGTB lookup goes here
 
   // update the UNSAFE bitboard and make a local is_check variable:
   b.update_move_info_bitboards();
@@ -272,7 +272,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
   /* ---------- FORWARD PRUNING ---------- */
 
   // for null-move pruning, we need to figure out whether our side has any major pieces:
-  U64 majors = (b.turn == WHITE) ?
+  /* U64 majors = (b.turn == WHITE) ?
                   b.bitboard[WN] | b.bitboard[WB] | b.bitboard[WR] | b.bitboard[WQ] :
                   b.bitboard[BN] | b.bitboard[BB] | b.bitboard[BR] | b.bitboard[BQ];
 
@@ -319,7 +319,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
         depth == 1 &&
         eval + 200 < beta
      )  return quiescence(alpha, beta, forward_ply);
-  }
+  } */
 
   /* ---------- END OF FORWARD PRUNING ---------- */
 

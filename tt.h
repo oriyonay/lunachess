@@ -42,9 +42,8 @@ struct transposition_table {
   // the mask we use for TT indexing:
   U64 mask;
 
-  // the constructor & destructor:
+  // the constructor:
   transposition_table(U64 MB);
-  ~transposition_table();
 
   // probe(): probe the transposition table for the given position:
   int probe(int depth, int alpha, int beta);
