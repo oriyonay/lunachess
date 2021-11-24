@@ -67,6 +67,7 @@ struct board {
   U64 pinned_pieces();
   bool is_check();
   bool is_repetition();
+  bool is_material_draw();
 };
 
 // utility functions for board class:

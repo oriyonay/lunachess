@@ -84,6 +84,12 @@ enum {INIT_WK = 0x1000000000000000L, INIT_BK = 0x10L};
 // utility to isolate LSB:
 #define ISOLATE_LSB(x) (x & ~(x - 1))
 
+// are there multiple ones set in this bitboard:
+#define SEVERAL(x) (x & (x - 1))
+
+// number of set bits in the bitboard:
+#define POPCOUNT(x) (__builtin_popcountll(x))
+
 // macros for getting information out of a move integer:
 #define MOVE_TO(move) ((move >> 26) & 0x3F)
 #define MOVE_FROM(move) ((move >> 20) & 0x3F)

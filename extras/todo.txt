@@ -1,3 +1,6 @@
+notes:
+- changed history update heuristic from (+= depth) to (+= depth * depth)
+
 TODO / NOTES:
 - king on open file penalty?
 - FIX SEE "BUGS"

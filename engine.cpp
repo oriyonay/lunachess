@@ -230,8 +230,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
   nodes_evaluated++;
 
   // if this is a draw, return 0:
-  // NOTE: we don't yet count material draws
-  if (b.is_repetition() || b.fifty_move_counter >= 100) return 0;
+  if (b.is_repetition() || b.is_material_draw() || b.fifty_move_counter >= 100) return 0;
 
   pv_length[forward_ply] = forward_ply;
   bool pv = (beta - alpha != 1);
@@ -375,12 +374,12 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
     move_scores[move_index] = -INF;
 
     // figure out some things about this move:
-    tactical = (MOVE_CAPTURED(move) != NONE) || (MOVE_IS_PROMOTION(move));
+    /* tactical = (MOVE_CAPTURED(move) != NONE) || (MOVE_IS_PROMOTION(move));
     is_killer = (move == killer_moves[0][forward_ply]) ||
                 (move == killer_moves[1][forward_ply]);
     recapture = (b.ply) &&
                 (MOVE_CAPTURED(b.move_history[b.ply-1]) != NONE) &&
-                (MOVE_CAPTURED(move) != NONE);
+                (MOVE_CAPTURED(move) != NONE); */
 
     // ----- move skipping: ----- //
 
@@ -406,7 +405,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
     // ----- end of move skipping ----- //
 
     non_pruned_moves++;
-    if (!tactical) num_quiets++;
+    // if (!tactical) num_quiets++;
     b.make_move(move);
 
     // extensions:
@@ -491,7 +490,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
 
         // add this move to the history move list, only if it's a quiet move:
         if (MOVE_CAPTURED(move) == NONE && (move != NULL)) {
-          history_moves[MOVE_PIECEMOVED(move)][MOVE_TO(move)] += depth;
+          history_moves[MOVE_PIECEMOVED(move)][MOVE_TO(move)] += (depth * depth);
         }
 
         // this is the PV node:
@@ -533,8 +532,7 @@ int quiescence(int alpha, int beta, int forward_ply) {
   if (b.is_check()) return negamax(0, alpha, beta, forward_ply, false);
 
   // if this is a draw, return 0:
-  // NOTE: we don't yet count material draws
-  if (b.is_repetition() || b.fifty_move_counter >= 100) return 0;
+  if (b.is_repetition() || b.is_material_draw() || b.fifty_move_counter >= 100) return 0;
 
   // do we have this position stored in the TT? if so, use it:
   // int tt_score = TT.probe(0, alpha, beta);
@@ -601,7 +599,7 @@ int quiescence(int alpha, int beta, int forward_ply) {
 }
 
 // see(): static exchange evaluation - is this static exchange going to be good for us?
-int see(int move) {
+/* int see(int move) {
   // unpack move info:
   int to = MOVE_TO(move);
   int from = MOVE_FROM(move);
@@ -696,4 +694,4 @@ int estimated_move_value(int move) {
   else if (MOVE_IS_CASTLE(move)) value = 0;
 
   return value;
-}
+} */
