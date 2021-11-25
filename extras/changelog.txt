@@ -13,15 +13,13 @@
    (9.5 / 10 vs old version!!)
 11) implemented SEE and currently using that instead of MVV/LVA for move ordering.
     also using late-move pruning. search speed seems to have significantly improved.
-12) started thorough testing of existing features to catch as many bugs as possible:
-  a) bishop pair bonus: ACCEPT
-  b) doubled pawn penalty: ACCEPT
-  c) isolated pawn penalty: REJECT (try later)
-  d) passed pawn bonus: REJECT (try later)
-  e) null-move pruning: ACCEPT
-  f) reverse futility pruning: ACCEPT (big improvement! .621)
-  g) razoring: ACCEPT (.544)
-  h) late move pruning: ACCEPT (.540)
-  i) 3rd late-move reduction condition: REJECT (.498)
-  j) king safety: REJECT (0.400)
-  h) aspiration windows: REJECT (0.460)
+
+--------------------------------------------------------------------------------
+
+12) more thorough testing than before. removed ALL features (except TT & history)
+  a. killer heuristic: updated move scoring to score both killers equally.
+     score: 409 - 281 - 310  [0.564] 1000
+  b. small updates: updated history update heuristic to (+= depth) instead of
+     (+= depth * depth) & various small changes
+     score: 392 - 359 - 249  [0.516] 1000
+  c. bishop pair bonus: (currently being tested)
