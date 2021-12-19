@@ -11,29 +11,9 @@ typedef uint64_t U64;
 #define VERSION "0.0.1"
 #define MAX_POSITION_MOVES 219
 #define MAX_GAME_MOVES 512
-
-// tuneable engine settings:
-#define ALPHA_PRUNING_DEPTH 5
-#define ALPHA_PRUNING_MARGIN 2000
-#define ASPIRATION_WINDOW_VALUE 75
-#define BISHOP_PAIR_BONUS 20
-#define DEFAULT_UCI_INPUT_BUFFER_SIZE 2048
 #define DEFAULT_TT_SIZE 32 // in MB
-#define DELTA_VALUE 200
-#define DOUBLED_PAWN_PENALTY 15
-#define FULLY_OPEN_FILE_BONUS 15
-#define ISOLATED_PAWN_PENALTY 15
-#define KING_SHIELD_BONUS 7
-#define LMP_DEPTH 7
-#define LMR_FULL_DEPTH_MOVES 5
-#define LMR_REDUCTION_LIMIT 3
-#define MATE_IN_MAX 999970 // INF - 30
-#define MULTICUT_M 6 // number of first moves to consider
-#define MULTICUT_C 3 // number of cutoffs to cause a multi-cut prune
-#define MULTICUT_R 4 // depth for multi-cut
-#define NULL_MOVE_PRUNING_DEPTH 3
-#define SEMI_OPEN_FILE_BONUS 7
 
+#define MATE_IN_MAX 999970 // INF - 30
 #define INF 1000000
 #define MAX_SEARCH_PLY 64
 #define NO_SCORE 10000000 // too high to be reached, so it's safe to use this

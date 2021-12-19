@@ -1,3 +1,5 @@
+// CONSTS.H: ALL NON-TUNEABLE CONSTANTS
+
 #ifndef CONSTS_H
 #define CONSTS_H
 
@@ -30,16 +32,6 @@ extern std::mt19937_64 generator;
 
 // maps piece characters to their index in the board::bitboard array
 extern std::unordered_map<char, int> PIECE_INDICES;
-
-// just the positive version of PIECE_TO_MATERIAL[0][:] with king & pawn values set to 0,
-// for faster game phase score calculation
-extern const int GAME_PHASE_MATERIAL_SCORE[13];
-
-// maps piece types (enums) to their material value
-extern const int PIECE_TO_MATERIAL[2][13];
-
-// the piece-square tables
-extern int PIECE_SQUARE_TABLE[2][12][64];
 
 // maps board::bitboard indices to their piece character
 extern char* PIECE_CHARS;
@@ -141,14 +133,6 @@ extern int MVV_LVA_SCORE[12][13]; // contains MVV/LVA precalculated scores
 extern U64 ISOLATED_MASKS[64];
 extern U64 WHITE_PASSED_PAWN_MASKS[64];
 extern U64 BLACK_PASSED_PAWN_MASKS[64];
-
-extern const int PASSED_PAWN_BONUS[9];
-
-extern const int RAZOR_MARGIN[10];
-
-extern const int SEE_PIECE_VALUES[13];
-
-extern int LMP_ARRAY[MAX_SEARCH_PLY][2]; // indexed [search depth][improving]
 
 /* -------------------- MISCELLANEOUS CONSTANTS -------------------- */
 // miscellaneous pre-calculated constants:

@@ -7,6 +7,7 @@
 
 #include "consts.h"
 #include "defs.h"
+#include "eval_consts.h"
 
 struct board {
   // main board data:
