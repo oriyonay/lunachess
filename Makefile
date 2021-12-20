@@ -5,13 +5,13 @@ all:
 	make consts.o
 	make engine.o
 	make eval.o
-	make eval_consts.o
+	make eval_params.o
 	make globals.o
 	make main.o
 	make tt.o
 	make uci.o
 	make utils.o
-	g++ -std=c++11 -O3 board.o consts.o engine.o eval.o eval_consts.o globals.o main.o tt.o uci.o utils.o -o main.out
+	g++ -std=c++11 -O3 board.o consts.o engine.o eval.o eval_params.o globals.o main.o tt.o uci.o utils.o -o main.out
 	make run
 
 run:
@@ -45,8 +45,8 @@ engine.o: engine.cpp engine.h
 eval.o: eval.cpp eval.h
 	g++ -std=c++11 -O3 -w -c eval.cpp -o eval.o
 
-eval_consts.o: eval_consts.cpp eval_consts.h
-	g++ -std=c++11 -O3 -w -c eval_consts.cpp -o eval_consts.o
+eval_consts.o: eval_params.cpp eval_params.h
+	g++ -std=c++11 -O3 -w -c eval_params.cpp -o eval_params.o
 
 globals.o: globals.cpp globals.h
 	g++ -std=c++11 -O3 -w -c globals.cpp -o globals.o

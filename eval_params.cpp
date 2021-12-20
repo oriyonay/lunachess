@@ -1,29 +1,157 @@
-#include "eval_consts.h"
+#include "eval_params.h"
 
-// tuneable engine settings:
-const int ALPHA_PRUNING_DEPTH = 5;
-const int ALPHA_PRUNING_MARGIN = 2000;
-const int ASPIRATION_WINDOW_VALUE = 75;
-const int BISHOP_PAIR_BONUS = 30;
-const int DEFAULT_UCI_INPUT_BUFFER_SIZE = 2048;
-const int DELTA_VALUE = 200;
-const int DOUBLED_PAWN_PENALTY = 15;
-const int FULLY_OPEN_FILE_BONUS = 15;
-const int ISOLATED_PAWN_PENALTY = 15;
-const int KING_SHIELD_BONUS = 7;
-const int LMP_DEPTH = 7;
-const int LMR_FULL_DEPTH_MOVES = 5;
-const int LMR_REDUCTION_LIMIT = 3;
-const int MULTICUT_M = 6; // number of first moves to consider
-const int MULTICUT_C = 3; // number of cutoffs to cause a multi-cut prune
-const int MULTICUT_R = 4; // depth for multi-cut
-const int NULL_MOVE_PRUNING_DEPTH = 3;
-const int SEMI_OPEN_FILE_BONUS = 7;
+extern void load_params(const char* FILENAME) {
+  // open the file stream:
+  std::ifstream ifs(FILENAME);
 
-const int GAME_PHASE_MATERIAL_SCORE[13] = {0,  337,  365,  477,  1025,  0,
+  // temp variables for storing input data:
+  std::string param_name;
+  int value;
+
+  // load the values:
+  // (NOTE: this function is designed to be backwards-compatible by ignoring the
+  // order of parameters in the input file. this is a lot more convenient when we
+  // add more parameters in the future).
+  while (ifs) {
+    ifs >> param_name >> value;
+
+    // in the case that we only read some whitespace (at the end of the file), break:
+    if (ifs.eof()) break;
+
+    if (param_name == "BISHOP_PAIR_BONUS")      BISHOP_PAIR_BONUS       = value;
+    if (param_name == "DOUBLED_PAWN_PENALTY")   DOUBLED_PAWN_PENALTY    = value;
+    if (param_name == "FULLY_OPEN_FILE_BONUS")  FULLY_OPEN_FILE_BONUS   = value;
+    if (param_name == "ISOLATED_PAWN_PENALTY")  ISOLATED_PAWN_PENALTY   = value;
+    if (param_name == "KING_SHIELD_BONUS")      KING_SHIELD_BONUS       = value;
+    if (param_name == "SEMI_OPEN_FILE_BONUS")   SEMI_OPEN_FILE_BONUS    = value;
+
+    if (param_name == "GAME_PHASE_MATERIAL_SCORE") {
+      for (int piece = WN; piece <= WQ; piece++) {
+        GAME_PHASE_MATERIAL_SCORE[piece] = value;
+        GAME_PHASE_MATERIAL_SCORE[piece + 6] = value;
+        if (piece != WQ) ifs >> value;
+      }
+    }
+
+    if (param_name == "PIECE_TO_MATERIAL") {
+      for (int piece = WP; piece <= BK; piece++) {
+        PIECE_TO_MATERIAL[piece/6][piece%6] = value;
+        PIECE_TO_MATERIAL[piece/6][(piece%6) + 6] = value;
+        if (piece != BK) ifs >> value;
+      }
+    }
+
+    if (param_name == "PIECE_SQUARE_TABLE") {
+      for (int phase = 0; phase < 2; phase++) {
+        for (int piece = WP; piece <= WK; piece++) {
+          for (int square = 0; square < 64; square++) {
+            PIECE_SQUARE_TABLE[phase][piece][square] = value;
+
+            if ((phase != 1) || (piece != WK) || (square != 63)) ifs >> value;
+          }
+        }
+      }
+    }
+
+    if (param_name == "PASSED_PAWN_BONUS") {
+      for (int rank = 1; rank <= 8; rank++) {
+        PASSED_PAWN_BONUS[rank] = value;
+        if (rank != 8) ifs >> value;
+      }
+    }
+
+    if (param_name == "SEE_PIECE_VALUES") {
+      for (int piece = WP; piece <= BK; piece++) {
+        SEE_PIECE_VALUES[piece] = value;
+        if (piece != BK) ifs >> value;
+      }
+    }
+  }
+
+  // recalculate all other constants and close the file stream:
+  init_consts();
+  ifs.close();
+}
+
+extern void save_params(const char* FILENAME) {
+  // open the file stream:
+  std::ofstream ofs(FILENAME);
+
+  // write tuneable params to file:
+  ofs << "BISHOP_PAIR_BONUS "             << BISHOP_PAIR_BONUS              << "\n";
+  ofs << "DOUBLED_PAWN_PENALTY "          << DOUBLED_PAWN_PENALTY           << "\n";
+  ofs << "FULLY_OPEN_FILE_BONUS "         << FULLY_OPEN_FILE_BONUS          << "\n";
+  ofs << "ISOLATED_PAWN_PENALTY "         << ISOLATED_PAWN_PENALTY          << "\n";
+  ofs << "KING_SHIELD_BONUS "             << KING_SHIELD_BONUS              << "\n";
+  ofs << "SEMI_OPEN_FILE_BONUS "          << SEMI_OPEN_FILE_BONUS           << "\n";
+
+  // no need to store anything other than those 4 numbers in most of these loops,
+  // since black's params are mirrored:
+  ofs << "GAME_PHASE_MATERIAL_SCORE ";
+  for (int piece = WN; piece <= WQ; piece++) {
+    ofs << GAME_PHASE_MATERIAL_SCORE[piece] << " ";
+  }
+  ofs << "\n";
+
+  ofs << "PIECE_TO_MATERIAL ";
+  for (int piece = WP; piece <= BK; piece++) {
+    ofs << PIECE_TO_MATERIAL[piece/6][piece%6] << " ";
+  }
+  ofs << "\n";
+
+  ofs << "PIECE_SQUARE_TABLE\n";
+  for (int phase = 0; phase < 2; phase++) {
+    for (int piece = WP; piece <= WK; piece++) {
+      for (int square = 0; square < 64; square++) {
+        ofs << (PIECE_SQUARE_TABLE[phase][piece][square] - PIECE_TO_MATERIAL[phase][piece]) << " ";
+        if (square % 8 == 7) ofs << "\n";
+      }
+      ofs << "\n";
+    }
+  }
+
+  ofs << "PASSED_PAWN_BONUS ";
+  for (int rank = 1; rank <= 8; rank++) {
+    ofs << PASSED_PAWN_BONUS[rank] << " ";
+  }
+  ofs << "\n";
+
+  ofs << "SEE_PIECE_VALUES ";
+  for (int piece = WP; piece <= BK; piece++) {
+    ofs << SEE_PIECE_VALUES[piece] << " ";
+  }
+  ofs << "\n";
+
+  // close the file stream:
+  ofs.close();
+}
+
+// engine settings (not machine-tuneable):
+int ALPHA_PRUNING_DEPTH = 5;
+int ALPHA_PRUNING_MARGIN = 2000;
+int ASPIRATION_WINDOW_VALUE = 75;
+int DEFAULT_UCI_INPUT_BUFFER_SIZE = 2048;
+int DELTA_VALUE = 200;
+int LMP_DEPTH = 7;
+int LMR_FULL_DEPTH_MOVES = 5;
+int LMR_REDUCTION_LIMIT = 3;
+int MULTICUT_M = 6; // number of first moves to consider
+int MULTICUT_C = 3; // number of cutoffs to cause a multi-cut prune
+int MULTICUT_R = 4; // depth for multi-cut
+int NULL_MOVE_PRUNING_DEPTH = 3;
+
+// tuneable engine parameters:
+int BISHOP_PAIR_BONUS = 20;
+int DOUBLED_PAWN_PENALTY = 30;
+int FULLY_OPEN_FILE_BONUS = 15;
+int ISOLATED_PAWN_PENALTY = 15;
+int KING_SHIELD_BONUS = 7;
+int SEMI_OPEN_FILE_BONUS = 7;
+
+int GAME_PHASE_MATERIAL_SCORE[13] = {0,  337,  365,  477,  1025,  0,
                                            0,  337,  365,  477,  1025,  0, 0};
 
-const int PIECE_TO_MATERIAL[2][13] = {{82,  337,  365,  477,  1025,  12000,
+int PIECE_TO_MATERIAL[2][13] = {{82,  337,  365,  477,  1025,  12000,
                                       -82, -337, -365, -477, -1025, -12000, 0},
                                       {94,  281,  297,  512,   936,  12000,
                                       -94, -281, -297, -512,  -936, -12000, 0}
@@ -231,9 +359,9 @@ int PIECE_SQUARE_TABLE[2][12][64] = {{
  }
 }};
 
-const int PASSED_PAWN_BONUS[9] = {0, 0, 10, 30, 50, 75, 100, 150, 200};
+int PASSED_PAWN_BONUS[9] = {0, 0, 10, 30, 50, 75, 100, 150, 200};
 
-const int SEE_PIECE_VALUES[13] = {100, 300, 300, 500, 900, 0,
+int SEE_PIECE_VALUES[13] = {100, 300, 300, 500, 900, 0,
                                   100, 300, 300, 500, 900, 0, 0};
 
 int LMP_ARRAY[MAX_SEARCH_PLY][2];

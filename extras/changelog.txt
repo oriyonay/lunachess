@@ -1,25 +1,11 @@
-1) started changelog. status: luna beats vice 10-0 and is probably ranked ~2250 elo.
-2) changed transposition table replacement scheme to aging mechanism
-3) implemented SEE function (still has some bugs). not yet used.
-4) now, upon receiving stop_search signal, we return a static evaluation rather than 0
-5) added 'go perft' command to UCI
-6) ----- starting MAJOR bug-fix hunt to fix as many bugs as possible -----
-   (this is what happens when one blindly implements features without testing them carefully. lesson learned!)
-7) changed entire negamax() function architecture. still working on fixing bug relating to extensions
-8) fixed lots of bugs!! still working on fixing PV collection bug
-9) fixed PV collection bug, code is working just as well as before.
-   working on better mate detection
-10) finally fixed timeout bug by implementing new time management scheme! HUGE difference in performance
-   (9.5 / 10 vs old version!!)
-11) implemented SEE and currently using that instead of MVV/LVA for move ordering.
-    also using late-move pruning. search speed seems to have significantly improved.
+1) starting rigorous testing of all features:
+  a) +30cp bonus for bishop pair: failed
+  b) +20cp bonus for bishop pair:
+        Score of luna_dev vs luna_main: 2356 - 2195 - 1296  [0.514] 5847
+      ...      luna_dev playing White: 1187 - 1093 - 644  [0.516] 2924
+      ...      luna_dev playing Black: 1169 - 1102 - 652  [0.511] 2923
+      ...      White vs Black: 2289 - 2262 - 1296  [0.502] 5847
+      Elo difference: 9.6 +/- 7.8, LOS: 99.1 %, DrawRatio: 22.2 %
+      SPRT: llr 2.2 (100.1%), lbound -2.2, ubound 2.2 - H1 was accepted
 
---------------------------------------------------------------------------------
-
-12) more thorough testing than before. removed ALL features (except TT & history)
-  a. killer heuristic: updated move scoring to score both killers equally.
-     score: 409 - 281 - 310  [0.564] 1000
-  b. small updates: updated history update heuristic to (+= depth) instead of
-     (+= depth * depth) & various small changes
-     score: 392 - 359 - 249  [0.516] 1000
-  c. bishop pair bonus: (currently being tested)
+  c) 
