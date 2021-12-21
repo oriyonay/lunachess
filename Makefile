@@ -20,6 +20,9 @@ run:
 run_test:
 	./tests.out
 
+run_tune:
+	./tuner.out
+
 test: tests.cpp
 	make board.o
 	make consts.o
@@ -28,6 +31,19 @@ test: tests.cpp
 	make utils.o
 	g++ -std=c++11 -O3 -w -c tests.cpp -o tests.o
 	g++ -std=c++11 -O3 board.o consts.o globals.o tests.o tt.o utils.o -o tests.out
+
+tune:
+	make board.o
+	make consts.o
+	make engine.o
+	make eval.o
+	make eval_params.o
+	make globals.o
+	make tt.o
+	make tuning.o
+	make uci.o
+	make utils.o
+	g++ -std=c++11 -O3 board.o consts.o engine.o eval.o eval_params.o globals.o tt.o tuning.o utils.o -o tuner.out
 
 clean:
 	rm *.o ||:
@@ -56,6 +72,9 @@ main.o: main.cpp *.h
 
 tt.o: tt.cpp tt.h
 	g++ -std=c++11 -O3 -w -c tt.cpp -o tt.o
+
+tuning.o: tuning.cpp tuning.h
+	g++ -std=c++11 -O3 -w -c tuning.cpp -o tuning.o
 
 uci.o: uci.cpp uci.h
 	g++ -std=c++11 -O3 -w -c uci.cpp -o uci.o

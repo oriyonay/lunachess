@@ -36,7 +36,7 @@ extern void load_params(const char* FILENAME) {
     if (param_name == "PIECE_TO_MATERIAL") {
       for (int piece = WP; piece <= BK; piece++) {
         PIECE_TO_MATERIAL[piece/6][piece%6] = value;
-        PIECE_TO_MATERIAL[piece/6][(piece%6) + 6] = value;
+        PIECE_TO_MATERIAL[piece/6][(piece%6) + 6] = -value;
         if (piece != BK) ifs >> value;
       }
     }
@@ -142,7 +142,7 @@ int NULL_MOVE_PRUNING_DEPTH = 3;
 
 // tuneable engine parameters:
 int BISHOP_PAIR_BONUS = 20;
-int DOUBLED_PAWN_PENALTY = 30;
+int DOUBLED_PAWN_PENALTY = 20;
 int FULLY_OPEN_FILE_BONUS = 15;
 int ISOLATED_PAWN_PENALTY = 15;
 int KING_SHIELD_BONUS = 7;

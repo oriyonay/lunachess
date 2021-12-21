@@ -11,17 +11,12 @@
 extern void load_params(const char* FILENAME);
 extern void save_params(const char* FILENAME);
 
-// tuneable engine settings:
+// engine settings (not machine-tuneable):
 extern int ALPHA_PRUNING_DEPTH;
 extern int ALPHA_PRUNING_MARGIN;
 extern int ASPIRATION_WINDOW_VALUE;
-extern int BISHOP_PAIR_BONUS;
 extern int DEFAULT_UCI_INPUT_BUFFER_SIZE;
 extern int DELTA_VALUE;
-extern int DOUBLED_PAWN_PENALTY;
-extern int FULLY_OPEN_FILE_BONUS;
-extern int ISOLATED_PAWN_PENALTY;
-extern int KING_SHIELD_BONUS;
 extern int LMP_DEPTH;
 extern int LMR_FULL_DEPTH_MOVES;
 extern int LMR_REDUCTION_LIMIT;
@@ -29,6 +24,13 @@ extern int MULTICUT_M; // number of first moves to consider
 extern int MULTICUT_C; // number of cutoffs to cause a multi-cut prune
 extern int MULTICUT_R; // depth for multi-cut
 extern int NULL_MOVE_PRUNING_DEPTH;
+
+// tuneable engine parameters:
+extern int BISHOP_PAIR_BONUS;
+extern int DOUBLED_PAWN_PENALTY;
+extern int FULLY_OPEN_FILE_BONUS;
+extern int ISOLATED_PAWN_PENALTY;
+extern int KING_SHIELD_BONUS;
 extern int SEMI_OPEN_FILE_BONUS;
 
 // just the positive version of PIECE_TO_MATERIAL[0][:] with king & pawn values set to 0,
