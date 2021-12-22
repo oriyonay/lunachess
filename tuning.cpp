@@ -3,7 +3,7 @@
 int main(int argc, char** argv) {
   // tuner settings:
   char* POSITIONS_FILE = "tuning/quiet-labeled.epd";
-  int NUM_POSITIONS_TO_EXTRACT = 64000;
+  int NUM_POSITIONS_TO_EXTRACT = 700000;
 
   // initialize consts and globals:
   init_consts();
@@ -37,6 +37,7 @@ void tune(char* POSITIONS_FILE, int NUM_POSITIONS_TO_EXTRACT) {
     ifs.getline(p->fen, 128, '"');
     std::getline(ifs, result);
 
+    // parse game result:
     if (result.find("1-0") != std::string::npos) p->result = 1.0;
     else if (result.find("1/2") != std::string::npos) p->result = 0.5;
     else if (result.find("0-1") != std::string::npos) p->result = 0.0;
@@ -53,6 +54,15 @@ void tune(char* POSITIONS_FILE, int NUM_POSITIONS_TO_EXTRACT) {
   // temporarily store the current param values in order to calculate the initial MSE:
   std::vector<int> best_param_values;
   copy_params(best_param_values);
+
+  // calculate optimal K:
+  /* std::ofstream ofs("K.txt");
+  for (K = 0.001; K <= 3; K += 0.001) {
+    ofs << K << " " << MSE(best_param_values, positions) << "\n";
+    printf("K = %.3f\n", K);
+  }
+  ofs.close();
+  return; */
 
   // tune the parameters!
   double best_MSE = MSE(best_param_values, positions);
@@ -111,7 +121,7 @@ double MSE(std::vector<int>& params, std::vector<position_data*>& positions) {
     b = board(positions[p]->fen);
 
     // statically evaluate the position using our current parameters:
-    eval = evaluate();
+    eval = evaluate() * (b.turn == WHITE ? 1 : -1);
 
     // calculate the sigmoid of this evaluation:
     sigmoid = 1.0 / (1.0 + pow(10, -K * eval / 400.0));

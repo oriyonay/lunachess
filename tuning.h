@@ -17,9 +17,10 @@ struct position_data {
 };
 
 // the constant value of K (for texel's sigmoid):
-double K = 1;
+double K = 1.715;
 
-// vector of all tuneable engine parameters, for cleaner code:
+// vector of all tuneable engine parameters, for cleaner code.
+// (we add more parameters to these later on!)
 std::vector<int*> params = {
   &BISHOP_PAIR_BONUS,
   &DOUBLED_PAWN_PENALTY,
@@ -37,9 +38,12 @@ std::vector<int*> params = {
 // dependencies[param] = {location of dependency, multiplier value (+/-1)}
 std::vector<std::pair<int*, int>> dependencies;
 
+// main functions:
 int main(int argc, char** argv);
 void tune(char* POSITIONS_FILE, int NUM_POSITIONS_TO_EXTRACT = 64000);
 double MSE(std::vector<int>& params, std::vector<position_data*>& positions);
+
+// utility functions:
 void copy_params(std::vector<int>& destination);
 void load_params(std::vector<int>& source);
 void initialize_params_and_dependencies();

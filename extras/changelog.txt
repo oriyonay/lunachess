@@ -8,4 +8,29 @@
       Elo difference: 9.6 +/- 7.8, LOS: 99.1 %, DrawRatio: 22.2 %
       SPRT: llr 2.2 (100.1%), lbound -2.2, ubound 2.2 - H1 was accepted
 
-  c) 
+  c) -20 doubled pawn penalty:
+        Score of luna_dev vs luna_main: 2594 - 2428 - 1383  [0.513] 6405
+      ...      luna_dev playing White: 1304 - 1209 - 690  [0.515] 3203
+      ...      luna_dev playing Black: 1290 - 1219 - 693  [0.511] 3202
+      ...      White vs Black: 2523 - 2499 - 1383  [0.502] 6405
+      Elo difference: 9.0 +/- 7.5, LOS: 99.0 %, DrawRatio: 21.6 %
+      SPRT: llr 2.2 (100.2%), lbound -2.2, ubound 2.2 - H1 was accepted
+  d) null move pruning:
+        Score of luna_dev vs luna_main: 251 - 133 - 119  [0.617] 503
+      ...      luna_dev playing White: 126 - 68 - 58  [0.615] 252
+      ...      luna_dev playing Black: 125 - 65 - 61  [0.620] 251
+      ...      White vs Black: 191 - 193 - 119  [0.498] 503
+      Elo difference: 83.1 +/- 27.1, LOS: 100.0 %, DrawRatio: 23.7 %
+      SPRT: llr 2.2 (100.1%), lbound -2.2, ubound 2.2 - H1 was accepted
+  e) reverse futility pruning:
+        Score of luna_dev vs luna_main: 215 - 105 - 125  [0.624] 445
+      ...      luna_dev playing White: 104 - 53 - 66  [0.614] 223
+      ...      luna_dev playing Black: 111 - 52 - 59  [0.633] 222
+      ...      White vs Black: 156 - 164 - 125  [0.491] 445
+      Elo difference: 87.7 +/- 27.9, LOS: 100.0 %, DrawRatio: 28.1 %
+      SPRT: llr 2.2 (100.1%), lbound -2.2, ubound 2.2 - H1 was accepted
+  f) razoring:
+        Score of luna_dev vs luna_main: 303 - 195 - 239  [0.573] 737
+      ...      luna_dev playing White: 149 - 105 - 115  [0.560] 369
+      ...      luna_dev playing Black: 154 - 90 - 124  [0.587] 368
+  g) 
