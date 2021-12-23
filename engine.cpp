@@ -274,7 +274,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
     ) {
 
       // late move pruning:
-      if (num_quiets > LMP_ARRAY[depth][improving]) skip_quiets = true;
+      // if (num_quiets > LMP_ARRAY[depth][improving]) skip_quiets = true;
 
       // extended futility pruning:
       if (depth < 3 &&
@@ -284,7 +284,7 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
     }
 
     // skip quiet moves if this move is quiet and skip_quiets flag is on:
-    if (skip_quiets && !tactical && (non_pruned_moves > 1)) continue; */
+    // if (skip_quiets && !tactical && (non_pruned_moves > 1)) continue; */
 
     // ----- end of move skipping ----- //
 
@@ -419,8 +419,8 @@ int quiescence(int alpha, int beta, int forward_ply) {
   if (b.is_repetition() || b.is_material_draw() || b.fifty_move_counter >= 100) return 0;
 
   // do we have this position stored in the TT? if so, use it:
-  // int tt_score = TT.probe(0, alpha, beta);
-  // if (b.ply > 0 && (tt_score != TT_NO_MATCH)) return tt_score;
+  int tt_score = TT.probe(0, alpha, beta);
+  if (b.ply > 0 && (tt_score != TT_NO_MATCH)) return tt_score;
 
   // static evaluation:
   int eval = evaluate();

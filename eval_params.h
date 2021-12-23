@@ -7,6 +7,9 @@
 #include "consts.h"
 #include "defs.h"
 
+// set up evaluation parameters:
+extern void init_eval_params();
+
 // functions for loading and exporting evaluation parameters:
 extern void load_params(const char* FILENAME);
 extern void save_params(const char* FILENAME);

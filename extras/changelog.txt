@@ -33,4 +33,17 @@
         Score of luna_dev vs luna_main: 303 - 195 - 239  [0.573] 737
       ...      luna_dev playing White: 149 - 105 - 115  [0.560] 369
       ...      luna_dev playing Black: 154 - 90 - 124  [0.587] 368
-  g) 
+  g) use TT lookup in qsearch:
+
+--------------------------------------------------
+quick match against VICE (~2050 elo):
+
+Score of luna_dev vs vice: 176 - 42 - 22  [0.779] 240
+...      luna_dev playing White: 91 - 23 - 6  [0.783] 120
+...      luna_dev playing Black: 85 - 19 - 16  [0.775] 120
+...      White vs Black: 110 - 108 - 22  [0.504] 240
+Elo difference: 219.0 +/- 49.9, LOS: 100.0 %, DrawRatio: 9.2 %
+SPRT: llr 2.2 (100.1%), lbound -2.2, ubound 2.2 - H1 was accepted
+--------------------------------------------------
+
+  h)

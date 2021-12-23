@@ -1,6 +1,15 @@
 #include "eval_params.h"
 
-extern void load_params(const char* FILENAME) {
+void init_eval_params() {
+  // set up LMP array:
+  // (currently using formula from weiss engine)
+  for (int i = 0; i < MAX_SEARCH_PLY; i++){
+    LMP_ARRAY[i][0] = (((pow(i, 2) * 2) + 3) / 2);
+    LMP_ARRAY[i][1] = ((pow(i, 2) * 2) + 3);
+  }
+}
+
+void load_params(const char* FILENAME) {
   // open the file stream:
   std::ifstream ifs(FILENAME);
 
@@ -73,7 +82,7 @@ extern void load_params(const char* FILENAME) {
   ifs.close();
 }
 
-extern void save_params(const char* FILENAME) {
+void save_params(const char* FILENAME) {
   // open the file stream:
   std::ofstream ofs(FILENAME);
 
