@@ -44,6 +44,15 @@ Score of luna_dev vs vice: 176 - 42 - 22  [0.779] 240
 ...      White vs Black: 110 - 108 - 22  [0.504] 240
 Elo difference: 219.0 +/- 49.9, LOS: 100.0 %, DrawRatio: 9.2 %
 SPRT: llr 2.2 (100.1%), lbound -2.2, ubound 2.2 - H1 was accepted
+
+quick match against zevra 1.8.6 (2269 elo):
+
+Score of luna_dev vs zevra: 532 - 391 - 134  [0.567] 1057
+...      luna_dev playing White: 263 - 194 - 72  [0.565] 529
+...      luna_dev playing Black: 269 - 197 - 62  [0.568] 528
+...      White vs Black: 460 - 463 - 134  [0.499] 1057
+Elo difference: 46.6 +/- 19.7, LOS: 100.0 %, DrawRatio: 12.7 %
+SPRT: llr 2.2 (100.3%), lbound -2.2, ubound 2.2 - H1 was accepted
 --------------------------------------------------
 
   h)

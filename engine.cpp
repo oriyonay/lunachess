@@ -116,6 +116,19 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
   // if this is a draw, return 0:
   if (b.is_repetition() || b.is_material_draw() || b.fifty_move_counter >= 100) return 0;
 
+  // mate distance pruning:
+  /* int mate_value = INF - forward_ply;
+  if (mate_value < beta) {
+    beta = mate_value;
+    if (alpha >= mate_value) return mate_value;
+  }
+
+  mate_value = -INF + forward_ply;
+  if (mate_value > alpha) {
+    alpha = mate_value;
+    if (beta <= mate_value) return mate_value;
+  } */
+
   pv_length[forward_ply] = forward_ply;
   bool pv = (beta - alpha != 1);
   bool root = (forward_ply == 0);
