@@ -152,11 +152,11 @@ extern void init_consts() {
     // initialize passed pawn masks:
     U64 white_mask = mask | FILES[file];
     U64 black_mask = mask | FILES[file];
-    for (int i = 0; i < (10-rank); i++) {
+    for (int i = 0; i <= rank; i++) {
       white_mask &= ~RANKS[i];
     }
-    for (int i = 0; i < rank; i++) {
-      black_mask &= ~RANKS[8-i];
+    for (int i = rank; i < 9; i++) {
+      black_mask &= ~RANKS[i];
     }
 
     WHITE_PASSED_PAWN_MASKS[sq] = white_mask;
