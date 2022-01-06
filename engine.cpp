@@ -280,29 +280,29 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
 
     // ----- move skipping: ----- //
 
-    /* if (!pv &&
+    if (!pv &&
         !is_check &&
         best_score > -MATE_IN_MAX &&
-        non_pruned_moves > 1
+        non_pruned_moves >= 1
     ) {
 
       // late move pruning:
       // if (num_quiets > LMP_ARRAY[depth][improving]) skip_quiets = true;
 
-      // extended futility pruning:
-      if (depth < 3 &&
+      // futility pruning:
+      if (depth < 4 &&
           !tactical &&
-          eval + (75 * depth) - (100 * improving) <= alpha
+          eval + (150 * depth) - (100 * improving) <= alpha
       ) continue;
     }
 
     // skip quiet moves if this move is quiet and skip_quiets flag is on:
-    // if (skip_quiets && !tactical && (non_pruned_moves > 1)) continue; */
+    // if (skip_quiets && !tactical && (non_pruned_moves > 1)) continue;
 
     // ----- end of move skipping ----- //
 
     non_pruned_moves++;
-    // if (!tactical) num_quiets++;
+    if (!tactical) num_quiets++;
     b.make_move(move);
 
     // extensions:
