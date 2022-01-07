@@ -62,3 +62,33 @@ SPRT: llr 2.2 (100.3%), lbound -2.2, ubound 2.2 - H1 was accepted
       ...      White vs Black: 36 - 51 - 39  [0.440] 126
       Elo difference: 36.0 +/- 50.9, LOS: 91.8 %, DrawRatio: 31.0 %
       SPRT: llr 0.253 (11.5%), lbound -2.2, ubound 2.2
+
+--------------------------------------------------
+quick match against teki 2 (2439 elo):
+
+Score of luna_dev vs teki: 551 - 411 - 150  [0.563] 1112
+...      luna_dev playing White: 269 - 224 - 64  [0.540] 557
+...      luna_dev playing Black: 282 - 187 - 86  [0.586] 555
+...      White vs Black: 456 - 506 - 150  [0.478] 1112
+Elo difference: 44.0 +/- 19.1, LOS: 100.0 %, DrawRatio: 13.5 %
+SPRT: llr 2.2 (100.2%), lbound -2.2, ubound 2.2 - H1 was accepted
+--------------------------------------------------
+
+  i) added first late-move depth reduction (classic LMR):
+        Score of luna_dev vs luna_main: 1625 - 1488 - 1471  [0.515] 4584
+      ...      luna_dev playing White: 832 - 720 - 741  [0.524] 2293
+      ...      luna_dev playing Black: 793 - 768 - 730  [0.505] 2291
+      ...      White vs Black: 1600 - 1513 - 1471  [0.509] 4584
+      Elo difference: 10.4 +/- 8.3, LOS: 99.3 %, DrawRatio: 32.1 %
+      SPRT: llr 2.21 (100.4%), lbound -2.2, ubound 2.2 - H1 was accepted
+
+  j) added second late-move depth reduction (extra reduction in non-PV lines)
+        Score of luna_dev vs luna_main: 367 - 279 - 345  [0.544] 991
+      ...      luna_dev playing White: 192 - 131 - 173  [0.561] 496
+      ...      luna_dev playing Black: 175 - 148 - 172  [0.527] 495
+      ...      White vs Black: 340 - 306 - 345  [0.517] 991
+      Elo difference: 30.9 +/- 17.5, LOS: 100.0 %, DrawRatio: 34.8 %
+      SPRT: llr 1.79 (81.7%), lbound -2.2, ubound 2.2
+
+  k) added third late-move depth reduction (extra reduction if > 3 quiets
+     searched and null move pruning failed):

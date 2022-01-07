@@ -2,10 +2,10 @@
 
 void init_eval_params() {
   // set up LMP array:
-  // (currently using formula from weiss engine)
-  for (int i = 0; i < MAX_SEARCH_PLY; i++){
-    LMP_ARRAY[i][0] = (((pow(i, 2) * 2) + 3) / 2);
-    LMP_ARRAY[i][1] = ((pow(i, 2) * 2) + 3);
+  // (currently using modified formula from weiss engine)
+  for (int i = 0; i < MAX_SEARCH_PLY; i++) {
+    LMP_ARRAY[i][0] = (((pow(i, 2) * 2) + 9) / 2);
+    LMP_ARRAY[i][1] = ((pow(i, 2) * 2) + 9);
   }
 }
 
