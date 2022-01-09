@@ -102,4 +102,6 @@ SPRT: llr 2.2 (100.2%), lbound -2.2, ubound 2.2 - H1 was accepted
       SPRT: llr 2.21 (100.4%), lbound -2.2, ubound 2.2 - H1 was accepted
 
   m) added fifth late-move depth reduction (reduction TO the reduction if this
-     move is a queen promotion):
+     move is a queen promotion): taking too long, will retest later
+
+  n) fixed material draw bug that would make illegal moves

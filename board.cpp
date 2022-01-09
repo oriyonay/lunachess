@@ -1626,12 +1626,12 @@ bool board::is_material_draw() {
   U64 pawns = bitboard[WP] | bitboard[BP];
   U64 knights = bitboard[WN] | bitboard[BN];
   U64 bishops = bitboard[WB] | bitboard[BB];
-  U64 rooks = bitboard[WR] | bitboard[WR];
+  U64 rooks = bitboard[WR] | bitboard[BR];
   U64 queens = bitboard[WQ] | bitboard[BQ];
 
-  return !(pawns | rooks | queens) &&
-          (!SEVERAL(W) || !SEVERAL(B)) &&
-          (!SEVERAL(knights | bishops) || (!bishops && POPCOUNT(knights) <= 2));
+  return (!(pawns | rooks | queens)) &&
+         (!SEVERAL(W) || !SEVERAL(B)) &&
+         (!SEVERAL(knights | bishops) || (!bishops && POPCOUNT(knights) <= 2));
 }
 
 /* ---------- BOARD UTILITY FUNCTIONS ---------- */

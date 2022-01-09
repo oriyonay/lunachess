@@ -117,17 +117,9 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
   if (b.is_repetition() || b.is_material_draw() || b.fifty_move_counter >= 100) return 0;
 
   // mate distance pruning:
-  /* int mate_value = INF - forward_ply;
-  if (mate_value < beta) {
-    beta = mate_value;
-    if (alpha >= mate_value) return mate_value;
-  }
-
-  mate_value = -INF + forward_ply;
-  if (mate_value > alpha) {
-    alpha = mate_value;
-    if (beta <= mate_value) return mate_value;
-  } */
+  /* alpha = std::max((-INF + forward_ply), alpha);
+  beta  = std::min((INF - forward_ply), beta);
+  if (alpha >= beta) return alpha; */
 
   pv_length[forward_ply] = forward_ply;
   bool pv = (beta - alpha != 1);
@@ -333,8 +325,8 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
         if (!b.is_check() && non_pruned_moves >= LMR_FULL_DEPTH_MOVES) R += 2;
         if (!pv) R++;
         // if (num_quiets > 3 && failed_null) R++;
-        if (!improving) R++; // potentially R += 2 ?
-        if (MOVE_IS_PROMOTION(move) && PIECE_TYPE(MOVE_PROMOTION_PIECE(move)) == QUEEN) R--;
+        if (!improving) R++;
+        // if (MOVE_IS_PROMOTION(move) && PIECE_TYPE(MOVE_PROMOTION_PIECE(move)) == QUEEN) R--;
         // if (is_killer) R--;
       }
       else {
