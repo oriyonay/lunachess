@@ -333,8 +333,8 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
         if (!b.is_check() && non_pruned_moves >= LMR_FULL_DEPTH_MOVES) R += 2;
         if (!pv) R++;
         // if (num_quiets > 3 && failed_null) R++;
-        // if (!improving) R++;
-        // if (MOVE_IS_PROMOTION(move) && PIECE_TYPE(MOVE_PROMOTION_PIECE(move)) == QUEEN) R--;
+        if (!improving) R++; // potentially R += 2 ?
+        if (MOVE_IS_PROMOTION(move) && PIECE_TYPE(MOVE_PROMOTION_PIECE(move)) == QUEEN) R--;
         // if (is_killer) R--;
       }
       else {

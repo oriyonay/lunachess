@@ -91,4 +91,15 @@ SPRT: llr 2.2 (100.2%), lbound -2.2, ubound 2.2 - H1 was accepted
       SPRT: llr 1.79 (81.7%), lbound -2.2, ubound 2.2
 
   k) added third late-move depth reduction (extra reduction if > 3 quiets
-     searched and null move pruning failed):
+     searched and null move pruning failed): FAILED
+
+  l) added fourth late-move depth reduction (extra reduction if not improving):
+        Score of luna_dev vs luna_main: 873 - 761 - 1068  [0.521] 2702
+      ...      luna_dev playing White: 431 - 373 - 548  [0.521] 1352
+      ...      luna_dev playing Black: 442 - 388 - 520  [0.520] 1350
+      ...      White vs Black: 819 - 815 - 1068  [0.501] 2702
+      Elo difference: 14.4 +/- 10.2, LOS: 99.7 %, DrawRatio: 39.5 %
+      SPRT: llr 2.21 (100.4%), lbound -2.2, ubound 2.2 - H1 was accepted
+
+  m) added fifth late-move depth reduction (reduction TO the reduction if this
+     move is a queen promotion):
