@@ -18,7 +18,6 @@ extern void save_params(const char* FILENAME);
 extern int ALPHA_PRUNING_DEPTH;
 extern int ALPHA_PRUNING_MARGIN;
 extern int ASPIRATION_WINDOW_VALUE;
-extern int DEFAULT_UCI_INPUT_BUFFER_SIZE;
 extern int DELTA_VALUE;
 extern int LMP_DEPTH;
 extern int LMR_FULL_DEPTH_MOVES;

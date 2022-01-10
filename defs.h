@@ -12,6 +12,7 @@ typedef uint64_t U64;
 #define MAX_POSITION_MOVES 219
 #define MAX_GAME_MOVES 512
 #define DEFAULT_TT_SIZE 32 // in MB
+#define DEFAULT_UCI_INPUT_BUFFER_SIZE 4096
 
 #define MATE_IN_MAX 999970 // INF - 30
 #define INF 1000000

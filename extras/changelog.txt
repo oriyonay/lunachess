@@ -104,4 +104,12 @@ SPRT: llr 2.2 (100.2%), lbound -2.2, ubound 2.2 - H1 was accepted
   m) added fifth late-move depth reduction (reduction TO the reduction if this
      move is a queen promotion): taking too long, will retest later
 
-  n) fixed material draw bug that would make illegal moves
+  n) fixed material draw bug that would make illegal moves, as well as the other
+     illegal move bug:
+
+         Score of luna_dev vs luna_main: 1133 - 1014 - 1380  [0.517] 3527
+    ...      luna_dev playing White: 491 - 506 - 767  [0.496] 1764
+    ...      luna_dev playing Black: 642 - 508 - 613  [0.538] 1763
+    ...      White vs Black: 999 - 1148 - 1380  [0.479] 3527
+    Elo difference: 11.7 +/- 8.9, LOS: 99.5 %, DrawRatio: 39.1 %
+    SPRT: llr 2.22 (100.8%), lbound -2.2, ubound 2.2 - H1 was accepted
