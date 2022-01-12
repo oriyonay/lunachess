@@ -141,4 +141,7 @@ extern U64 SQUARE_FILES[64];
 // extern char FILE_OF[64];
 // extern char RANK_OF[64];
 
+// tablebase flags, *negated* to allow for the EGTB hack
+extern const int TB_VALUES[5];
+
 #endif

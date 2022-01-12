@@ -106,10 +106,17 @@ SPRT: llr 2.2 (100.2%), lbound -2.2, ubound 2.2 - H1 was accepted
 
   n) fixed material draw bug that would make illegal moves, as well as the other
      illegal move bug:
-
          Score of luna_dev vs luna_main: 1133 - 1014 - 1380  [0.517] 3527
     ...      luna_dev playing White: 491 - 506 - 767  [0.496] 1764
     ...      luna_dev playing Black: 642 - 508 - 613  [0.538] 1763
     ...      White vs Black: 999 - 1148 - 1380  [0.479] 3527
     Elo difference: 11.7 +/- 8.9, LOS: 99.5 %, DrawRatio: 39.1 %
     SPRT: llr 2.22 (100.8%), lbound -2.2, ubound 2.2 - H1 was accepted
+
+  o) semi and fully-open rook files:
+        Score of luna_dev vs luna_main: 1242 - 1119 - 1391  [0.516] 3752
+      ...      luna_dev playing White: 623 - 554 - 700  [0.518] 1877
+      ...      luna_dev playing Black: 619 - 565 - 691  [0.514] 1875
+      ...      White vs Black: 1188 - 1173 - 1391  [0.502] 3752
+      Elo difference: 11.4 +/- 8.8, LOS: 99.4 %, DrawRatio: 37.1 %
+      SPRT: llr 2.2 (100.0%), lbound -2.2, ubound 2.2 - H1 was accepted

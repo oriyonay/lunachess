@@ -5,6 +5,8 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
+#include "syzygy/tbprobe.h"
+
 #include "board.h"
 #include "eval.h"
 #include "globals.h"

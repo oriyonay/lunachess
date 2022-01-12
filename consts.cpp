@@ -424,3 +424,8 @@ U64 SQUARE_FILES[64];
 // U64 SQUARE_RANKS[64];
 // char FILE_OF[64];
 // char RANK_OF[64];
+
+// tablebase flags, *negated* to allow for the EGTB hack
+const int TB_VALUES[5] = {
+    INF, 1, 0, -1, -INF
+};

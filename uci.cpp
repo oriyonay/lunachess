@@ -32,10 +32,12 @@ void uci_loop() {
     else if (!strncmp(inbuf, "go", 2)) parse_go(inbuf);
     else if (!strncmp(inbuf, "quit", 4)) break;
     else if (!strncmp(inbuf, "print", 5)) b.print();
+    else if (!strncmp(inbuf, "setoption", 9)) parse_option(inbuf);
     else if (!strncmp(inbuf, "uci", 3)) {
       // print engine info:
       printf("id name %s\n", NAME);
       printf("id author %s\n", AUTHOR);
+      printf("option name SyzygyPath type string default None\n");
       printf("uciok\n");
     }
   }
@@ -162,4 +164,43 @@ void parse_go(char* command) {
 
   // now search the position with these parameters:
   search(depth);
+}
+
+void parse_option(char* command) {
+  command += 10;
+
+  // command must start with 'setoption name'
+  if (strncmp(command, "name", 4)) {
+    printf("error: option not recognized.\n");
+    return;
+  }
+
+  command += 5;
+
+  if (!strncmp(command, "SyzygyPath", 10)) {
+    // expect next characters to be 'SyzygyPath value '
+    command += 17;
+
+    // we have to get rid of the newline in the input buffer before feeding
+    // it to fathom!
+    char* ptr = command;
+    while (*ptr) {
+      if (*ptr == '\n') {
+        *ptr = '\0';
+        break;
+      }
+      ptr++;
+    }
+
+    // initialize the tablebase:
+    tb_init(command);
+
+    // output info to the user:
+    if (TB_LARGEST > 0) {
+      printf("info string largest tablebase size = %d\n", TB_LARGEST);
+    }
+    else {
+      printf("info string error: tablebase not found\n");
+    }
+  }
 }

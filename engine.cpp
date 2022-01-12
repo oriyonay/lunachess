@@ -134,7 +134,33 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
   if (b.ply > 0 && !pv && (score != TT_NO_MATCH)) return score;
   score = -INF;
 
-  // TODO: EGTB lookup goes here
+  // EGTB lookup: make sure neither side can castle
+  // big brain moment: since luna's board representation is A8..H1 and fathom
+  // expects the board in A1..H8 order, all we have to do is feed the black
+  // pieces as white and vice versa and negate the outcome ;)
+	if (TB_LARGEST > 0 &&
+      !b.castle_rights &&
+      !b.ply &&
+      depth > 1 &&
+      __builtin_popcountll(b.W | b.B) <= (int) TB_LARGEST
+  ) {
+    U64 US = (b.turn == WHITE) ? b.W : b.B;
+    U64 THEM = (b.turn == WHITE) ? b.B : b.W;
+    unsigned int wdl = tb_probe_wdl(
+      THEM, US,
+      b.bitboard[WK] | b.bitboard[BK],
+      b.bitboard[WQ] | b.bitboard[BQ],
+      b.bitboard[WR] | b.bitboard[BR],
+      b.bitboard[WB] | b.bitboard[BB],
+      b.bitboard[WN] | b.bitboard[BN],
+      b.bitboard[WP] | b.bitboard[BP],
+      0, 0, 0, true
+    );
+    if (wdl != TB_RESULT_FAILED) {
+      TT.put(depth, TB_VALUES[wdl], 0, TT_EXACT, false);
+      return TB_VALUES[wdl];
+    }
+	}
 
   // update the UNSAFE bitboard and make a local is_check variable:
   b.update_move_info_bitboards();

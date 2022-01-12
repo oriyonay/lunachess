@@ -37,7 +37,8 @@ int evaluate() {
   } */
 
   // semi-open and fully-open rook files:
-  /* U64 wr = b.bitboard[WR] | b.bitboard[WQ];
+  int index;
+  U64 wr = b.bitboard[WR] | b.bitboard[WQ];
   U64 br = b.bitboard[BR] | b.bitboard[BQ];
   while (wr) {
     index = LSB(wr);
@@ -50,7 +51,7 @@ int evaluate() {
     if (!((b.bitboard[WP] | b.bitboard[BP]) & SQUARE_FILES[index])) bonus -= FULLY_OPEN_FILE_BONUS;
     else if (!(b.bitboard[BP] & SQUARE_FILES[index])) bonus -= SEMI_OPEN_FILE_BONUS;
     POP_LSB(br);
-  } */
+  }
 
   // piece mobility evaluation:
   /* U64 not_pinned_white;

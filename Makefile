@@ -8,10 +8,11 @@ all:
 	make eval_params.o
 	make globals.o
 	make main.o
+	make tbprobe.o
 	make tt.o
 	make uci.o
 	make utils.o
-	g++ -std=c++11 -O3 board.o consts.o engine.o eval.o eval_params.o globals.o main.o tt.o uci.o utils.o -o main.out
+	g++ -std=c++11 -O3 board.o consts.o engine.o eval.o eval_params.o globals.o main.o tbprobe.o tt.o uci.o utils.o -o main.out
 	make run
 
 run:
@@ -69,6 +70,9 @@ globals.o: globals.cpp globals.h
 
 main.o: main.cpp *.h
 	g++ -std=c++11 -O3 -w -c main.cpp -o main.o
+
+tbprobe.o: syzygy/tbprobe.c
+	g++ -std=c++11 -O3 -w -c syzygy/tbprobe.c -o tbprobe.o
 
 tt.o: tt.cpp tt.h
 	g++ -std=c++11 -O3 -w -c tt.cpp -o tt.o
