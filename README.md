@@ -7,3 +7,4 @@ Special thanks / this project is highly inspired by:
 - Andrew Grant (Ethereal author)
 - Manik Charan (Teki author)
 - Oleg Smirnov (Zevra author)
+- Jon Dart (Arasan/Fathom author)

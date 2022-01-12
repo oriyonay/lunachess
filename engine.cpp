@@ -231,7 +231,11 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
     // razoring:
     if (depth == 1 &&
         eval + 200 < beta
-     )  return quiescence(alpha, beta, forward_ply);
+    )  return quiescence(alpha, beta, forward_ply);
+
+    /* if (depth < 3 &&
+        eval + (200 * depth) < alpha
+    ) return quiescence(alpha, beta, forward_ply); */
   }
 
   /* ---------- END OF FORWARD PRUNING ---------- */
