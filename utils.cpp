@@ -1,5 +1,10 @@
 #include "utils.h"
 
+// avoid including the huge Windows.h header more than once:
+#ifdef _WIN32
+  #include <Windows.h>
+#endif
+
 // print a move given the move code. does NOT print a new line!
 void print_move(int move) {
   int to = MOVE_TO(move);
@@ -21,19 +26,15 @@ void print_move(int move) {
 // gets the time in milliseconds (as an int - we assume no one's
 // going to run this for 50 days straight)
 int get_time() {
-  #ifdef WIN32
-    return GetTickCount();
-  #else
-    struct timeval t;
-    gettimeofday(&t, NULL);
-    return (t.tv_sec * 1000) + (t.tv_usec / 1000);
-  #endif
+  auto duration = high_resolution_clock::now().time_since_epoch();
+  auto millis = duration_cast<milliseconds>(duration).count();
+  return (int) millis;
 }
 
 // listen to GUI input while in search. OS-dependent:
 // (code is from VICE engine by richard allbert)
 bool input_waiting() {
-  #ifndef WIN32
+  #ifndef _WIN32
     fd_set readfds;
     struct timeval tv;
     FD_ZERO(&readfds);

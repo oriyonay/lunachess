@@ -1,19 +1,20 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <chrono>
 #include <stdio.h>
 
 #include "consts.h"
 #include "defs.h"
 #include "globals.h"
 
-#ifdef WIN32
+#ifdef _WIN32
   #include <io.h>
-  #include <Windows.h>
 #else
-  #include <sys/time.h>
   #include <unistd.h>
 #endif
+
+using namespace std::chrono;
 
 // print a move given the move code. does NOT print a new line!
 void print_move(int m);
