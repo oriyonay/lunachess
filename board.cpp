@@ -1651,7 +1651,7 @@ inline static int move_int(char TO, char FROM, char CAPTURED, char PCR, char PM)
 // * only used in generation of magic bitboard tables *
 // here, s = the board index of the slider piece location and
 // OCCUPIED = bitboard of the occupied pieces
-inline U64 line_moves(char s, U64 OCCUPIED) {
+U64 line_moves(char s, U64 OCCUPIED) {
   U64 s_bin = 1L << s;
   U64 horizontal = (OCCUPIED - (2 * s_bin)) ^
       reverse_bits(reverse_bits(OCCUPIED) - (2 * reverse_bits(s_bin)));
@@ -1663,7 +1663,7 @@ inline U64 line_moves(char s, U64 OCCUPIED) {
 
 // generate all possible diagonal (bishop-like) moves:
 // * only used in generation of magic bitboard tables *
-inline U64 diag_moves(char s, U64 OCCUPIED) {
+U64 diag_moves(char s, U64 OCCUPIED) {
   U64 s_bin = 1L << s;
   U64 diag = DIAGONAL_MASKS[(s / 8) + (s % 8)];
   U64 antidiag = ANTIDIAGONAL_MASKS[(s / 8) + 7 - (s % 8)];
@@ -1703,7 +1703,7 @@ U64 diag_moves_magic(char s, U64 OCCUPIED) {
 }
 
 // reverse_bits(n): reverses the bits of a U64
-inline U64 reverse_bits(U64 n) {
+U64 reverse_bits(U64 n) {
     // swap odd and even bits
     n = ((n >> 1) & 0x5555555555555555) | ((n & 0x5555555555555555) << 1);
     // swap consecutive pairs
