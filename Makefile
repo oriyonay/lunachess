@@ -62,7 +62,7 @@ engine.o: engine.cpp engine.h
 eval.o: eval.cpp eval.h
 	g++ -std=c++11 -O3 -w -c eval.cpp -o eval.o
 
-eval_consts.o: eval_params.cpp eval_params.h
+eval_params.o: eval_params.cpp eval_params.h
 	g++ -std=c++11 -O3 -w -c eval_params.cpp -o eval_params.o
 
 globals.o: globals.cpp globals.h

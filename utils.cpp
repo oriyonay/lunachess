@@ -55,11 +55,11 @@ bool input_waiting() {
     fd_set readfds;
     struct timeval tv;
     FD_ZERO(&readfds);
-    FD_SET(fileno(stdin), &readfds);
+    FD_SET(STDIN_FILENO, &readfds);
     tv.tv_sec = 0;
     tv.tv_usec = 0;
     select(16, &readfds, 0, 0, &tv);
-    return (FD_ISSET(fileno(stdin), &readfds));
+    return (FD_ISSET(STDIN_FILENO, &readfds));
   #endif
 }
 
@@ -73,7 +73,7 @@ void read_input() {
   if (input_waiting()) {
     stop_search = true;
     do {
-      bytes = read(fileno(stdin), input, 256);
+      bytes = read(STDIN_FILENO, input, 256);
     } while (bytes < 0);
 
     endc = strchr(input, '\n');
