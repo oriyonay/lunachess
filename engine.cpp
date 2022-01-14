@@ -2,41 +2,6 @@
 // move scoring/ordering, etc.
 #include "engine.h"
 
-// score_move(): the move scoring function
-int score_move(int move, int forward_ply) {
-  // is this a PV move?
-  if (score_pv && (move == pv_table[0][forward_ply])) {
-    score_pv = false;
-    return 10000;
-  }
-
-  // is this move the best move for this position, as stored in our TT?
-  if (move == (&TT.TT[b.hash & TT.mask])->best_move) return 9000;
-
-  // is this a recapture?
-  /* if ((b.ply) &&
-      (MOVE_CAPTURED(b.move_history[b.ply-1]) != NONE) &&
-      (MOVE_CAPTURED(move) != NONE) &&
-      (MOVE_TO(b.move_history[b.ply-1]) == MOVE_TO(move))
-  ) return 8000; */
-
-  // in the endgame, is this a pawn push?
-  // TODO
-
-  // MVV/LVA scoring
-  int score = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)] +
-              (MOVE_IS_PROMOTION(move) ? 900 : 0);
-  if (score) return score;
-  /* if (MOVE_CAPTURED(move) != NONE) return see(move);
-  if (MOVE_IS_PROMOTION(move)) return 1000; */
-
-  // killer move heuristic for quiet moves:
-  if (move == killer_moves[0][forward_ply] ||
-      move == killer_moves[1][forward_ply]) return 50;
-
-  return history_moves[MOVE_PIECEMOVED(move)][MOVE_TO(move)];
-}
-
 // search(): the main search algorithm (with iterative deepening)
 void search(int depth) {
   // after this search, increment the transposition table's age:
@@ -116,11 +81,6 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
   // if this is a draw, return 0:
   if (b.is_repetition() || b.is_material_draw() || b.fifty_move_counter >= 100) return 0;
 
-  // mate distance pruning:
-  /* alpha = std::max((-INF + forward_ply), alpha);
-  beta  = std::min((INF - forward_ply), beta);
-  if (alpha >= beta) return alpha; */
-
   pv_length[forward_ply] = forward_ply;
   bool pv = (beta - alpha != 1);
   bool root = (forward_ply == 0);
@@ -128,6 +88,13 @@ int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune)
   int best_score = -INF;
   int best_move = NULL;
   char tt_flag = TT_ALPHA;
+
+  // mate distance pruning:
+  /* if (!root) {
+    alpha = std::max((-INF + forward_ply), alpha);
+    beta  = std::min((INF - forward_ply), beta);
+    if (alpha >= beta) return alpha;
+  } */
 
   // look up the position in the TT:
   score = TT.probe(depth, alpha, beta);
@@ -515,4 +482,39 @@ int quiescence(int alpha, int beta, int forward_ply) {
 
   // node fails low:
   return alpha;
+}
+
+// score_move(): the move scoring function
+int score_move(int move, int forward_ply) {
+  // is this a PV move?
+  if (score_pv && (move == pv_table[0][forward_ply])) {
+    score_pv = false;
+    return 10000;
+  }
+
+  // is this move the best move for this position, as stored in our TT?
+  if (move == (&TT.TT[b.hash & TT.mask])->best_move) return 9000;
+
+  // is this a recapture?
+  /* if ((b.ply) &&
+      (MOVE_CAPTURED(b.move_history[b.ply-1]) != NONE) &&
+      (MOVE_CAPTURED(move) != NONE) &&
+      (MOVE_TO(b.move_history[b.ply-1]) == MOVE_TO(move))
+  ) return 8000; */
+
+  // in the endgame, is this a pawn push?
+  // TODO
+
+  // MVV/LVA scoring
+  int score = MVV_LVA_SCORE[MOVE_PIECEMOVED(move)][MOVE_CAPTURED(move)] +
+              (MOVE_IS_PROMOTION(move) ? 900 : 0);
+  if (score) return score;
+  /* if (MOVE_CAPTURED(move) != NONE) return see(move);
+  if (MOVE_IS_PROMOTION(move)) return 1000; */
+
+  // killer move heuristic for quiet moves:
+  if (move == killer_moves[0][forward_ply] ||
+      move == killer_moves[1][forward_ply]) return 50;
+
+  return history_moves[MOVE_PIECEMOVED(move)][MOVE_TO(move)];
 }

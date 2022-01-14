@@ -12,9 +12,9 @@
 #include "globals.h"
 #include "utils.h"
 
-int score_move(int move, int forward_ply);
 void search(int depth);
 int negamax(int depth, int alpha, int beta, int forward_ply, bool forward_prune);
 int quiescence(int alpha, int beta, int forward_ply);
+int score_move(int move, int forward_ply);
 
 #endif

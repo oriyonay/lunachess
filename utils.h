@@ -4,15 +4,19 @@
 #include <chrono>
 #include <stdio.h>
 
+#if defined(_WIN32) || defined(_WIN64)
+  #include <io.h>
+  #include <windows.h>
+#else
+  #include <sys/select.h>
+  #include <sys/time.h>
+	#include <sys/types.h>
+  #include <unistd.h>
+#endif
+
 #include "consts.h"
 #include "defs.h"
 #include "globals.h"
-
-#ifdef _WIN32
-  #include <io.h>
-#else
-  #include <unistd.h>
-#endif
 
 using namespace std::chrono;
 

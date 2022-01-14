@@ -183,14 +183,13 @@ void parse_option(char* command) {
 
     // we have to get rid of the newline in the input buffer before feeding
     // it to fathom!
-    char* ptr = command;
-    while (*ptr) {
-      if (*ptr == '\n') {
-        *ptr = '\0';
-        break;
-      }
-      ptr++;
-    }
+    char* endc = strchr(command, '\n');
+    if (endc) *endc = 0;
+
+    // remove trailing whitespace:
+    char* end = command + strlen(command) - 1;
+    while(end > command && isspace((unsigned char)* end)) end--;
+    end[1] = 0;
 
     // initialize the tablebase:
     tb_init(command);

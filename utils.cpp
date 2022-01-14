@@ -1,10 +1,5 @@
 #include "utils.h"
 
-// avoid including the huge Windows.h header more than once:
-#ifdef _WIN32
-  #include <Windows.h>
-#endif
-
 // print a move given the move code. does NOT print a new line!
 void print_move(int move) {
   int to = MOVE_TO(move);
@@ -34,16 +29,7 @@ int get_time() {
 // listen to GUI input while in search. OS-dependent:
 // (code is from VICE engine by richard allbert)
 bool input_waiting() {
-  #ifndef _WIN32
-    fd_set readfds;
-    struct timeval tv;
-    FD_ZERO(&readfds);
-    FD_SET(fileno(stdin), &readfds);
-    tv.tv_sec = 0;
-    tv.tv_usec = 0;
-    select(16, &readfds, 0, 0, &tv);
-    return (FD_ISSET(fileno(stdin), &readfds));
-  #else
+  #if defined(_WIN32) || defined(_WIN64)
     static int init = 0, pipe;
     static HANDLE inh;
     DWORD dw;
@@ -65,6 +51,15 @@ bool input_waiting() {
       GetNumberOfConsoleInputEvents(inh, &dw);
       return dw <= 1 ? 0 : dw;
     }
+  #else
+    fd_set readfds;
+    struct timeval tv;
+    FD_ZERO(&readfds);
+    FD_SET(fileno(stdin), &readfds);
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
+    select(16, &readfds, 0, 0, &tv);
+    return (FD_ISSET(fileno(stdin), &readfds));
   #endif
 }
 
