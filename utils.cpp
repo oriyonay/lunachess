@@ -26,40 +26,18 @@ int get_time() {
   return (int) millis;
 }
 
-// listen to GUI input while in search. OS-dependent:
-// (code is from VICE engine by richard allbert)
-bool input_waiting() {
+// input_waiting(): checks for waiting input in pipe
+// (code is slightly modified from H.G.Muller's Fairy-Max)
+int input_waiting() {
   #if defined(_WIN32) || defined(_WIN64)
-    static int init = 0, pipe;
-    static HANDLE inh;
-    DWORD dw;
-    if (!init) {
-      init = 1;
-      inh = GetStdHandle(STD_INPUT_HANDLE);
-      pipe = !GetConsoleMode(inh, &dw);
-      if (!pipe) {
-        SetConsoleMode(inh, dw & ~(ENABLE_MOUSE_INPUT|ENABLE_WINDOW_INPUT));
-        FlushConsoleInputBuffer(inh);
-      }
-    }
-
-    if (pipe) {
-      if (!PeekNamedPipe(inh, NULL, 0, NULL, &dw, NULL)) return 1;
-      return dw;
-    }
-    else {
-      GetNumberOfConsoleInputEvents(inh, &dw);
-      return dw <= 1 ? 0 : dw;
-    }
+    static int init; static HANDLE inp; DWORD cnt;
+    if(!init) inp = GetStdHandle(STD_INPUT_HANDLE);
+    if(!PeekNamedPipe(inp, NULL, 0, NULL, &cnt, NULL)) return 1;
+    return cnt;
   #else
-    fd_set readfds;
-    struct timeval tv;
-    FD_ZERO(&readfds);
-    FD_SET(STDIN_FILENO, &readfds);
-    tv.tv_sec = 0;
-    tv.tv_usec = 0;
-    select(16, &readfds, 0, 0, &tv);
-    return (FD_ISSET(STDIN_FILENO, &readfds));
+    int cnt;
+    if (ioctl(0, FIONREAD, &cnt)) return 1;
+    return cnt;
   #endif
 }
 

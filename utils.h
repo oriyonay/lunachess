@@ -8,6 +8,7 @@
   #include <io.h>
   #include <windows.h>
 #else
+  #include <sys/ioctl.h>
   #include <sys/select.h>
   #include <sys/time.h>
 	#include <sys/types.h>
@@ -29,7 +30,7 @@ int get_time();
 
 // listen to GUI input while in search. OS-dependent:
 // (code is from VICE engine by richard allbert)
-bool input_waiting();
+int input_waiting();
 
 // read GUI input:
 // (code is from BBC engine)
