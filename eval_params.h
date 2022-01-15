@@ -34,6 +34,8 @@ extern int FULLY_OPEN_FILE_BONUS;
 extern int ISOLATED_PAWN_PENALTY;
 extern int KING_SHIELD_BONUS;
 extern int SEMI_OPEN_FILE_BONUS;
+extern int PAWN_SUPPORT_BONUS;
+extern int TEMPO_BONUS;
 
 // just the positive version of PIECE_TO_MATERIAL[0][:] with king & pawn values set to 0,
 // for faster game phase score calculation

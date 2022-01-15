@@ -155,6 +155,8 @@ int FULLY_OPEN_FILE_BONUS = 15;
 int ISOLATED_PAWN_PENALTY = 15;
 int KING_SHIELD_BONUS = 7;
 int SEMI_OPEN_FILE_BONUS = 7;
+int PAWN_SUPPORT_BONUS = 10;
+int TEMPO_BONUS = 15;
 
 int GAME_PHASE_MATERIAL_SCORE[13] = {0,  337,  365,  477,  1025,  0,
                                            0,  337,  365,  477,  1025,  0, 0};

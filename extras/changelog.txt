@@ -120,3 +120,17 @@ SPRT: llr 2.2 (100.2%), lbound -2.2, ubound 2.2 - H1 was accepted
       ...      White vs Black: 1188 - 1173 - 1391  [0.502] 3752
       Elo difference: 11.4 +/- 8.8, LOS: 99.4 %, DrawRatio: 37.1 %
       SPRT: llr 2.2 (100.0%), lbound -2.2, ubound 2.2 - H1 was accepted
+  p) tempo bonus:
+        Score of luna_dev vs luna_main: 740 - 631 - 895  [0.524] 2266
+      ...      luna_dev playing White: 377 - 319 - 437  [0.526] 1133
+      ...      luna_dev playing Black: 363 - 312 - 458  [0.523] 1133
+      ...      White vs Black: 689 - 682 - 895  [0.502] 2266
+      Elo difference: 16.7 +/- 11.1, LOS: 99.8 %, DrawRatio: 39.5 %
+      SPRT: llr 2.21 (100.5%), lbound -2.2, ubound 2.2 - H1 was accepted
+  q) pawn support bonus:
+        Score of luna_dev vs luna_main: 209 - 153 - 215  [0.549] 577
+      ...      luna_dev playing White: 100 - 86 - 103  [0.524] 289
+      ...      luna_dev playing Black: 109 - 67 - 112  [0.573] 288
+      ...      White vs Black: 167 - 195 - 215  [0.476] 577
+      Elo difference: 33.8 +/- 22.5, LOS: 99.8 %, DrawRatio: 37.3 %
+      SPRT: llr 1.2 (54.5%), lbound -2.2, ubound 2.2

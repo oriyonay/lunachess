@@ -31,8 +31,8 @@ int get_time() {
 int input_waiting() {
   #if defined(_WIN32) || defined(_WIN64)
     static int init; static HANDLE inp; DWORD cnt;
-    if(!init) inp = GetStdHandle(STD_INPUT_HANDLE);
-    if(!PeekNamedPipe(inp, NULL, 0, NULL, &cnt, NULL)) return 1;
+    if (!init) inp = GetStdHandle(STD_INPUT_HANDLE);
+    if (!PeekNamedPipe(inp, NULL, 0, NULL, &cnt, NULL)) return 1;
     return cnt;
   #else
     int cnt;

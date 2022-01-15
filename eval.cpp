@@ -5,9 +5,16 @@ int evaluate() {
   // start with naive evaluation (b.base_score) and add bonus:
   int bonus = 0;
 
+  // tempo bonus:
+  bonus += TEMPO_BONUS * (b.turn == WHITE ? 1 : -1);
+
   // bishop pair bonus:
   if (SEVERAL(b.bitboard[WB])) bonus += BISHOP_PAIR_BONUS;
   if (SEVERAL(b.bitboard[BB])) bonus -= BISHOP_PAIR_BONUS;
+
+  // doubled pawn penalty:
+  // bonus -= __builtin_popcountll(b.bitboard[WP] & (b.bitboard[WP] >> 8)) * DOUBLED_PAWN_PENALTY;
+  // bonus += __builtin_popcountll(b.bitboard[BP] & (b.bitboard[BP] << 8)) * DOUBLED_PAWN_PENALTY;
 
   // doubled pawn penalty:
   int white_pawns_on_file;
@@ -18,6 +25,14 @@ int evaluate() {
     if (white_pawns_on_file > 1) bonus -= DOUBLED_PAWN_PENALTY; // * (white_pawns_on_file - 1);
     if (black_pawns_on_file > 1) bonus += DOUBLED_PAWN_PENALTY; // * (black_pawns_on_file - 1);
   }
+
+  // pawn support (pawns defending other pawns) bonus:
+  U64 wp_attacks = ((b.bitboard[WP] >> 7) & ~FILES[A]) |
+                   ((b.bitboard[WP] >> 9) & ~FILES[H]);
+  U64 bp_attacks = ((b.bitboard[BP] << 7) & ~FILES[H]) | 
+                   ((b.bitboard[BP] << 9) & ~FILES[A]);
+  bonus += __builtin_popcountll(b.bitboard[WP] & wp_attacks) * PAWN_SUPPORT_BONUS;
+  bonus -= __builtin_popcountll(b.bitboard[BP] & bp_attacks) * PAWN_SUPPORT_BONUS;
 
   // isolated and passed pawn penalty/bonus:
   /* U64 wp = b.bitboard[WP];
