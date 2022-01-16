@@ -13,18 +13,8 @@ int evaluate() {
   if (SEVERAL(b.bitboard[BB])) bonus -= BISHOP_PAIR_BONUS;
 
   // doubled pawn penalty:
-  // bonus -= __builtin_popcountll(b.bitboard[WP] & (b.bitboard[WP] >> 8)) * DOUBLED_PAWN_PENALTY;
-  // bonus += __builtin_popcountll(b.bitboard[BP] & (b.bitboard[BP] << 8)) * DOUBLED_PAWN_PENALTY;
-
-  // doubled pawn penalty:
-  int white_pawns_on_file;
-  int black_pawns_on_file;
-  for (int file = 0; file < 8; file++) {
-    white_pawns_on_file = __builtin_popcountll(b.bitboard[WP] & FILES[file]);
-    black_pawns_on_file = __builtin_popcountll(b.bitboard[BP] & FILES[file]);
-    if (white_pawns_on_file > 1) bonus -= DOUBLED_PAWN_PENALTY; // * (white_pawns_on_file - 1);
-    if (black_pawns_on_file > 1) bonus += DOUBLED_PAWN_PENALTY; // * (black_pawns_on_file - 1);
-  }
+  bonus -= __builtin_popcountll(b.bitboard[WP] & (b.bitboard[WP] >> 8)) * DOUBLED_PAWN_PENALTY;
+  bonus += __builtin_popcountll(b.bitboard[BP] & (b.bitboard[BP] << 8)) * DOUBLED_PAWN_PENALTY;
 
   // pawn support (pawns defending other pawns) bonus:
   U64 wp_attacks = ((b.bitboard[WP] >> 7) & ~FILES[A]) |
