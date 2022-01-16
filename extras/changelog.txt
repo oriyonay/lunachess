@@ -1,39 +1,39 @@
-1) starting rigorous testing of all features:
-  a) +30cp bonus for bishop pair: failed
-  b) +20cp bonus for bishop pair:
-        Score of luna_dev vs luna_main: 2356 - 2195 - 1296  [0.514] 5847
-      ...      luna_dev playing White: 1187 - 1093 - 644  [0.516] 2924
-      ...      luna_dev playing Black: 1169 - 1102 - 652  [0.511] 2923
-      ...      White vs Black: 2289 - 2262 - 1296  [0.502] 5847
-      Elo difference: 9.6 +/- 7.8, LOS: 99.1 %, DrawRatio: 22.2 %
-      SPRT: llr 2.2 (100.1%), lbound -2.2, ubound 2.2 - H1 was accepted
+starting rigorous testing of all features:
+1) +30cp bonus for bishop pair: failed
+2) +20cp bonus for bishop pair:
+      Score of luna_dev vs luna_main: 2356 - 2195 - 1296  [0.514] 5847
+    ...      luna_dev playing White: 1187 - 1093 - 644  [0.516] 2924
+    ...      luna_dev playing Black: 1169 - 1102 - 652  [0.511] 2923
+    ...      White vs Black: 2289 - 2262 - 1296  [0.502] 5847
+    Elo difference: 9.6 +/- 7.8, LOS: 99.1 %, DrawRatio: 22.2 %
+    SPRT: llr 2.2 (100.1%), lbound -2.2, ubound 2.2 - H1 was accepted
 
-  c) -20 doubled pawn penalty:
-        Score of luna_dev vs luna_main: 2594 - 2428 - 1383  [0.513] 6405
-      ...      luna_dev playing White: 1304 - 1209 - 690  [0.515] 3203
-      ...      luna_dev playing Black: 1290 - 1219 - 693  [0.511] 3202
-      ...      White vs Black: 2523 - 2499 - 1383  [0.502] 6405
-      Elo difference: 9.0 +/- 7.5, LOS: 99.0 %, DrawRatio: 21.6 %
-      SPRT: llr 2.2 (100.2%), lbound -2.2, ubound 2.2 - H1 was accepted
-  d) null move pruning:
-        Score of luna_dev vs luna_main: 251 - 133 - 119  [0.617] 503
-      ...      luna_dev playing White: 126 - 68 - 58  [0.615] 252
-      ...      luna_dev playing Black: 125 - 65 - 61  [0.620] 251
-      ...      White vs Black: 191 - 193 - 119  [0.498] 503
-      Elo difference: 83.1 +/- 27.1, LOS: 100.0 %, DrawRatio: 23.7 %
-      SPRT: llr 2.2 (100.1%), lbound -2.2, ubound 2.2 - H1 was accepted
-  e) reverse futility pruning:
-        Score of luna_dev vs luna_main: 215 - 105 - 125  [0.624] 445
-      ...      luna_dev playing White: 104 - 53 - 66  [0.614] 223
-      ...      luna_dev playing Black: 111 - 52 - 59  [0.633] 222
-      ...      White vs Black: 156 - 164 - 125  [0.491] 445
-      Elo difference: 87.7 +/- 27.9, LOS: 100.0 %, DrawRatio: 28.1 %
-      SPRT: llr 2.2 (100.1%), lbound -2.2, ubound 2.2 - H1 was accepted
-  f) razoring:
-        Score of luna_dev vs luna_main: 303 - 195 - 239  [0.573] 737
-      ...      luna_dev playing White: 149 - 105 - 115  [0.560] 369
-      ...      luna_dev playing Black: 154 - 90 - 124  [0.587] 368
-  g) use TT lookup in qsearch: (some improvement; match statistics lost)
+3) -20 doubled pawn penalty:
+      Score of luna_dev vs luna_main: 2594 - 2428 - 1383  [0.513] 6405
+    ...      luna_dev playing White: 1304 - 1209 - 690  [0.515] 3203
+    ...      luna_dev playing Black: 1290 - 1219 - 693  [0.511] 3202
+    ...      White vs Black: 2523 - 2499 - 1383  [0.502] 6405
+    Elo difference: 9.0 +/- 7.5, LOS: 99.0 %, DrawRatio: 21.6 %
+    SPRT: llr 2.2 (100.2%), lbound -2.2, ubound 2.2 - H1 was accepted
+4) null move pruning:
+      Score of luna_dev vs luna_main: 251 - 133 - 119  [0.617] 503
+    ...      luna_dev playing White: 126 - 68 - 58  [0.615] 252
+    ...      luna_dev playing Black: 125 - 65 - 61  [0.620] 251
+    ...      White vs Black: 191 - 193 - 119  [0.498] 503
+    Elo difference: 83.1 +/- 27.1, LOS: 100.0 %, DrawRatio: 23.7 %
+    SPRT: llr 2.2 (100.1%), lbound -2.2, ubound 2.2 - H1 was accepted
+5) reverse futility pruning:
+      Score of luna_dev vs luna_main: 215 - 105 - 125  [0.624] 445
+    ...      luna_dev playing White: 104 - 53 - 66  [0.614] 223
+    ...      luna_dev playing Black: 111 - 52 - 59  [0.633] 222
+    ...      White vs Black: 156 - 164 - 125  [0.491] 445
+    Elo difference: 87.7 +/- 27.9, LOS: 100.0 %, DrawRatio: 28.1 %
+    SPRT: llr 2.2 (100.1%), lbound -2.2, ubound 2.2 - H1 was accepted
+6) razoring:
+      Score of luna_dev vs luna_main: 303 - 195 - 239  [0.573] 737
+    ...      luna_dev playing White: 149 - 105 - 115  [0.560] 369
+    ...      luna_dev playing Black: 154 - 90 - 124  [0.587] 368
+7) use TT lookup in qsearch: (some improvement; match statistics lost)
 
 --------------------------------------------------
 quick match against VICE (~2050 elo):
@@ -55,13 +55,13 @@ Elo difference: 46.6 +/- 19.7, LOS: 100.0 %, DrawRatio: 12.7 %
 SPRT: llr 2.2 (100.3%), lbound -2.2, ubound 2.2 - H1 was accepted
 --------------------------------------------------
 
-  h) futility pruning:
-        Score of luna_dev vs luna_main: 50 - 37 - 39  [0.552] 126
-      ...      luna_dev playing White: 20 - 21 - 23  [0.492] 64
-      ...      luna_dev playing Black: 30 - 16 - 16  [0.613] 62
-      ...      White vs Black: 36 - 51 - 39  [0.440] 126
-      Elo difference: 36.0 +/- 50.9, LOS: 91.8 %, DrawRatio: 31.0 %
-      SPRT: llr 0.253 (11.5%), lbound -2.2, ubound 2.2
+8) futility pruning:
+      Score of luna_dev vs luna_main: 50 - 37 - 39  [0.552] 126
+    ...      luna_dev playing White: 20 - 21 - 23  [0.492] 64
+    ...      luna_dev playing Black: 30 - 16 - 16  [0.613] 62
+    ...      White vs Black: 36 - 51 - 39  [0.440] 126
+    Elo difference: 36.0 +/- 50.9, LOS: 91.8 %, DrawRatio: 31.0 %
+    SPRT: llr 0.253 (11.5%), lbound -2.2, ubound 2.2
 
 --------------------------------------------------
 quick match against teki 2 (2439 elo):
@@ -74,63 +74,70 @@ Elo difference: 44.0 +/- 19.1, LOS: 100.0 %, DrawRatio: 13.5 %
 SPRT: llr 2.2 (100.2%), lbound -2.2, ubound 2.2 - H1 was accepted
 --------------------------------------------------
 
-  i) added first late-move depth reduction (classic LMR):
-        Score of luna_dev vs luna_main: 1625 - 1488 - 1471  [0.515] 4584
-      ...      luna_dev playing White: 832 - 720 - 741  [0.524] 2293
-      ...      luna_dev playing Black: 793 - 768 - 730  [0.505] 2291
-      ...      White vs Black: 1600 - 1513 - 1471  [0.509] 4584
-      Elo difference: 10.4 +/- 8.3, LOS: 99.3 %, DrawRatio: 32.1 %
-      SPRT: llr 2.21 (100.4%), lbound -2.2, ubound 2.2 - H1 was accepted
+9) added first late-move depth reduction (classic LMR):
+      Score of luna_dev vs luna_main: 1625 - 1488 - 1471  [0.515] 4584
+    ...      luna_dev playing White: 832 - 720 - 741  [0.524] 2293
+    ...      luna_dev playing Black: 793 - 768 - 730  [0.505] 2291
+    ...      White vs Black: 1600 - 1513 - 1471  [0.509] 4584
+    Elo difference: 10.4 +/- 8.3, LOS: 99.3 %, DrawRatio: 32.1 %
+    SPRT: llr 2.21 (100.4%), lbound -2.2, ubound 2.2 - H1 was accepted
 
-  j) added second late-move depth reduction (extra reduction in non-PV lines)
-        Score of luna_dev vs luna_main: 367 - 279 - 345  [0.544] 991
-      ...      luna_dev playing White: 192 - 131 - 173  [0.561] 496
-      ...      luna_dev playing Black: 175 - 148 - 172  [0.527] 495
-      ...      White vs Black: 340 - 306 - 345  [0.517] 991
-      Elo difference: 30.9 +/- 17.5, LOS: 100.0 %, DrawRatio: 34.8 %
-      SPRT: llr 1.79 (81.7%), lbound -2.2, ubound 2.2
+10) added second late-move depth reduction (extra reduction in non-PV lines)
+      Score of luna_dev vs luna_main: 367 - 279 - 345  [0.544] 991
+    ...      luna_dev playing White: 192 - 131 - 173  [0.561] 496
+    ...      luna_dev playing Black: 175 - 148 - 172  [0.527] 495
+    ...      White vs Black: 340 - 306 - 345  [0.517] 991
+    Elo difference: 30.9 +/- 17.5, LOS: 100.0 %, DrawRatio: 34.8 %
+    SPRT: llr 1.79 (81.7%), lbound -2.2, ubound 2.2
 
-  k) added third late-move depth reduction (extra reduction if > 3 quiets
-     searched and null move pruning failed): FAILED
+11) added third late-move depth reduction (extra reduction if > 3 quiets
+    searched and null move pruning failed): FAILED
 
-  l) added fourth late-move depth reduction (extra reduction if not improving):
-        Score of luna_dev vs luna_main: 873 - 761 - 1068  [0.521] 2702
-      ...      luna_dev playing White: 431 - 373 - 548  [0.521] 1352
-      ...      luna_dev playing Black: 442 - 388 - 520  [0.520] 1350
-      ...      White vs Black: 819 - 815 - 1068  [0.501] 2702
-      Elo difference: 14.4 +/- 10.2, LOS: 99.7 %, DrawRatio: 39.5 %
-      SPRT: llr 2.21 (100.4%), lbound -2.2, ubound 2.2 - H1 was accepted
+12) added fourth late-move depth reduction (extra reduction if not improving):
+      Score of luna_dev vs luna_main: 873 - 761 - 1068  [0.521] 2702
+    ...      luna_dev playing White: 431 - 373 - 548  [0.521] 1352
+    ...      luna_dev playing Black: 442 - 388 - 520  [0.520] 1350
+    ...      White vs Black: 819 - 815 - 1068  [0.501] 2702
+    Elo difference: 14.4 +/- 10.2, LOS: 99.7 %, DrawRatio: 39.5 %
+    SPRT: llr 2.21 (100.4%), lbound -2.2, ubound 2.2 - H1 was accepted
 
-  m) added fifth late-move depth reduction (reduction TO the reduction if this
-     move is a queen promotion): taking too long, will retest later
+13) added fifth late-move depth reduction (reduction TO the reduction if this
+    move is a queen promotion): taking too long, will retest later
 
-  n) fixed material draw bug that would make illegal moves, as well as the other
-     illegal move bug:
-         Score of luna_dev vs luna_main: 1133 - 1014 - 1380  [0.517] 3527
-    ...      luna_dev playing White: 491 - 506 - 767  [0.496] 1764
-    ...      luna_dev playing Black: 642 - 508 - 613  [0.538] 1763
-    ...      White vs Black: 999 - 1148 - 1380  [0.479] 3527
-    Elo difference: 11.7 +/- 8.9, LOS: 99.5 %, DrawRatio: 39.1 %
-    SPRT: llr 2.22 (100.8%), lbound -2.2, ubound 2.2 - H1 was accepted
+14) fixed material draw bug that would make illegal moves, as well as the other
+    illegal move bug:
+        Score of luna_dev vs luna_main: 1133 - 1014 - 1380  [0.517] 3527
+  ...      luna_dev playing White: 491 - 506 - 767  [0.496] 1764
+  ...      luna_dev playing Black: 642 - 508 - 613  [0.538] 1763
+  ...      White vs Black: 999 - 1148 - 1380  [0.479] 3527
+  Elo difference: 11.7 +/- 8.9, LOS: 99.5 %, DrawRatio: 39.1 %
+  SPRT: llr 2.22 (100.8%), lbound -2.2, ubound 2.2 - H1 was accepted
 
-  o) semi and fully-open rook files:
-        Score of luna_dev vs luna_main: 1242 - 1119 - 1391  [0.516] 3752
-      ...      luna_dev playing White: 623 - 554 - 700  [0.518] 1877
-      ...      luna_dev playing Black: 619 - 565 - 691  [0.514] 1875
-      ...      White vs Black: 1188 - 1173 - 1391  [0.502] 3752
-      Elo difference: 11.4 +/- 8.8, LOS: 99.4 %, DrawRatio: 37.1 %
-      SPRT: llr 2.2 (100.0%), lbound -2.2, ubound 2.2 - H1 was accepted
-  p) tempo bonus:
-        Score of luna_dev vs luna_main: 740 - 631 - 895  [0.524] 2266
-      ...      luna_dev playing White: 377 - 319 - 437  [0.526] 1133
-      ...      luna_dev playing Black: 363 - 312 - 458  [0.523] 1133
-      ...      White vs Black: 689 - 682 - 895  [0.502] 2266
-      Elo difference: 16.7 +/- 11.1, LOS: 99.8 %, DrawRatio: 39.5 %
-      SPRT: llr 2.21 (100.5%), lbound -2.2, ubound 2.2 - H1 was accepted
-  q) pawn support bonus:
-        Score of luna_dev vs luna_main: 209 - 153 - 215  [0.549] 577
-      ...      luna_dev playing White: 100 - 86 - 103  [0.524] 289
-      ...      luna_dev playing Black: 109 - 67 - 112  [0.573] 288
-      ...      White vs Black: 167 - 195 - 215  [0.476] 577
-      Elo difference: 33.8 +/- 22.5, LOS: 99.8 %, DrawRatio: 37.3 %
-      SPRT: llr 1.2 (54.5%), lbound -2.2, ubound 2.2
+15) semi and fully-open rook files:
+      Score of luna_dev vs luna_main: 1242 - 1119 - 1391  [0.516] 3752
+    ...      luna_dev playing White: 623 - 554 - 700  [0.518] 1877
+    ...      luna_dev playing Black: 619 - 565 - 691  [0.514] 1875
+    ...      White vs Black: 1188 - 1173 - 1391  [0.502] 3752
+    Elo difference: 11.4 +/- 8.8, LOS: 99.4 %, DrawRatio: 37.1 %
+    SPRT: llr 2.2 (100.0%), lbound -2.2, ubound 2.2 - H1 was accepted
+16) tempo bonus:
+      Score of luna_dev vs luna_main: 740 - 631 - 895  [0.524] 2266
+    ...      luna_dev playing White: 377 - 319 - 437  [0.526] 1133
+    ...      luna_dev playing Black: 363 - 312 - 458  [0.523] 1133
+    ...      White vs Black: 689 - 682 - 895  [0.502] 2266
+    Elo difference: 16.7 +/- 11.1, LOS: 99.8 %, DrawRatio: 39.5 %
+    SPRT: llr 2.21 (100.5%), lbound -2.2, ubound 2.2 - H1 was accepted
+17) pawn support bonus:
+      Score of luna_dev vs luna_main: 209 - 153 - 215  [0.549] 577
+    ...      luna_dev playing White: 100 - 86 - 103  [0.524] 289
+    ...      luna_dev playing Black: 109 - 67 - 112  [0.573] 288
+    ...      White vs Black: 167 - 195 - 215  [0.476] 577
+    Elo difference: 33.8 +/- 22.5, LOS: 99.8 %, DrawRatio: 37.3 %
+    SPRT: llr 1.2 (54.5%), lbound -2.2, ubound 2.2
+18) isolated pawn penalty (for some reason *now* it works):
+    Score of luna_dev vs luna_main: 589 - 501 - 588  [0.526] 1678
+    ...      luna_dev playing White: 310 - 235 - 294  [0.545] 839
+    ...      luna_dev playing Black: 279 - 266 - 294  [0.508] 839
+    ...      White vs Black: 576 - 514 - 588  [0.518] 1678
+    Elo difference: 18.2 +/- 13.4, LOS: 99.6 %, DrawRatio: 35.0 %
+    SPRT: llr 1.69 (76.7%), lbound -2.2, ubound 2.2

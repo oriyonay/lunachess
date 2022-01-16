@@ -13,36 +13,35 @@ int evaluate() {
   if (SEVERAL(b.bitboard[BB])) bonus -= BISHOP_PAIR_BONUS;
 
   // doubled pawn penalty:
-  bonus -= __builtin_popcountll(b.bitboard[WP] & (b.bitboard[WP] >> 8)) * DOUBLED_PAWN_PENALTY;
-  bonus += __builtin_popcountll(b.bitboard[BP] & (b.bitboard[BP] << 8)) * DOUBLED_PAWN_PENALTY;
+  bonus -= POPCOUNT(b.bitboard[WP] & (b.bitboard[WP] >> 8)) * DOUBLED_PAWN_PENALTY;
+  bonus += POPCOUNT(b.bitboard[BP] & (b.bitboard[BP] << 8)) * DOUBLED_PAWN_PENALTY;
 
   // pawn support (pawns defending other pawns) bonus:
   U64 wp_attacks = ((b.bitboard[WP] >> 7) & ~FILES[A]) |
                    ((b.bitboard[WP] >> 9) & ~FILES[H]);
   U64 bp_attacks = ((b.bitboard[BP] << 7) & ~FILES[H]) | 
                    ((b.bitboard[BP] << 9) & ~FILES[A]);
-  bonus += __builtin_popcountll(b.bitboard[WP] & wp_attacks) * PAWN_SUPPORT_BONUS;
-  bonus -= __builtin_popcountll(b.bitboard[BP] & bp_attacks) * PAWN_SUPPORT_BONUS;
+  bonus += POPCOUNT(b.bitboard[WP] & wp_attacks) * PAWN_SUPPORT_BONUS;
+  bonus -= POPCOUNT(b.bitboard[BP] & bp_attacks) * PAWN_SUPPORT_BONUS;
 
   // isolated and passed pawn penalty/bonus:
-  /* U64 wp = b.bitboard[WP];
+  U64 wp = b.bitboard[WP];
   U64 bp = b.bitboard[BP];
   int index;
   while (wp) {
     index = LSB(wp);
     if (!(b.bitboard[WP] & ISOLATED_MASKS[index])) bonus -= ISOLATED_PAWN_PENALTY;
-    if (!(b.bitboard[BP] & WHITE_PASSED_PAWN_MASKS[index])) bonus += PASSED_PAWN_BONUS[RANK_NO(index)];
+    // if (!(b.bitboard[BP] & WHITE_PASSED_PAWN_MASKS[index])) bonus += PASSED_PAWN_BONUS[RANK_NO(index)];
     POP_LSB(wp);
   }
   while (bp) {
     index = LSB(bp);
     if (!(b.bitboard[BP] & ISOLATED_MASKS[index])) bonus += ISOLATED_PAWN_PENALTY;
-    if (!(b.bitboard[WP] & BLACK_PASSED_PAWN_MASKS[index])) bonus -= PASSED_PAWN_BONUS[9 - RANK_NO(index)];
+    // if (!(b.bitboard[WP] & BLACK_PASSED_PAWN_MASKS[index])) bonus -= PASSED_PAWN_BONUS[9 - RANK_NO(index)];
     POP_LSB(bp);
-  } */
+  }
 
   // semi-open and fully-open rook files:
-  int index;
   U64 wr = b.bitboard[WR] | b.bitboard[WQ];
   U64 br = b.bitboard[BR] | b.bitboard[BQ];
   while (wr) {
