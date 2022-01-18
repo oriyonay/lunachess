@@ -27,11 +27,12 @@ run_tune:
 test: tests.cpp
 	make board.o
 	make consts.o
+	make eval_params.o
 	make globals.o
 	make tt.o
 	make utils.o
 	g++ -std=c++11 -O3 -w -c tests.cpp -o tests.o
-	g++ -std=c++11 -O3 board.o consts.o globals.o tests.o tt.o utils.o -o tests.out
+	g++ -std=c++11 -O3 board.o consts.o eval_params.o globals.o tests.o tt.o utils.o -o tests.out
 
 tune:
 	make board.o

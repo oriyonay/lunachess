@@ -9,7 +9,7 @@ board::board(char* FEN) : base_score_opening(0), base_score_endgame(0), game_pha
 
   // clear the piece board:
   // NOTE: the piece board is used for quick piece-square lookup
-  memset(piece_board, 12, 64 * sizeof(int));
+  memset(piece_board, NONE, 64 * sizeof(int));
 
   // clear the move and repetition history list:
   memset(move_history, 0, MAX_GAME_MOVES * sizeof(int));

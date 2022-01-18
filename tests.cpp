@@ -195,3 +195,30 @@ bool verify(board* b) {
     assert(false);
   }
 }
+
+// test_checks(): tests the gives_check() function in eval.cpp
+/* void test_checks(int depth) {
+  if (depth == 0) return;
+
+  // generate all legal moves:
+  int moves[MAX_POSITION_MOVES];
+  int num_moves = b.get_moves(moves);
+
+  // test whether gives_check() gives the right result:
+  for (int i = 0; i < num_moves; i++) {
+    int move = moves[i];
+    b.update_move_info_bitboards();
+    bool gives_check_hypothesis = gives_check(move);
+    b.make_move(move);
+    b.update_move_info_bitboards();
+    bool actually_gives_check = b.is_check();
+    test_checks(depth - 1);
+    b.undo_move();
+
+    if (gives_check_hypothesis != actually_gives_check) {
+      print_move(move);
+      printf(" is wrong! %d vs %d\n", gives_check(move), actually_gives_check);
+      b.print();
+    }
+  }
+} */
