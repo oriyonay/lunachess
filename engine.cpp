@@ -495,6 +495,9 @@ int score_move(int move, int forward_ply) {
   // is this move the best move for this position, as stored in our TT?
   if (move == (&TT.TT[b.hash & TT.mask])->best_move) return 9000;
 
+  // does this move give check?
+  // if (gives_check(move)) return 8000;
+
   // is this a recapture?
   /* if ((b.ply) &&
       (MOVE_CAPTURED(b.move_history[b.ply-1]) != NONE) &&
