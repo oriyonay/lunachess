@@ -25,7 +25,7 @@ int evaluate() {
   bonus -= POPCOUNT(b.bitboard[BP] & bp_attacks) * PAWN_SUPPORT_BONUS;
 
   // isolated and passed pawn penalty/bonus:
-  /* U64 wp = b.bitboard[WP];
+  U64 wp = b.bitboard[WP];
   U64 bp = b.bitboard[BP];
   int index;
   while (wp) {
@@ -39,12 +39,11 @@ int evaluate() {
     if (!(b.bitboard[BP] & ISOLATED_MASKS[index])) bonus += ISOLATED_PAWN_PENALTY;
     // if (!(b.bitboard[WP] & BLACK_PASSED_PAWN_MASKS[index])) bonus -= PASSED_PAWN_BONUS[9 - RANK_NO(index)];
     POP_LSB(bp);
-  } */
+  }
 
   // semi-open and fully-open rook files:
   U64 wr = b.bitboard[WR] | b.bitboard[WQ];
   U64 br = b.bitboard[BR] | b.bitboard[BQ];
-  int index;
   while (wr) {
     index = LSB(wr);
     if (!((b.bitboard[WP] | b.bitboard[BP]) & SQUARE_FILES[index])) bonus += FULLY_OPEN_FILE_BONUS;
@@ -222,7 +221,7 @@ int estimated_move_value(int move) {
 
 // gives_check(): does this move give check?
 // ASSUMES UNSAFE BITBOARD HAS BEEN UPDATED!
-bool gives_check(int move) {
+/* bool gives_check(int move) {
     // a move can give check in 2 different ways:
     // either directly or by discovered check.
 
@@ -295,4 +294,4 @@ bool gives_check(int move) {
 
     // we'll only get here if there's no discovered attack, and the king was moved:
     return false;
-}
+} */
