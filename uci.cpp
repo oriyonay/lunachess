@@ -138,6 +138,8 @@ void parse_go(char* command) {
 
   if (move_time != -1) {
     time_limit = move_time;
+    stop_time = start_time + time_limit - 30;
+    time_set = true;
     moves_to_go = 1;
   }
 
